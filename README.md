@@ -19,4 +19,4 @@ Simply choose "New Application", head to "Bot" tab (inside the app settings whic
 To invite your bot to your server, head to the "OAuth2" tab, and in the "scopes" section under "OAuth2 URL Generator", select "bot". Give the bot the permissions you like, or possibly admnistrator. (Take care with this, if a person has access to your token they will also have access to admin privelleges) and copy the URL. Visit the URL and you should be prompted to invite the bot.
 
 ## Running a bot instance
-Assuming you have valid code for your bot in a .py file, add `client.run('BOTTOKENHERE')` to the your file. In the terminal, simply using `python3 filename.py` should suffice, and you should see your bot come online in your server. Alternatively, an enviroment variable may also be used for the bot token (and will be our preferred way later on).
+Assuming you have valid code for your bot in a .py file, add `client.run('BOTTOKENHERE')` to your file. In the terminal, running the startup file, and you should see your bot come online in your server. Alternatively, an enviroment variable may also be used for the bot token and is the preferred way.
