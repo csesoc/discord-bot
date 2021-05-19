@@ -20,3 +20,4 @@ To invite your bot to your server, head to the "OAuth2" tab, and in the "scopes"
 
 ## Running a bot instance
 Assuming you have valid code for your bot in a .py file, add `client.run('BOTTOKENHERE')` to your file. In the terminal, running the startup file, and you should see your bot come online in your server. Alternatively, an enviroment variable may also be used for the bot token and is the preferred way.
+Test
