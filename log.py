@@ -33,17 +33,19 @@ if __name__ == "__main__":
     for extension in settings['enabled_extensions']:
         bot.load_extension(f"extensions.{extension}")
 
-#-----------------------------------------------------------#
-
-# 1 general logging file -> log.txt
-# multiple specific logging files
+##############################################################
+#               LOGGING (General + Error Handling)           #
+##############################################################
 
 # General logging
 @bot.event
 async def on_command(ctx):
-    # Log format
-    logging.basicConfig(filename='general.log', filemode = 'a', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', encoding='utf-8', level=logging.INFO)    # Message contains user and command typed in
-    # command = ctx.command
+    # Log format (Message contains user, server and command typed in)
+    logging.basicConfig(filename='general.log', \
+        filemode = 'a', \
+        format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+        encoding='utf-8', \
+        level=logging.INFO)
     server = ctx.guild.name
     user = ctx.author
     message = ctx.message.content
@@ -53,7 +55,11 @@ async def on_command(ctx):
 @bot.event
 async def on_error(ctx):
     # Error Log format    
-    logging.basicConfig(filename='error.log', filemode = 'a', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', encoding='utf-8', level=logging.INFO)
+    logging.basicConfig(filename='error.log', \
+    filemode = 'a', format='%(asctime)s - %(message)s', \
+    datefmt='%d-%b-%y %H:%M:%S', \
+    encoding='utf-8', \
+    level=logging.ERROR)
     server = ctx.guild.name
     user = ctx.author
     message = ctx.message.content
@@ -64,7 +70,11 @@ async def on_error(ctx):
 @bot.event
 async def on_command_error(ctx, error):
     # Error Log Format
-    logging.basicConfig(filename='command_error.log', filemode = 'a', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', encoding='utf-8', level=logging.INFO)
+    logging.basicConfig(filename='command_error.log', \
+        filemode = 'a', \
+        format='%(asctime)s - %(message)s', \
+        datefmt='%d-%b-%y %H:%M:%S', \
+        encoding='utf-8', level=logging.ERROR)
     server = ctx.guild.name
     user = ctx.author
     message = ctx.message.content
