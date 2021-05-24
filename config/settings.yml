@@ -8,7 +8,8 @@ prefix: $
 #                       Extension Settings                         #
 ####################################################################
 
-enabled_extensions: []
+enabled_extensions:
+- handbook
 
 ####################################################################
 #                        Token Settings                            #
