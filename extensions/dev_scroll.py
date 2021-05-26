@@ -1,11 +1,14 @@
 import discord
 from discord.client import Client
 from discord.ext import commands
+import asyncio
+import random
 
 
 left = "⬅️"
 right = "➡️"
 delete = "❌"
+message_ttl = 60
 
 
 class Dev_Scroll(commands.Cog):
@@ -15,7 +18,7 @@ class Dev_Scroll(commands.Cog):
 
     @commands.command()
     async def test(self, ctx):
-        await self.scroller.new(ctx, "myembed", ["blablabla", "lalalallala"])
+        await self.scroller.new(ctx, "myembed", ["blablabla", "lalalallala\nhello\nnewline"])
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -34,7 +37,6 @@ class DiscordScroll:
         self._pagenum = 0  # indexed from 0
         self._message = None
         self.embed = self.generate_embed()
-        # TODO: Add a TTL
 
     @property
     def title(self):
@@ -98,9 +100,9 @@ class DiscordScroll:
         # generates the embed based off the stored stuff
         embed = discord.Embed()
 
-        embed.colour = discord.Colour(0xffffff)
+        embed.color = discord.Color(int(hex(random.randint(1, 16581374)), 16))
         embed.title = self.title
-        embed.description = "```" + self.current_page + "```"
+        embed.description = "```\n" + self.current_page + "\n```"
         embed.set_footer(text=f"Page: {self._pagenum+1}")
 
         return embed
@@ -157,6 +159,11 @@ class DiscordScroll:
         # deletes the message
         await self._message.delete()
 
+    async def deactivate(self):
+        # removes the reactions, deactivating the scroller
+        if self._message is not None:
+            await self._message.clear_reactions()
+
 
 class DiscordScrollHandler:
     def __init__(self, bot_id):
@@ -167,6 +174,21 @@ class DiscordScrollHandler:
         self._cached = []
         self._bot_id = bot_id
 
+    async def _add_ttl(self, seconds, scroller):
+        if not isinstance(seconds, int):
+            wrong_type = seconds.__class__.__name__
+            raise TypeError(f"DiscordScrollHandler expected int for seconds, but received {wrong_type} instead.")
+        elif seconds < 30:
+            raise TypeError(f"DiscordScrollHandler expected seconds to be larger than or equal to 30.")
+        elif not isinstance(scroller, DiscordScroll):
+            wrong_type = seconds.__class__.__name__
+            raise TypeError(f"DiscordScrollHandler expected DiscordScroll for scroller, but received {wrong_type} instead.")
+
+        # adds a time to live to a scroller
+        await asyncio.sleep(seconds)
+        await scroller.deactivate()
+        self._cached.remove(scroller)
+
     async def new(self, ctx, title, pages):
         # creates a new scroller
         scroller = DiscordScroll(title, pages)
@@ -174,10 +196,20 @@ class DiscordScrollHandler:
         await scroller.send(ctx)
         # appends the scroller to the cached scrollers
         self._cached.append(scroller)
+        # add the ttl to the scroller, so that itll turn off after abit
+        asyncio.create_task(self._add_ttl(message_ttl, scroller))
+
         return scroller
 
     async def handle_reaction(self, reaction, user):
         # handles a reaction on a scroller
+        if not isinstance(reaction, discord.Reaction):
+            wrong_type = reaction.__class__.__name__
+            raise TypeError(f"DiscordScrollHandler expected discord.Reaction for reaction, but received {wrong_type} instead.")
+        elif not (isinstance(user, discord.Member) or isinstance(user, discord.Member)):
+            wrong_type = user.__class__.__name__
+            raise TypeError(f"DiscordScrollHandler expected discord.User for user, but received {wrong_type} instead.")
+
         if user.id != self._bot_id:
             curr_scroller = None
 
