@@ -101,6 +101,7 @@ class DiscordScroll:
         embed.colour = discord.Colour(0xffffff)
         embed.title = self.title
         embed.description = "```" + self.current_page + "```"
+        embed.set_footer(text=f"Page: {self._pagenum+1}")
 
         return embed
 
