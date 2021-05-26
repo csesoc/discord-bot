@@ -24,6 +24,10 @@ class Dev_Scroll(commands.Cog):
         await scroller.send(ctx)
         self._cachedscrolls.append(scroller)
 
+    @commands.command()
+    async def error(self, ctx):
+        scroller = Discord_Scroll("myembed", ["blablabla", "lalalallala"])
+
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user):
         if isnt_bot(user.id):
@@ -63,6 +67,8 @@ class Discord_Scroll:
         if not isinstance(value, str):
             wrong_type = value.__class__.__name__
             raise TypeError(f"Discord_Scroll.title expected str but received {wrong_type} instead.")
+        elif len(value):
+            raise TypeError(f"Discord_Scroll.title expected str with length of at least one")
 
         self._title = value
 
@@ -129,8 +135,12 @@ class Discord_Scroll:
         self._message = message
         return message
 
-    async def scroll(self, reaction: discord.Reaction):
+    async def scroll(self, reaction):
         # scrolls the scroller, requires a reaction type
+        if not isinstance(reaction, discord.Reaction):
+            wrong_type = reaction.__class__.__name__
+            raise TypeError(f"Discord_Scroll.scroll expected discord.Reaction but received {wrong_type} instead.")
+
         if str(reaction) == left:
             # scroll left
             await self._previous_page()
