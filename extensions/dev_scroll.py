@@ -3,10 +3,6 @@ from discord.client import Client
 from discord.ext import commands
 
 
-def isnt_bot(id):
-    return id != 831835566587772958
-
-
 left = "⬅️"
 right = "➡️"
 delete = "❌"
@@ -15,44 +11,28 @@ delete = "❌"
 class Dev_Scroll(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self._cachedscrolls = []
+        self.scroller = DiscordScrollHandler(831835566587772958)
 
     @commands.command()
     async def test(self, ctx):
-        scroller = Discord_Scroll("myembed", ["blablabla", "lalalallala"])
-
-        await scroller.send(ctx)
-        self._cachedscrolls.append(scroller)
-
-    @commands.command()
-    async def error(self, ctx):
-        scroller = Discord_Scroll("myembed", ["blablabla", "lalalallala"])
+        await self.scroller.new(ctx, "myembed", ["blablabla", "lalalallala"])
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user):
-        if isnt_bot(user.id):
-            curr_scroller: Discord_Scroll
-
-            for cachedscroll in self._cachedscrolls:
-                if cachedscroll.message_id == reaction.message.id:
-                    curr_scroller = cachedscroll
-
-            await reaction.remove(user)
-
-            await curr_scroller.scroll(reaction)
+    async def on_reaction_add(self, reaction, user):
+        await self.scroller.handle_reaction(reaction, user)
 
 
 def setup(client):
     client.add_cog(Dev_Scroll(client))
 
 
-class Discord_Scroll:
+class DiscordScroll:
     def __init__(self, title, pages):
         # creates the embed and the discord scroll
         self.title = title
         self.pages = pages
         self._pagenum = 0  # indexed from 0
-        self._message: discord.Message = None
+        self._message = None
         self.embed = self.generate_embed()
         # TODO: Add a TTL
 
@@ -66,9 +46,9 @@ class Discord_Scroll:
         # the setter method for title
         if not isinstance(value, str):
             wrong_type = value.__class__.__name__
-            raise TypeError(f"Discord_Scroll.title expected str but received {wrong_type} instead.")
-        elif len(value):
-            raise TypeError(f"Discord_Scroll.title expected str with length of at least one")
+            raise TypeError(f"DiscordScroll.title expected str but received {wrong_type} instead.")
+        elif len(value) == 0:
+            raise TypeError(f"DiscordScroll.title expected str with length of at least one")
 
         self._title = value
 
@@ -82,11 +62,11 @@ class Discord_Scroll:
         # the setter method for pages
         if not isinstance(value, list):
             wrong_type = value.__class__.__name__
-            raise TypeError(f"Discord_Scroll.pages expected list but received {wrong_type} instead.")
+            raise TypeError(f"DiscordScroll.pages expected list but received {wrong_type} instead.")
         elif len(value) == 0:
-            raise TypeError(f"Discord_Scroll.pages expected at least one element in list.")
+            raise TypeError(f"DiscordScroll.pages expected at least one element in list.")
         elif not all(isinstance(element, str) for element in value):
-            raise TypeError(f"Discord_Scroll.pages expected list of str.")
+            raise TypeError(f"DiscordScroll.pages expected list of str.")
 
         self._pages = value
 
@@ -105,7 +85,7 @@ class Discord_Scroll:
         # the setter method for embed
         if not isinstance(value, discord.Embed):
             wrong_type = value.__class__.__name__
-            raise TypeError(f"Discord_Scroll.embed expected discord.Embed but received {wrong_type} instead.")
+            raise TypeError(f"DiscordScroll.embed expected discord.Embed but received {wrong_type} instead.")
 
         self._embed = value
 
@@ -126,7 +106,11 @@ class Discord_Scroll:
 
     async def send(self, ctx):
         # sends the scroller to the channel, and adds the reactions
-        message: discord.Message = await ctx.send(embed=self.embed)
+        if not isinstance(ctx, discord.ext.commands.context.Context):
+            wrong_type = ctx.__class__.__name__
+            raise TypeError(f"DiscordScroll.send expected discord.ext.commands.context.Context but received {wrong_type} instead.")
+
+        message = await ctx.send(embed=self.embed)
 
         await message.add_reaction(delete)
         await message.add_reaction(left)
@@ -139,7 +123,7 @@ class Discord_Scroll:
         # scrolls the scroller, requires a reaction type
         if not isinstance(reaction, discord.Reaction):
             wrong_type = reaction.__class__.__name__
-            raise TypeError(f"Discord_Scroll.scroll expected discord.Reaction but received {wrong_type} instead.")
+            raise TypeError(f"DiscordScroll.scroll expected discord.Reaction but received {wrong_type} instead.")
 
         if str(reaction) == left:
             # scroll left
@@ -171,3 +155,38 @@ class Discord_Scroll:
     async def _delete(self):
         # deletes the message
         await self._message.delete()
+
+
+class DiscordScrollHandler:
+    def __init__(self, bot_id):
+        if not isinstance(bot_id, int):
+            wrong_type = bot_id.__class__.__name__
+            raise TypeError(f"DiscordScrollHandler expected int for bot_id, but received {wrong_type} instead.")
+
+        self._cached = []
+        self._bot_id = bot_id
+
+    async def new(self, ctx, title, pages):
+        # creates a new scroller
+        scroller = DiscordScroll(title, pages)
+        # sends the scroller to the channel
+        await scroller.send(ctx)
+        # appends the scroller to the cached scrollers
+        self._cached.append(scroller)
+        return scroller
+
+    async def handle_reaction(self, reaction, user):
+        # handles a reaction on a scroller
+        if user.id != self._bot_id:
+            curr_scroller = None
+
+            for cached in self._cached:
+                # finding the cached scroller
+                if cached.message_id == reaction.message.id:
+                    curr_scroller = cached
+                    break
+
+            if curr_scroller is not None:
+                # make sure a scroller was found
+                await reaction.remove(user)
+                await curr_scroller.scroll(reaction)
