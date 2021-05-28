@@ -27,7 +27,8 @@ class DiscordScrollHandler:
             wrong_type = message_ttl.__class__.__name__
             raise TypeError(f"DiscordScrollHandler expected int for message_ttl, but received {wrong_type} instead.")
 
-        self._cached = []
+        # _cached has the structure {message_id (`int`): {"scroll": DiscordScroll, "ttl_task": Task}}
+        self._cached = {}
         self._message_ttl = message_ttl
 
     async def _add_ttl(self, seconds, scroller):
@@ -55,8 +56,9 @@ class DiscordScrollHandler:
             raise TypeError(f"DiscordScrollHandler expected DiscordScroll for scroller, but received {wrong_type} instead.")
 
         await asyncio.sleep(seconds)
+
+        self._cached.pop(scroller.message_id)
         await scroller.deactivate()
-        self._cached.remove(scroller)
 
     async def new(self, ctx, title, pages):
         """Creates a new DiscordScroll instance to be handled.
@@ -82,9 +84,10 @@ class DiscordScrollHandler:
         """
         scroller = DiscordScroll(title, pages)
         await scroller.send(ctx)
-        self._cached.append(scroller)
-        # add the ttl to the scroller, so that itll turn off after abit
-        asyncio.create_task(self._add_ttl(self._message_ttl, scroller))
+
+        # add the ttl to the scroller, and cache the scroller
+        ttl_task = asyncio.create_task(self._add_ttl(self._message_ttl, scroller))
+        self._cached[scroller.message_id] = {"scroll": scroller, "ttl_task": ttl_task}
 
         return scroller
 
@@ -116,18 +119,19 @@ class DiscordScrollHandler:
 
         if user.id != reaction.message.author.id:
             # checks if the reaction isnt performed by the bot
-            curr_scroller = None
+            cached_scroller = self._cached.get(reaction.message.id)
 
-            for cached in self._cached:
-                # finding the cached scroller
-                if cached.message_id == reaction.message.id:
-                    curr_scroller = cached
-                    break
-
-            if curr_scroller is not None:
+            if cached_scroller is not None:
                 # make sure a scroller was found
                 await reaction.remove(user)
-                await curr_scroller.scroll(reaction)
+                scroller = cached_scroller["scroll"]
+                await scroller.scroll(reaction)
+                # remove the scroll from cached if reaction was delete
+                if str(reaction) == scroller.emojis["delete"]:
+                    cached_scroller["ttl_task"].cancel()
+                    del cached_scroller["ttl_task"]
+                    self._cached.pop(scroller.message_id)
+                    await scroller.deactivate()
 
 
 class DiscordScroll:
@@ -222,6 +226,11 @@ class DiscordScroll:
     def message_id(self):
         """The DiscordScroll's message_id (`int`, read-only)."""
         return self._message.id
+
+    @property
+    def emojis(self):
+        """The DiscordScroll's set emojis (`dict[str, str]`, read-only)."""
+        return {"next": self._left, "previous": self._right, "delete": self._delete}
 
     async def send(self, ctx):
         """Send the message to the channel of the command called.
