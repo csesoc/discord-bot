@@ -19,7 +19,6 @@ class DiscordScrollHandler:
     Notes
     -----
     This class depends on the DiscordScroll class to be present.
-    TODO: Graceful shutdowns
     """
 
     def __init__(self, message_ttl):
@@ -30,35 +29,6 @@ class DiscordScrollHandler:
         # _cached has the structure {message_id (`int`): {"scroll": DiscordScroll, "ttl_task": Task}}
         self._cached = {}
         self._message_ttl = message_ttl
-
-    async def _add_ttl(self, seconds, scroller):
-        """(Private) Add a TTL to a DiscordScroll.
-
-        Parameters
-        ----------
-        seconds: `int`
-            The time, in seconds, for the ttl.
-        scroller: `DiscordScroll`
-            The Scroller instance that is having the ttl added to it.
-
-        Raises
-        ------
-        TypeError
-            Raised if ``seconds`` or ``scroller`` are invalid types.
-        """
-        if not isinstance(seconds, int):
-            wrong_type = seconds.__class__.__name__
-            raise TypeError(f"DiscordScrollHandler expected int for seconds, but received {wrong_type} instead.")
-        elif seconds < 30:
-            raise TypeError(f"DiscordScrollHandler expected seconds to be larger than or equal to 30.")
-        elif not isinstance(scroller, DiscordScroll):
-            wrong_type = seconds.__class__.__name__
-            raise TypeError(f"DiscordScrollHandler expected DiscordScroll for scroller, but received {wrong_type} instead.")
-
-        await asyncio.sleep(seconds)
-
-        self._cached.pop(scroller.message_id)
-        await scroller.deactivate()
 
     async def new(self, ctx, title, pages):
         """Creates a new DiscordScroll instance to be handled.
@@ -128,10 +98,66 @@ class DiscordScrollHandler:
                 await scroller.scroll(reaction)
                 # remove the scroll from cached if reaction was delete
                 if str(reaction) == scroller.emojis["delete"]:
-                    cached_scroller["ttl_task"].cancel()
-                    del cached_scroller["ttl_task"]
-                    self._cached.pop(scroller.message_id)
-                    await scroller.deactivate()
+                    await self._stop_handling(scroller.message_id)
+
+    async def shutdown(self):
+        """Stops handling all the cached messages, useful in graceful shutdowns.
+
+        Raises
+        ------
+        discord.errors.NotFound
+            Raised by DiscordScroll if the message no longer exists at time of deactivation.
+        """
+        for scroller_id in list(self._cached.keys()):
+            # Goes through each of the current scrollers and stops handling them
+            await self._stop_handling(scroller_id)
+
+    async def _add_ttl(self, seconds, scroller):
+        """(Private) Add a TTL to a DiscordScroll.
+
+        Parameters
+        ----------
+        seconds: `int`
+            The time, in seconds, for the ttl.
+        scroller: `DiscordScroll`
+            The DiscordScroll instance that is having the ttl added to it.
+
+        Raises
+        ------
+        TypeError
+            Raised if ``seconds`` or ``scroller`` are invalid types.
+        """
+        if not isinstance(seconds, int):
+            wrong_type = seconds.__class__.__name__
+            raise TypeError(f"DiscordScrollHandler expected int for seconds, but received {wrong_type} instead.")
+        elif seconds < 30:
+            raise TypeError(f"DiscordScrollHandler expected seconds to be larger than or equal to 30.")
+        elif not isinstance(scroller, DiscordScroll):
+            wrong_type = seconds.__class__.__name__
+            raise TypeError(f"DiscordScrollHandler expected DiscordScroll for scroller, but received {wrong_type} instead.")
+
+        await asyncio.sleep(seconds)
+
+        self._cached.pop(scroller.message_id)
+        await scroller.deactivate()
+
+    async def _stop_handling(self, scroller_id):
+        """Stops handling a specific DiscordScroll instance, will deactivate it.
+
+        Parameters
+        ----------
+        scroller_id: `int`
+            The message_id of the DiscordScroll instance that is being dropped.
+        """
+        cached_scroller = self._cached.get(scroller_id)
+
+        if cached_scroller is not None:
+            # make sure a scroller is cached, then dismantle it
+            cached_scroller["ttl_task"].cancel()
+            del cached_scroller["ttl_task"]
+            scroller = cached_scroller["scroll"]
+            self._cached.pop(scroller_id)
+            await scroller.deactivate()
 
 
 class DiscordScroll:
