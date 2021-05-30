@@ -264,11 +264,11 @@ class vote(commands.Cog):
         return embed
     
     def save_data(self):
-        with open("data_votes.json", 'w') as f:
+        with open("extensions/data_votes.json", 'w') as f:
             json.dump(self.data_vote, f, indent=2)
     
     def load_data(self):
-        with open("data_votes.json", 'r') as f:
+        with open("extensions/data_votes.json", 'r') as f:
             self.data_vote = json.load(f)
 
             
@@ -276,4 +276,4 @@ class vote(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Vote(bot))
+    bot.add_cog(vote(bot))
