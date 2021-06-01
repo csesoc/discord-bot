@@ -84,3 +84,52 @@ async def on_command_error(ctx, error):
     
     elif (isinstance(error, commands.CommandNotFound)):
         logging.error(f'{server} - {user} - {message} - Command not found.')
+
+
+
+###############################################################
+#                      MESSAGE LOGGING                        #
+###############################################################
+
+# Messages
+
+@bot.event
+async def on_message(message):
+     logging.basicConfig(filename='message.log', \
+        filemode = 'a', \
+        format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+        encoding='utf-8', \
+        level=logging.INFO)
+    server = ctx.guild.name
+    user = ctx.author
+    message = ctx.message.content
+    
+    logging.info(f'{server} - {user} - {message}')
+
+@bot.event
+async def on_message_edit(message):
+    logging.basicConfig(filename='message.edit.log', \
+        filemode = 'a', \
+        format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+        encoding='utf-8', \
+        level=logging.INFO)
+    server = ctx.guild.name
+    user = ctx.author
+    message_before = message_before.content
+    message_after = message_after.content
+
+    logging.info(f'{user} edited message in {server} \n Message before:{message_before} \n Message after:{message_after}')
+
+
+@bot.event
+async def on_message_delete(message):
+    logging.basicConfig(filename='message.delete.log', \
+        filemode = 'a', \
+        format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+        encoding='utf-8', \
+        level=logging.INFO)
+    server = ctx.guild.name
+    user = ctx.author
+    message = ctx.message.content
+   
+    logging.info (f'{server} - {user} - {message} - deleted')
