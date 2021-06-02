@@ -1,6 +1,7 @@
 ## Example usage of DiscordScroll.py in a Cog:
 ```python
 from discord.ext import commands
+from lib.discordscroll.discordscroll import DiscordScrollHandler
 
 class Example_Cog_Using_Scroll(commands.Cog):
     def __init__(self, client):
