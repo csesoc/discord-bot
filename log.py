@@ -10,7 +10,7 @@ from discord.ext.commands.errors import BadArgument
 #               LOGGING (General + Error Handling)           #
 ##############################################################
 
-class CommandLogging(commands.Cog):
+class Log(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -66,4 +66,4 @@ class CommandLogging(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(CommandLogging(bot))
+    bot.add_cog(Log(bot))
