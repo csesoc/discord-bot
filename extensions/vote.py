@@ -16,7 +16,7 @@ class vote(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
         try:
-            with open("data_votes.json", 'r') as f:
+            with open("extensions/data_votes.json", 'r') as f:
                 self.data_vote = json.load(f)
         except:
             self.data_vote = []
