@@ -8,7 +8,7 @@ prefix: $
 #                       Extension Settings                         #
 ####################################################################
 
-enabled_extensions: []
+enabled_extensions: [vote]
 
 ####################################################################
 #                        Token Settings                            #
