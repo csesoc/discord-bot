@@ -21,7 +21,7 @@ class Example_Cog_Using_Scroll(commands.Cog):
             "example page 2\nwith\nnewlines"
         ]
 
-        await self.scroll_handler.new(ctx, title, pages)
+        await self.scroll_handler.new(ctx, pages, title)
 
     # An example using pregenerated Embeds for pages
     # Don't pass in a title
