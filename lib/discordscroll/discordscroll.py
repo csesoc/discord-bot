@@ -30,17 +30,18 @@ class DiscordScrollHandler:
         self._cached = {}
         self._message_ttl = message_ttl
 
-    async def new(self, ctx, title, pages):
+    async def new(self, ctx, pages, title=None):
         """Creates a new DiscordScroll instance to be handled.
 
         Parameters
         ----------
         ctx: `discord.ext.commands.context.Context`
             The context of the command to create the scroll.
-        title: `str`
-            The title of the Scroll.
-        pages: `List[str]`
-            A list of each page as a str.
+        pages: `List[str]` or `List[discord.Embed]`
+            A list str OR list of prepared embeds, each signifying a page.
+            If `List[discord.Embed]`, ``title`` cannot be present.
+        title: `str`, optional
+            The title of the Scroll. Needed if ``pages`` is `List[str]`.
 
         Returns
         -------
@@ -52,7 +53,7 @@ class DiscordScrollHandler:
         TypeError
             Raised by `DiscordScroll` if any of the parameters are invalid types.
         """
-        scroller = DiscordScroll(title, pages)
+        scroller = DiscordScroll(pages, title)
         await scroller.send(ctx)
 
         # add the ttl to the scroller, and cache the scroller
@@ -93,7 +94,7 @@ class DiscordScrollHandler:
 
             if cached_scroller is not None:
                 # make sure a scroller was found
-                await reaction.remove(user)
+                await reaction.remove(user)  # in this order since removed msg
                 scroller = cached_scroller["scroll"]
                 await scroller.scroll(reaction)
                 # remove the scroll from cached if reaction was delete
@@ -165,22 +166,25 @@ class DiscordScroll:
 
     Parameters
     ----------
-    title: `str`
-        The title of the Scroll.
-    pages: `List[str]`
-        A list of each page as a str.
+    pages: `List[str]` or `List[discord.Embed]`
+        A list str OR list of prepared embeds, each signifying a page.
+        If `List[discord.Embed]`, ``title`` cannot be present.
+    title: `str`, optional
+        The title of the Scroll. Needed if ``pages`` is `List[str]`.
 
     Raises
     ------
     TypeError
         Raised if ``title`` or ``pages`` are invalid types.
+    AttributeError
+        Raised if ``title`` is set when ``pages`` is of type `List[discord.Embed]`.
 
     Notes
     -----
     This class should be used in conjunction with DiscordScrollHandler.
     """
 
-    def __init__(self, title, pages):
+    def __init__(self, pages, title=None):
         # The default emojis
         self._left = "⬅️"
         self._right = "➡️"
@@ -189,43 +193,63 @@ class DiscordScroll:
         self._pagenum = 0  # indexed from 0
         self._message = None
         self._active = False
+        self._using_embeds = False  # whether or not current using embeds for pages
 
-        self.title = title
+        self._title = None
         self.pages = pages
+        if title is not None:  # checking first time setting
+            self.title = title
         self.embed = self._generate_embed()
 
     @property
     def title(self):
         """The title of the Scroll (`str`)."""
+        if self._using_embeds:
+            raise AttributeError(f"DiscordScroll.title does not exist.")
+
         return self._title
 
     @title.setter
     def title(self, value):
         """Setter method for title, expects a `str`."""
         # Type Checking the value
-        if not isinstance(value, str):
-            wrong_type = value.__class__.__name__
-            raise TypeError(f"DiscordScroll.title expected str but received {wrong_type} instead.")
-        elif len(value) == 0:
-            raise TypeError(f"DiscordScroll.title expected str with length of at least one")
+        if not self._using_embeds:
+            if not isinstance(value, str):
+                wrong_type = value.__class__.__name__
+                raise TypeError(f"DiscordScroll.title expected str but received {wrong_type} instead.")
+            elif len(value) == 0:
+                raise TypeError(f"DiscordScroll.title expected str with length of at least one.")
+        else:
+            raise AttributeError(f"DiscordScroll.title cannot be set when using embeds.")
 
         self._title = value
 
     @property
     def pages(self):
-        """The Pages in the Scroll (`List[str]`)."""
+        """The Pages in the Scroll (`List[str]` or `List[discord.Embed])."""
         return self._pages
 
     @pages.setter
     def pages(self, value):
-        """Setter method for pages, expects `List[str]`."""
+        """Setter method for pages, expects `List[str]` or `List[discord.Embed]."""
         if not isinstance(value, list):
             wrong_type = value.__class__.__name__
             raise TypeError(f"DiscordScroll.pages expected list but received {wrong_type} instead.")
         elif len(value) == 0:
             raise TypeError(f"DiscordScroll.pages expected at least one element in list.")
-        elif not all(isinstance(element, str) for element in value):
-            raise TypeError(f"DiscordScroll.pages expected list of str.")
+
+        # fixing the title, and updating self._using_embeds
+        if all(isinstance(element, str) for element in value):
+            # when user gives str for pages
+            self._using_embeds = False
+            if self._title is None:  # ensure there is a title for _generate_embed
+                self.title = "Default Title"
+        elif all(isinstance(element, discord.Embed) for element in value):
+            # when user gives embeds for pages
+            self._using_embeds = True
+            self._title = None
+        else:
+            raise TypeError(f"DiscordScroll.pages expected list of str OR list of discord.Embed.")
 
         self._pages = value
 
@@ -245,7 +269,7 @@ class DiscordScroll:
 
     @property
     def current_page(self):
-        """The current page the scroll is on (`str`, read-only)."""
+        """The current page the scroll is on (`str` or `discord.Embed`, read-only)."""
         return self.pages[self._pagenum]
 
     @property
@@ -257,6 +281,11 @@ class DiscordScroll:
     def emojis(self):
         """The DiscordScroll's set emojis (`dict[str, str]`, read-only)."""
         return {"next": self._left, "previous": self._right, "delete": self._delete}
+
+    @property
+    def using_embeds(self):
+        """Whether the DiscordScroll is using premade embeds for pages (`bool`, read-only)."""
+        return self._using_embeds
 
     async def send(self, ctx):
         """Send the message to the channel of the command called.
@@ -340,16 +369,21 @@ class DiscordScroll:
         Returns
         -------
         embed: `discord.Embed`
-            The embed which was generated.
+            The embed page which was generated.
         """
-        embed = discord.Embed()
+        if not self._using_embeds:
+            # generate a new page
+            embed = discord.Embed()
 
-        embed.color = discord.Color(int(hex(random.randint(1, 16581374)), 16))
-        embed.title = self.title
-        embed.description = "```\n" + self.current_page + "\n```"
-        embed.set_footer(text=f"Page: {self._pagenum+1}")
+            embed.color = discord.Color(int(hex(random.randint(1, 16581374)), 16))
+            embed.title = self.title
+            embed.description = "```\n" + self.current_page + "\n```"
+            embed.set_footer(text=f"Page: {self._pagenum+1}")
 
-        return embed
+            return embed
+        else:
+            # returning the pregenerated embed page
+            return self.current_page
 
     async def _update(self):
         """(Private) Regenerates the embed, and edits the message to the new embed."""
