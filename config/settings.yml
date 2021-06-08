@@ -20,4 +20,5 @@ token_env_enabled: true
 token_env_key: DISCORD_TOKEN
 
 # Only used if token_env_enabled is false
-token: XXXYOURBOTTOKENHEREXXX
+token: ODMxODM1NTY2NTg3NzcyOTU4.YHbBPQ.Q1MNydQk-5LYFqcebesPTBTiFvE
+# token: XXXYOURBOTTOKENHEREXXX
