@@ -21,28 +21,30 @@ class Log(commands.Cog):
         # Log format (Message contains user, server and command typed in)
         logging.basicConfig(filename='general.log', \
             filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S', \
             encoding='utf-8', \
             level=logging.INFO)
         server = ctx.guild.name
+        user_id = ctx.author.id
         user = ctx.author
         message = ctx.message.content
-        logging.info(f'{server} - {user} - {message}')
+        logging.info(f'{server} - {user_id} - {user} - {message}')
 
     @commands.Cog.listener()
     #  Bot error messages
     async def on_error(self, ctx):
         # Error Log format    
         logging.basicConfig(filename='error.log', \
-        filemode = 'a', format='%(asctime)s - %(message)s', \
-        datefmt='%d-%b-%y %H:%M:%S', \
-        encoding='utf-8', \
-        level=logging.ERROR)
+            filemode = 'a', format='%(asctime)s - %(message)s', \
+            datefmt='%Y-%m-%d %H:%M:%S', \
+            encoding='utf-8', \
+            level=logging.ERROR)
         server = ctx.guild.name
+        user_id = ctx.author.id
         user = ctx.author
         message = ctx.message.content
         # Log error
-        logging.error(f'{server} - {user} - {traceback.format_exc()}')
+        logging.error(f'{server} - {user_id} - {user} - {traceback.format_exc()}')
 
     @commands.Cog.listener()
     # User Command error messages
@@ -51,17 +53,18 @@ class Log(commands.Cog):
         logging.basicConfig(filename='command_error.log', \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', \
-            datefmt='%d-%b-%y %H:%M:%S', \
+            datefmt='%Y-%m-%d %H:%M:%S', \
             encoding='utf-8', level=logging.ERROR)
         server = ctx.guild.name
+        user_id = ctx.author.id
         user = ctx.author
         message = ctx.message.content
 
         if ((isinstance(error, commands.MissingRequiredArgument)) or (isinstance(error, commands.BadArgument))):
-            logging.error(f'{server} - {user} - {message} - Invalid Arguments')
+            logging.error(f'{server} - {user_id} - {user} - {message} - Invalid Arguments')
         
         elif (isinstance(error, commands.CommandNotFound)):
-            logging.error(f'{server} - {user} - {message} - Command not found.')
+            logging.error(f'{server} - {user_id} - {user} - {message} - Command not found.')
 
 
 
