@@ -22,10 +22,10 @@ class Message_Log(commands.Cog):
             encoding='utf-8', \
             level=logging.INFO)
         server = message.guild.name
-        user = message.author.id
+        user_id = message.author.id
         message = message.content
         
-        logging.info(f'{server} - {user} - {message}')
+        logging.info(f'{server} - {user_id} - {message}')
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, message):
@@ -35,11 +35,11 @@ class Message_Log(commands.Cog):
             encoding='utf-8', \
             level=logging.INFO)
         server = message.guild.name
-        user = message.author.id
+        user_id = message.author.id
         message_before = before.content
         message_after = message.content
 
-        logging.info(f'{user} edited message in {server}\n\tMessage before: {message_before}\n\tMessage after: {message_after}')
+        logging.info(f'{user_id} edited message in {server}\n\tMessage before: {message_before}\n\tMessage after: {message_after}')
 
 
     @commands.Cog.listener()
@@ -50,10 +50,10 @@ class Message_Log(commands.Cog):
             encoding='utf-8', \
             level=logging.INFO)
         server = message.guild.name
-        user = message.author.id
+        user_id = message.author.id
         message = message.content
     
-        logging.info (f'{server} - {user} - {message} - deleted')
+        logging.info (f'{server} - {user_id} - {message} - deleted')
 
 
 def setup(bot):

@@ -25,9 +25,9 @@ class Log(commands.Cog):
             encoding='utf-8', \
             level=logging.INFO)
         server = ctx.guild.name
-        user = ctx.author
+        user_id = ctx.author.id
         message = ctx.message.content
-        logging.info(f'{server} - {user} - {message}')
+        logging.info(f'{server} - {user_id} - {message}')
 
     @commands.Cog.listener()
     #  Bot error messages
@@ -39,10 +39,10 @@ class Log(commands.Cog):
         encoding='utf-8', \
         level=logging.ERROR)
         server = ctx.guild.name
-        user = ctx.author
+        user_id = ctx.author.id
         message = ctx.message.content
         # Log error
-        logging.error(f'{server} - {user} - {traceback.format_exc()}')
+        logging.error(f'{server} - {user_id} - {traceback.format_exc()}')
 
     @commands.Cog.listener()
     # User Command error messages
@@ -54,14 +54,14 @@ class Log(commands.Cog):
             datefmt='%d-%b-%y %H:%M:%S', \
             encoding='utf-8', level=logging.ERROR)
         server = ctx.guild.name
-        user = ctx.author
+        user_id = ctx.author.id
         message = ctx.message.content
 
         if ((isinstance(error, commands.MissingRequiredArgument)) or (isinstance(error, commands.BadArgument))):
-            logging.error(f'{server} - {user} - {message} - Invalid Arguments')
+            logging.error(f'{server} - {user_id} - {message} - Invalid Arguments')
         
         elif (isinstance(error, commands.CommandNotFound)):
-            logging.error(f'{server} - {user} - {message} - Command not found.')
+            logging.error(f'{server} - {user_id} - {message} - Command not found.')
 
 
 
