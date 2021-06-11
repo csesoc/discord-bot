@@ -18,7 +18,7 @@ class Message_Log(commands.Cog):
     async def on_message(self, message):
         logging.basicConfig(filename='message.log', \
             filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
             level=logging.INFO)
         server = message.guild.name
@@ -31,7 +31,7 @@ class Message_Log(commands.Cog):
     async def on_message_edit(self, before, message):
         logging.basicConfig(filename='message.log', \
             filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
             level=logging.INFO)
         server = message.guild.name
@@ -46,7 +46,7 @@ class Message_Log(commands.Cog):
     async def on_message_delete(self, message):
         logging.basicConfig(filename='message.log', \
             filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
             level=logging.INFO)
         server = message.guild.name

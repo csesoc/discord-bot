@@ -4,6 +4,7 @@ from discord.ext import commands
 import logging
 import traceback
 from discord.ext.commands.errors import BadArgument
+import datetime
 
 
 ##############################################################
@@ -19,9 +20,10 @@ class Log(commands.Cog):
     # General logging
     async def on_command(self, ctx):
         # Log format (Message contains user, server and command typed in)
+        time = str(datetime.datetime.now().astimezone().replace(microsecond=0).isoformat())
         logging.basicConfig(filename='general.log', \
             filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', \
+            format='%(time)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
             level=logging.INFO)
         server = ctx.guild.name
@@ -35,7 +37,7 @@ class Log(commands.Cog):
         # Error Log format    
         logging.basicConfig(filename='error.log', \
         filemode = 'a', format='%(asctime)s - %(message)s', \
-        datefmt='%d-%b-%y %H:%M:%S', \
+        datefmt='%Y-%m-%dT%H:%M:%S%z', \
         encoding='utf-8', \
         level=logging.ERROR)
         server = ctx.guild.name
@@ -51,7 +53,7 @@ class Log(commands.Cog):
         logging.basicConfig(filename='command_error.log', \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', \
-            datefmt='%d-%b-%y %H:%M:%S', \
+            datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', level=logging.ERROR)
         server = ctx.guild.name
         user_id = ctx.author.id
