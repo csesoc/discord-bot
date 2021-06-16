@@ -8,7 +8,7 @@ prefix: $
 #                       Extension Settings                         #
 ####################################################################
 
-enabled_extensions: [vote]
+enabled_extensions: [log,vote,message_log]
 
 ####################################################################
 #                        Token Settings                            #
@@ -21,3 +21,10 @@ token_env_key: DISCORD_TOKEN
 
 # Only used if token_env_enabled is false
 token: XXXYOURBOTTOKENHEREXXX
+
+####################################################################
+#                        Data Settings                             #
+####################################################################
+enable_local_data: true
+local_directory: "data/"
+root_directory: "/root/data/"

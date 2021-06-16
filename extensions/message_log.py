@@ -1,4 +1,3 @@
-from gc import is_finalized
 import discord
 from discord.ext import commands
 import logging
