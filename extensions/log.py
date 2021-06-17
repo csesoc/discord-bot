@@ -25,7 +25,8 @@ class Log(commands.Cog):
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
-            level=logging.INFO)
+            level=logging.INFO, \
+            force=True)
         server = ctx.guild.name
         user_id = ctx.author.id
         message = ctx.message.content
@@ -39,7 +40,8 @@ class Log(commands.Cog):
         filemode = 'a', format='%(asctime)s - %(message)s', \
         datefmt='%Y-%m-%dT%H:%M:%S%z', \
         encoding='utf-8', \
-        level=logging.ERROR)
+        level=logging.ERROR, \
+        force=True)
         server = ctx.guild.name
         user_id = ctx.author.id
         message = ctx.message.content
@@ -54,7 +56,8 @@ class Log(commands.Cog):
             filemode = 'a', \
             format='%(asctime)s - %(message)s', \
             datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            encoding='utf-8', level=logging.ERROR)
+            encoding='utf-8', level=logging.ERROR, \
+            force=True)
         server = ctx.guild.name
         user_id = ctx.author.id
         message = ctx.message.content

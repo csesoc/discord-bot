@@ -20,7 +20,8 @@ class Message_Log(commands.Cog):
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
-            level=logging.INFO)
+            level=logging.INFO, \
+            force=True)
         server = message.guild.name
         user_id = message.author.id
         message = message.content
@@ -33,7 +34,8 @@ class Message_Log(commands.Cog):
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
-            level=logging.INFO)
+            level=logging.INFO, \
+            force=True)
         server = message.guild.name
         user_id = message.author.id
         message_before = before.content
@@ -48,7 +50,8 @@ class Message_Log(commands.Cog):
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
-            level=logging.INFO)
+            level=logging.INFO, \
+            force=True)
         server = message.guild.name
         user_id = message.author.id
         message = message.content
