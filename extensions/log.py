@@ -23,7 +23,7 @@ class Log(commands.Cog):
         time = str(datetime.datetime.now().astimezone().replace(microsecond=0).isoformat())
         logging.basicConfig(filename='general.log', \
             filemode = 'a', \
-            format='%(time)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
+            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
             level=logging.INFO)
         server = ctx.guild.name

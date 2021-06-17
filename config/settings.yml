@@ -8,7 +8,7 @@ prefix: $
 #                       Extension Settings                         #
 ####################################################################
 
-enabled_extensions: [vote]
+enabled_extensions: [vote, log, message_log]
 
 ####################################################################
 #                        Token Settings                            #
@@ -16,7 +16,7 @@ enabled_extensions: [vote]
 
 # Uses the token stored in the .env file
 # in the same directory as bot.py
-token_env_enabled: false
+token_env_enabled: true
 token_env_key: DISCORD_TOKEN
 
 # Only used if token_env_enabled is false
