@@ -24,7 +24,7 @@ class Log(commands.Cog):
     async def on_command(self, ctx):
         # Log format (Message contains user, server and command typed in)
         time = str(datetime.datetime.now().astimezone().replace(microsecond=0).isoformat())
-        logging.basicConfig(filename="general.log", \
+        logging.basicConfig(filename=self.general_file, \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
@@ -39,7 +39,7 @@ class Log(commands.Cog):
     #  Bot error messages
     async def on_error(self, ctx):
         # Error Log format    
-        logging.basicConfig(filename="error.log", \
+        logging.basicConfig(filename=self.error_file, \
         filemode = 'a', format='%(asctime)s - %(message)s', \
         datefmt='%Y-%m-%dT%H:%M:%S%z', \
         encoding='utf-8', \
@@ -55,7 +55,7 @@ class Log(commands.Cog):
     # User Command error messages
     async def on_command_error(self, ctx, error):
         # Error Log Format
-        logging.basicConfig(filename="on_command_error.log", \
+        logging.basicConfig(filename=self.command_error_file, \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', \
             datefmt='%Y-%m-%dT%H:%M:%S%z', \

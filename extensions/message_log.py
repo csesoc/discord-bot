@@ -3,7 +3,7 @@ from discord.ext import commands
 import logging
 import traceback
 from discord.ext.commands.errors import BadArgument
-
+import yaml
 
 ###############################################################
 #                      MESSAGE LOGGING                        #
@@ -12,10 +12,14 @@ class Message_Log(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.path = self.load_directory()
+        self.message_log = f'{self.path}message.log'
+        self.on_message_edit = f'{self.path}message.log'
+        self.on_message_delete = f'{self.path}message.log'
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        logging.basicConfig(filename='message.log', \
+        logging.basicConfig(filename=self.message_log, \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
@@ -29,7 +33,7 @@ class Message_Log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, message):
-        logging.basicConfig(filename='message.log', \
+        logging.basicConfig(filename=self.on_message_edit, \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
@@ -45,7 +49,7 @@ class Message_Log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        logging.basicConfig(filename='message.log', \
+        logging.basicConfig(filename=self.on_message_delete, \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
             encoding='utf-8', \
@@ -56,6 +60,17 @@ class Message_Log(commands.Cog):
         message = message.content
     
         logging.info (f'{server} - {user_id} - {message} - deleted')
+    
+    def load_directory(self):
+        with open('./config/settings.yml') as file:
+            settings = yaml.full_load(file)
+
+        if settings['enable_local_data']:
+            return settings['local_directory']
+        
+        else:
+            return settings['root_directory']
+
 
 
 def setup(bot):
