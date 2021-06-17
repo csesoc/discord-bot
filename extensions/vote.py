@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord import Embed, Color
 import random
 import json
+import yaml
 
 class vote(commands.Cog):
     """Handles all the voting related commands in any channel that the Bot has access to.
@@ -15,8 +16,11 @@ class vote(commands.Cog):
     """
     def __init__(self,bot):
         self.bot = bot
+        self.path = self.load_directory()
+        self.file_name = f'{self.path}data_vote.json'
+
         try:
-            with open("extensions/data_votes.json", 'r') as f:
+            with open(self.file_name, 'r') as f:
                 self.data_vote = json.load(f)
         except:
             self.data_vote = []
@@ -264,12 +268,22 @@ class vote(commands.Cog):
         return embed
     
     def save_data(self):
-        with open("extensions/data_votes.json", 'w') as f:
+        with open(self.file_name, 'w') as f:
             json.dump(self.data_vote, f, indent=2)
     
     def load_data(self):
-        with open("extensions/data_votes.json", 'r') as f:
+        with open(self.file_name, 'r') as f:
             self.data_vote = json.load(f)
+    
+    def load_directory(self):
+        with open('./config/settings.yml') as file:
+            settings = yaml.full_load(file)
+
+        if settings['enable_local_data']:
+            return settings['local_directory']
+        
+        else:
+            return settings['root_directory']
 
             
         
