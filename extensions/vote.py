@@ -2,7 +2,9 @@ from discord.ext import commands
 from discord import Embed, Color
 import random
 import json
-import yaml
+from ruamel.yaml import YAML
+
+yaml = YAML()
 
 class vote(commands.Cog):
     """Handles all the voting related commands in any channel that the Bot has access to.
@@ -277,7 +279,7 @@ class vote(commands.Cog):
     
     def load_directory(self):
         with open('./config/settings.yml') as file:
-            settings = yaml.full_load(file)
+            settings = yaml.load(file)
 
         if settings['enable_local_data']:
             return settings['local_directory']

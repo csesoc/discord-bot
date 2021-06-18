@@ -8,7 +8,11 @@ prefix: $
 #                       Extension Settings                         #
 ####################################################################
 
-enabled_extensions: [log,vote,message_log]
+enabled_extensions:
+  - log
+  - roles
+  - message_log
+  - vote
 
 ####################################################################
 #                        Token Settings                            #

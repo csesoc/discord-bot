@@ -4,7 +4,9 @@ import logging
 import traceback
 from discord.ext.commands.errors import BadArgument
 import datetime
-import yaml
+from ruamel.yaml import YAML
+
+yaml = YAML()
 
 ##############################################################
 #               LOGGING (General + Error Handling)           #
@@ -14,7 +16,7 @@ class Log(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.root_dir = self.load_root_directory()
+        self.root_dir = self.load_directory()
         self.error_file = f"{self.root_dir}error.log"
         self.general_file = f"{self.root_dir}general.log"
         self.command_error_file = f"{self.root_dir}command_error.log"
@@ -59,7 +61,8 @@ class Log(commands.Cog):
             filemode = 'a', \
             format='%(asctime)s - %(message)s', \
             datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            encoding='utf-8', level=logging.ERROR, \
+            encoding='utf-8',
+            level=logging.ERROR, \
             force=True)
         server = ctx.guild.name
         user_id = ctx.author.id
@@ -71,9 +74,9 @@ class Log(commands.Cog):
         elif (isinstance(error, commands.CommandNotFound)):
             logging.error(f'{server} - {user_id} - {message} - Command not found.')
 
-    def load_root_directory(self):
+    def load_directory(self):
         with open('./config/settings.yml') as file:
-            settings = yaml.full_load(file)
+            settings = yaml.load(file)
         
         if settings['enable_local_data']:
             return settings['local_directory']
