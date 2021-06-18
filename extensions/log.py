@@ -29,7 +29,6 @@ class Log(commands.Cog):
         logging.basicConfig(filename=self.general_file, \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            encoding='utf-8', \
             level=logging.INFO, \
             force=True)
         server = ctx.guild.name
@@ -44,7 +43,6 @@ class Log(commands.Cog):
         logging.basicConfig(filename=self.error_file, \
         filemode = 'a', format='%(asctime)s - %(message)s', \
         datefmt='%Y-%m-%dT%H:%M:%S%z', \
-        encoding='utf-8', \
         level=logging.ERROR, \
         force=True)
         server = ctx.guild.name
@@ -61,7 +59,6 @@ class Log(commands.Cog):
             filemode = 'a', \
             format='%(asctime)s - %(message)s', \
             datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            encoding='utf-8',
             level=logging.ERROR, \
             force=True)
         server = ctx.guild.name

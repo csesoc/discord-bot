@@ -24,7 +24,6 @@ class Message_Log(commands.Cog):
         logging.basicConfig(filename=self.message_log, \
             filemode = 'a', \
             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            encoding='utf-8', \
             level=logging.INFO, \
             force=True)
         server = message.guild.name
@@ -38,7 +37,6 @@ class Message_Log(commands.Cog):
     #     logging.basicConfig(filename=self.on_message_edit, \
     #         filemode = 'a', \
     #         format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
-    #         encoding='utf-8', \
     #         level=logging.INFO, \
     #         force=True)
     #     server = message.guild.name
@@ -54,7 +52,6 @@ class Message_Log(commands.Cog):
     #     logging.basicConfig(filename=self.on_message_delete, \
     #         filemode = 'a', \
     #         format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
-    #         encoding='utf-8', \
     #         level=logging.INFO, \
     #         force=True)
     #     server = message.guild.name
