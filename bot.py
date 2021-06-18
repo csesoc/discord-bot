@@ -2,12 +2,14 @@ import discord
 from discord.ext import commands
 
 import os
-import yaml
+from ruamel.yaml import YAML
 from dotenv import load_dotenv
+
+yaml = YAML()
 
 # Load settings file and set variables
 with open('./config/settings.yml') as file:
-    settings = yaml.full_load(file)
+    settings = yaml.load(file)
 
 BOT_PREFIX = settings['prefix']
 
@@ -19,7 +21,7 @@ else:
     BOT_TOKEN = settings['token']
 
 # TODO: Move this to config file
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 
 # Initialise bot
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
@@ -42,6 +44,22 @@ async def on_ready():
     for guild in bot.guilds:
         print(f"- {guild.name} (ID: {guild.id})")
     print("---------------------------------------------")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def prefix(ctx, *, new_prefix):
+    bot.command_prefix = new_prefix
+
+    with open('./config/settings.yml') as file:
+        data = yaml.load(file)
+
+    data['prefix'] = new_prefix
+
+    with open('./config/settings.yml', 'w') as file:
+        yaml.dump(data, file)
+
+    await ctx.send(f"Set `{new_prefix}` as the new command prefix.")
 
 
 bot.run(BOT_TOKEN)
