@@ -29,6 +29,7 @@ token: XXXYOURBOTTOKENHEREXXX
 ####################################################################
 #                        Data Settings                             #
 ####################################################################
+
 enable_local_data: true
-local_directory: "data/"
-root_directory: "/root/data/"
+local_directory: data/
+root_directory: /root/data/

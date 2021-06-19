@@ -62,4 +62,59 @@ async def prefix(ctx, *, new_prefix):
     await ctx.send(f"Set `{new_prefix}` as the new command prefix.")
 
 
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def load(ctx, extension):
+    try:
+        bot.load_extension(f"extensions.{extension}")
+
+        with open('./config/settings.yml') as file:
+            data = yaml.load(file)
+
+        data['enabled_extensions'].append(extension)
+
+        with open('./config/settings.yml', 'w') as file:
+            yaml.dump(data, file)
+
+        await ctx.send(f"Loaded `{extension}`.")
+    except:
+        await ctx.send(f"Failed to load `{extension}`.")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def unload(ctx, extension):
+    try:
+        bot.unload_extension(f"extensions.{extension}")
+
+        with open('./config/settings.yml') as file:
+            data = yaml.load(file)
+
+        data['enabled_extensions'].remove(extension)
+
+        with open('./config/settings.yml', 'w') as file:
+            yaml.dump(data, file)
+
+        await ctx.send(f"Unloaded `{extension}`.")
+    except:
+        await ctx.send(f"Failed to unload `{extension}`.")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def reload(ctx, extension):
+    bot.reload_extension(f"extensions.{extension}")
+
+    await ctx.send(f"Reloaded `{extension}`.")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def reloadall(ctx):
+    for extension in list(bot.extensions):
+        bot.reload_extension(extension)
+
+    await ctx.send("Reloaded all extensions.")
+
+
 bot.run(BOT_TOKEN)
