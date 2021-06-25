@@ -5,7 +5,7 @@ import traceback
 from discord.ext.commands.errors import BadArgument
 import datetime
 from ruamel.yaml import YAML
-
+from bot import SETTINGS_FILE
 yaml = YAML()
 
 ##############################################################
@@ -72,7 +72,7 @@ class Log(commands.Cog):
             logging.error(f'{server} - {user_id} - {message} - Command not found.')
 
     def load_directory(self):
-        with open('./config/settings.yml') as file:
+        with open(SETTINGS_FILE) as file:
             settings = yaml.load(file)
         
         if settings['enable_local_data']:

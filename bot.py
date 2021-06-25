@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 
 yaml = YAML()
 
+SETTINGS_FILE = './data/config/settings.yml'
 # Load settings file and set variables
-with open('./config/settings.yml') as file:
+with open(SETTINGS_FILE) as file:
     settings = yaml.load(file)
 
 BOT_PREFIX = settings['prefix']
@@ -51,12 +52,12 @@ async def on_ready():
 async def prefix(ctx, *, new_prefix):
     bot.command_prefix = new_prefix
 
-    with open('./config/settings.yml') as file:
+    with open(SETTINGS_FILE) as file:
         data = yaml.load(file)
 
     data['prefix'] = new_prefix
 
-    with open('./config/settings.yml', 'w') as file:
+    with open(SETTINGS_FILE, 'w') as file:
         yaml.dump(data, file)
 
     await ctx.send(f"Set `{new_prefix}` as the new command prefix.")
@@ -68,12 +69,12 @@ async def load(ctx, extension):
     try:
         bot.load_extension(f"extensions.{extension}")
 
-        with open('./config/settings.yml') as file:
+        with open(SETTINGS_FILE) as file:
             data = yaml.load(file)
 
         data['enabled_extensions'].append(extension)
 
-        with open('./config/settings.yml', 'w') as file:
+        with open(SETTINGS_FILE, 'w') as file:
             yaml.dump(data, file)
 
         await ctx.send(f"Loaded `{extension}`.")
@@ -87,12 +88,12 @@ async def unload(ctx, extension):
     try:
         bot.unload_extension(f"extensions.{extension}")
 
-        with open('./config/settings.yml') as file:
+        with open(SETTINGS_FILE) as file:
             data = yaml.load(file)
 
         data['enabled_extensions'].remove(extension)
 
-        with open('./config/settings.yml', 'w') as file:
+        with open(SETTINGS_FILE, 'w') as file:
             yaml.dump(data, file)
 
         await ctx.send(f"Unloaded `{extension}`.")
