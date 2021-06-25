@@ -54,7 +54,7 @@ class Roles(commands.Cog):
         log_channel = self.bot.get_channel(self.role_log_channel_id)
         success = True
 
-        for role_name in role_names:
+        for role_name in role_names[:3]:
             role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
 
             if role is None:
@@ -89,7 +89,7 @@ class Roles(commands.Cog):
         log_channel = self.bot.get_channel(self.role_log_channel_id)
         success = True
 
-        for role_name in role_names:
+        for role_name in role_names[:3]:
             role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
 
             if role is None:
