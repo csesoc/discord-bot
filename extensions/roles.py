@@ -146,6 +146,10 @@ class Roles(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def whitelist(self, ctx, *role_names):
+        if len(role_names) == 0:
+            await ctx.send(f"Usage: `{self.bot.command_prefix}whitelist [role1] [role2] ...`")
+            return
+
         for role_name in role_names:
             if role_name.lower() in (role.lower() for role in self.allowedroles):
                 await ctx.send(f"❌ {role_name} is already on the whitelist.")
@@ -165,6 +169,10 @@ class Roles(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def blacklist(self, ctx, *role_names):
+        if len(role_names) == 0:
+            await ctx.send(f"Usage: `{self.bot.command_prefix}blacklist [role1] [role2] ...`")
+            return
+
         for role_name in role_names:
             if role_name.lower() not in (role.lower() for role in self.allowedroles):
                 await ctx.send(f"❌ {role_name} is not currently on the whitelist.")
@@ -184,6 +192,10 @@ class Roles(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def allowedroles(self, ctx):
+        if not self.allowedroles:
+            await ctx.send(f"No roles are currently allowed")
+            return
+
         title = "Allowed Roles"
         pages = ['\n'.join(self.allowedroles[i:i+10]) for i in range(0,len(self.allowedroles),10)]
 
@@ -195,7 +207,11 @@ class Roles(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def countmembers(self, ctx, *, role_name):
+    async def countmembers(self, ctx, *, role_name = None):
+        if role_name is None:
+            await ctx.send(f"Usage: `{self.bot.command_prefix}countmembers [role]`")
+            return
+
         role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
 
         if role is None:
