@@ -58,21 +58,21 @@ class Roles(commands.Cog):
             role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
 
             if role is None:
-                await ctx.send(f"❌ Failed to give {role_name} to {user}. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
-                await log_channel.send(f"❌ Failed to give {role_name} to {user} (role missing or invalid).")
+                await ctx.send(f"❌ Failed to give `{role_name}` to `{user}`. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
+                await log_channel.send(f"❌ Failed to give `{role_name}` to `{user}` (role missing or invalid).")
                 success = False
             elif role in user.roles:
-                await ctx.send(f"❌ Failed to give {role_name} to {user}. You already have this role.", delete_after=2)
-                await log_channel.send(f"❌ Failed to give {role_name} to {user} (user already has role).")
+                await ctx.send(f"❌ Failed to give `{role_name}` to `{user}`. You already have this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to give `{role_name}` to `{user}` (user already has role).")
                 success = False
             elif role_name.lower() not in (role.lower() for role in self.allowedroles):
-                await ctx.send(f"❌ Failed to give {role_name} to {user}. You do not have permission to give yourself this role.", delete_after=2)
-                await log_channel.send(f"❌ Failed to give {role_name} to {user} (role not on whitelist).")
+                await ctx.send(f"❌ Failed to give `{role_name}` to `{user}`. You do not have permission to give yourself this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to give `{role_name}` to `{user}` (role not on whitelist).")
                 success = False
             else:
                 await user.add_roles(role)
-                await ctx.send(f"✅ Gave {role_name} to {user}.", delete_after=2)
-                await log_channel.send(f"✅ Gave {role_name} to {user}.")
+                await ctx.send(f"✅ Gave `{role_name}` to `{user}`.", delete_after=2)
+                await log_channel.send(f"✅ Gave `{role_name}` to `{user}`.")
 
         if success:
             await ctx.message.add_reaction("👍")
@@ -93,21 +93,21 @@ class Roles(commands.Cog):
             role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
 
             if role is None:
-                await ctx.send(f"❌ Failed to remove {role_name} from {user}. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
-                await log_channel.send(f"❌ Failed to remove {role_name} from {user} (role missing or invalid).")
+                await ctx.send(f"❌ Failed to remove `{role_name}` from `{user}`. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
+                await log_channel.send(f"❌ Failed to remove `{role_name}` from `{user}` (role missing or invalid).")
                 success = False
             elif role not in user.roles:
-                await ctx.send(f"❌ Failed to remove {role_name} from {user}. You do not have this role.", delete_after=2)
-                await log_channel.send(f"❌ Failed to remove {role_name} from {user} (user does not have role).")
+                await ctx.send(f"❌ Failed to remove `{role_name}` from `{user}`. You do not have this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to remove `{role_name}` from `{user}` (user does not have role).")
                 success = False
             elif role_name.lower() not in (role.lower() for role in self.allowedroles):
-                await ctx.send(f"❌ Failed to remove {role_name} from {user}. You do not have permission to remove this role.", delete_after=2)
-                await log_channel.send(f"❌ Failed to remove {role_name} from {user} (role not on whitelist).")
+                await ctx.send(f"❌ Failed to remove `{role_name}` from `{user}`. You do not have permission to remove this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to remove `{role_name}` from `{user}` (role not on whitelist).")
                 success = False
             else:
                 await user.remove_roles(role)
-                await ctx.send(f"✅ Removed {role_name} from {user}.", delete_after=2)
-                await log_channel.send(f"✅ Removed {role_name} from {user}.")
+                await ctx.send(f"✅ Removed `{role_name}` from `{user}`.", delete_after=2)
+                await log_channel.send(f"✅ Removed `{role_name}` from `{user}`.")
 
         if success:
             await ctx.message.add_reaction("👍")
@@ -152,7 +152,7 @@ class Roles(commands.Cog):
 
         for role_name in role_names:
             if role_name.lower() in (role.lower() for role in self.allowedroles):
-                await ctx.send(f"❌ {role_name} is already on the whitelist.")
+                await ctx.send(f"❌ `{role_name}` is already on the whitelist.")
             else:
                 self.allowedroles.append(role_name)
 
@@ -164,7 +164,7 @@ class Roles(commands.Cog):
                 with open(self.settings_file, 'w') as file:
                     yaml.dump(role_data, file)
 
-                await ctx.send(f"✅ Added {role_name} to the whitelist.")
+                await ctx.send(f"✅ Added `{role_name}` to the whitelist.")
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -175,7 +175,7 @@ class Roles(commands.Cog):
 
         for role_name in role_names:
             if role_name.lower() not in (role.lower() for role in self.allowedroles):
-                await ctx.send(f"❌ {role_name} is not currently on the whitelist.")
+                await ctx.send(f"❌ `{role_name}` is not currently on the whitelist.")
             else:
                 self.allowedroles.remove(role_name)
 
@@ -187,7 +187,7 @@ class Roles(commands.Cog):
                 with open(self.settings_file, 'w') as file:
                     yaml.dump(role_data, file)
 
-                await ctx.send(f"✅ Removed {role_name} from the whitelist.")
+                await ctx.send(f"✅ Removed `{role_name}` from the whitelist.")
 
     @commands.command()
     @commands.has_permissions(administrator=True)
