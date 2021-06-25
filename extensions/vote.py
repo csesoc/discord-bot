@@ -3,7 +3,6 @@ from discord import Embed, Color
 import random
 import json
 from ruamel.yaml import YAML
-from bot import SETTINGS_FILE
 
 yaml = YAML()
 
@@ -287,7 +286,7 @@ class vote(commands.Cog):
             self.data_vote = json.load(f)
     
     def load_directory(self):
-        with open(SETTINGS_FILE) as file:
+        with open('./data/config/settings.yml') as file:
             settings = yaml.load(file)
 
         if settings['enable_local_data']:

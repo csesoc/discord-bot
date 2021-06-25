@@ -20,8 +20,10 @@ class Roles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        self.settings_file = './data/config/roles.yml'
+
         # Load settings file and set variables
-        with open('./config/roles.yml') as file:
+        with open(self.settings_file) as file:
             settings = yaml.load(file)
 
         self.role_channel_id = settings['role_channel_id']
@@ -30,6 +32,18 @@ class Roles(commands.Cog):
 
         scroll_ttl = 60  # The time in seconds that a scroll will work
         self.scroll_handler = DiscordScrollHandler(scroll_ttl)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.channel.id != self.role_channel_id:
+            return
+
+        # This is extremely scuffed but it sorta works
+        await asyncio.sleep(5)
+        try:
+            await message.delete()
+        except:
+            pass
 
     @commands.command()
     async def give(self, ctx, *role_names):
@@ -107,12 +121,12 @@ class Roles(commands.Cog):
         self.role_channel_id = ctx.channel.id
         await ctx.send(f"Set <#{self.role_channel_id}> as role channel.")
         
-        with open('./config/roles.yml') as file:
+        with open(self.settings_file) as file:
             data = yaml.load(file)
 
         data['role_channel_id'] = ctx.channel.id
 
-        with open('./config/roles.yml', 'w') as file:
+        with open(self.settings_file, 'w') as file:
             yaml.dump(data, file)
 
     @commands.command()
@@ -121,12 +135,12 @@ class Roles(commands.Cog):
         self.role_log_channel_id = ctx.channel.id
         await ctx.send(f"Set <#{self.role_log_channel_id}> as default role log channel.")
 
-        with open('./config/roles.yml') as file:
+        with open(self.settings_file) as file:
             data = yaml.load(file)
 
         data['role_log_channel_id'] = ctx.channel.id
 
-        with open('./config/roles.yml', 'w') as file:
+        with open(self.settings_file, 'w') as file:
             yaml.dump(data, file)
 
     @commands.command()
@@ -138,12 +152,12 @@ class Roles(commands.Cog):
             else:
                 self.allowedroles.append(role_name)
 
-                with open('./config/roles.yml') as file:
+                with open(self.settings_file) as file:
                     role_data = yaml.load(file)
 
                 role_data['allowed_roles'].append(role_name)
 
-                with open('./config/roles.yml', 'w') as file:
+                with open(self.settings_file, 'w') as file:
                     yaml.dump(role_data, file)
 
                 await ctx.send(f"✅ Added {role_name} to the whitelist.")
@@ -157,12 +171,12 @@ class Roles(commands.Cog):
             else:
                 self.allowedroles.remove(role_name)
 
-                with open('./config/roles.yml') as file:
+                with open(self.settings_file) as file:
                     role_data = yaml.load(file)
 
                 role_data['allowed_roles'].remove(role_name)
 
-                with open('./config/roles.yml', 'w') as file:
+                with open(self.settings_file, 'w') as file:
                     yaml.dump(role_data, file)
 
                 await ctx.send(f"✅ Removed {role_name} from the whitelist.")

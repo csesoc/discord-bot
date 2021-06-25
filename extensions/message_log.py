@@ -4,7 +4,6 @@ import logging
 import traceback
 from discord.ext.commands.errors import BadArgument
 from ruamel.yaml import YAML
-from bot import SETTINGS_FILE
 
 yaml = YAML()
 
@@ -64,7 +63,7 @@ class Message_Log(commands.Cog):
         logging.info (f'{server} - {user_id} - {message} - deleted')
     
     def load_directory(self):
-        with open(SETTINGS_FILE) as file:
+        with open('./data/config/settings.yml') as file:
             settings = yaml.load(file)
 
         if settings['enable_local_data']:
