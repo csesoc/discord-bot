@@ -57,6 +57,8 @@ class Roles(commands.Cog):
         for role_name in role_names[:3]:
             role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
 
+            role_name = role_name.replace('`', '')
+
             if role is None:
                 await ctx.send(f"❌ Failed to give `{role_name}` to `{user}`. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
                 await log_channel.send(f"❌ Failed to give `{role_name}` to `{user}` (role missing or invalid).")
@@ -91,6 +93,8 @@ class Roles(commands.Cog):
 
         for role_name in role_names[:3]:
             role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
+
+            role_name = role_name.replace('`', '')
 
             if role is None:
                 await ctx.send(f"❌ Failed to remove `{role_name}` from `{user}`. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
