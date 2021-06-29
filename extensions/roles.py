@@ -55,7 +55,7 @@ class Roles(commands.Cog):
         success = True
 
         for role_name in role_names[:3]:
-            role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
 
             role_name = role_name.replace('`', '')
 
@@ -92,7 +92,7 @@ class Roles(commands.Cog):
         success = True
 
         for role_name in role_names[:3]:
-            role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
 
             role_name = role_name.replace('`', '')
 
@@ -216,13 +216,25 @@ class Roles(commands.Cog):
             await ctx.send(f"Usage: `{self.bot.command_prefix}countmembers [role]`")
             return
 
-        role = discord.utils.find(lambda r: role_name.lower() == r.name.lower(), ctx.guild.roles)
+        role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
 
         if role is None:
             await ctx.send(f"`{role_name}` was not found. Please make sure the spelling is correct.")
         else:
             await ctx.send(f"`{role_name}` has {len(role.members)} members.")
 
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def removeunverified(self, ctx):
+        # This is Shrey's code don't @ me
+        i = 0
+        for member in ctx.guild.members:
+            if discord.utils.get(member.roles, name = 'unverified' ):
+                i += 1
+                await member.send(content = "You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
+                await member.kick(reason = "You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
+        
+        await ctx.send(f"Removed {i} unverified members")
 
 def setup(bot):
     bot.add_cog(Roles(bot))
