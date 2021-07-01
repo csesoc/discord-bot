@@ -13,6 +13,7 @@ enabled_extensions:
   - roles
   - message_log
   - vote
+  - utilities
 
 ####################################################################
 #                        Token Settings                            #
