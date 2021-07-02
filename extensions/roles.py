@@ -211,6 +211,11 @@ class Roles(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
+    async def listallroles(self, ctx):
+        await ctx.send("```" + ('\n'.join(role.name for role in ctx.guild.roles)) + "```")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
     async def countmembers(self, ctx, *, role_name = None):
         if role_name is None:
             await ctx.send(f"Usage: `{self.bot.command_prefix}countmembers [role]`")
