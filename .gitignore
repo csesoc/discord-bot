@@ -25,7 +25,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -147,3 +146,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Ignore .DS_Store files for Mac users
+.DS_Store

@@ -1,0 +1,245 @@
+import discord
+from discord.ext import commands
+
+import asyncio
+from ruamel.yaml import YAML
+from lib.discordscroll.discordscroll import DiscordScrollHandler
+
+yaml = YAML()
+
+
+class Roles(commands.Cog):
+    """Handles role assignment and removal and provides useful admin commands
+
+    All configuration information is stored in roles.yml
+    - Role and role log channel IDs
+    - Allowed roles whitelist
+    Can be modified manually or with commands
+    """
+
+    def __init__(self, bot):
+        self.bot = bot
+
+        self.settings_file = './data/config/roles.yml'
+
+        # Load settings file and set variables
+        with open(self.settings_file) as file:
+            settings = yaml.load(file)
+
+        self.role_channel_id = settings['role_channel_id']
+        self.role_log_channel_id = settings['role_log_channel_id']
+        self.allowedroles = settings['allowed_roles']
+
+        scroll_ttl = 60  # The time in seconds that a scroll will work
+        self.scroll_handler = DiscordScrollHandler(scroll_ttl)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.channel.id != self.role_channel_id:
+            return
+
+        # This is extremely scuffed but it sorta works
+        await asyncio.sleep(5)
+        try:
+            await message.delete()
+        except:
+            pass
+
+    @commands.command()
+    async def give(self, ctx, *role_names):
+        if ctx.message.channel.id != self.role_channel_id:
+            return
+
+        user = ctx.message.author
+        log_channel = self.bot.get_channel(self.role_log_channel_id)
+        success = True
+
+        for role_name in role_names[:3]:
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
+
+            role_name = role_name.replace('`', '')
+
+            if role is None:
+                await ctx.send(f"❌ Failed to give `{role_name}` to `{user}`. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
+                await log_channel.send(f"❌ Failed to give `{role_name}` to `{user}` (role missing or invalid).")
+                success = False
+            elif role in user.roles:
+                await ctx.send(f"❌ Failed to give `{role_name}` to `{user}`. You already have this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to give `{role_name}` to `{user}` (user already has role).")
+                success = False
+            elif role_name.lower() not in (role.lower() for role in self.allowedroles):
+                await ctx.send(f"❌ Failed to give `{role_name}` to `{user}`. You do not have permission to give yourself this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to give `{role_name}` to `{user}` (role not on whitelist).")
+                success = False
+            else:
+                await user.add_roles(role)
+                await ctx.send(f"✅ Gave `{role_name}` to `{user}`.", delete_after=2)
+                await log_channel.send(f"✅ Gave `{role_name}` to `{user}`.")
+
+        if success:
+            await ctx.message.add_reaction("👍")
+
+        await asyncio.sleep(2.5)
+        await ctx.message.delete()
+
+    @commands.command()
+    async def remove(self, ctx, *role_names):
+        if ctx.message.channel.id != self.role_channel_id:
+            return
+
+        user = ctx.message.author
+        log_channel = self.bot.get_channel(self.role_log_channel_id)
+        success = True
+
+        for role_name in role_names[:3]:
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
+
+            role_name = role_name.replace('`', '')
+
+            if role is None:
+                await ctx.send(f"❌ Failed to remove `{role_name}` from `{user}`. Please make sure your course code matches exactly e.g. `COMP1511` not `COMP 1511`.", delete_after=2)
+                await log_channel.send(f"❌ Failed to remove `{role_name}` from `{user}` (role missing or invalid).")
+                success = False
+            elif role not in user.roles:
+                await ctx.send(f"❌ Failed to remove `{role_name}` from `{user}`. You do not have this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to remove `{role_name}` from `{user}` (user does not have role).")
+                success = False
+            elif role_name.lower() not in (role.lower() for role in self.allowedroles):
+                await ctx.send(f"❌ Failed to remove `{role_name}` from `{user}`. You do not have permission to remove this role.", delete_after=2)
+                await log_channel.send(f"❌ Failed to remove `{role_name}` from `{user}` (role not on whitelist).")
+                success = False
+            else:
+                await user.remove_roles(role)
+                await ctx.send(f"✅ Removed `{role_name}` from `{user}`.", delete_after=2)
+                await log_channel.send(f"✅ Removed `{role_name}` from `{user}`.")
+
+        if success:
+            await ctx.message.add_reaction("👍")
+
+        await asyncio.sleep(2.5)
+        await ctx.message.delete()
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def setrole(self, ctx):
+        self.role_channel_id = ctx.channel.id
+        await ctx.send(f"Set <#{self.role_channel_id}> as role channel.")
+        
+        with open(self.settings_file) as file:
+            data = yaml.load(file)
+
+        data['role_channel_id'] = ctx.channel.id
+
+        with open(self.settings_file, 'w') as file:
+            yaml.dump(data, file)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def setrolelog(self, ctx):
+        self.role_log_channel_id = ctx.channel.id
+        await ctx.send(f"Set <#{self.role_log_channel_id}> as default role log channel.")
+
+        with open(self.settings_file) as file:
+            data = yaml.load(file)
+
+        data['role_log_channel_id'] = ctx.channel.id
+
+        with open(self.settings_file, 'w') as file:
+            yaml.dump(data, file)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def whitelist(self, ctx, *role_names):
+        if len(role_names) == 0:
+            await ctx.send(f"Usage: `{self.bot.command_prefix}whitelist [role1] [role2] ...`")
+            return
+
+        for role_name in role_names:
+            if role_name.lower() in (role.lower() for role in self.allowedroles):
+                await ctx.send(f"❌ `{role_name}` is already on the whitelist.")
+            else:
+                self.allowedroles.append(role_name)
+
+                with open(self.settings_file) as file:
+                    role_data = yaml.load(file)
+
+                role_data['allowed_roles'].append(role_name)
+
+                with open(self.settings_file, 'w') as file:
+                    yaml.dump(role_data, file)
+
+                await ctx.send(f"✅ Added `{role_name}` to the whitelist.")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def blacklist(self, ctx, *role_names):
+        if len(role_names) == 0:
+            await ctx.send(f"Usage: `{self.bot.command_prefix}blacklist [role1] [role2] ...`")
+            return
+
+        for role_name in role_names:
+            if role_name.lower() not in (role.lower() for role in self.allowedroles):
+                await ctx.send(f"❌ `{role_name}` is not currently on the whitelist.")
+            else:
+                self.allowedroles.remove(role_name)
+
+                with open(self.settings_file) as file:
+                    role_data = yaml.load(file)
+
+                role_data['allowed_roles'].remove(role_name)
+
+                with open(self.settings_file, 'w') as file:
+                    yaml.dump(role_data, file)
+
+                await ctx.send(f"✅ Removed `{role_name}` from the whitelist.")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def allowedroles(self, ctx):
+        if not self.allowedroles:
+            await ctx.send(f"No roles are currently allowed")
+            return
+
+        title = "Allowed Roles"
+        pages = ['\n'.join(self.allowedroles[i:i+10]) for i in range(0,len(self.allowedroles),10)]
+
+        await self.scroll_handler.new(ctx, pages, title)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        await self.scroll_handler.handle_reaction(reaction, user)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def listallroles(self, ctx):
+        await ctx.send("```" + ('\n'.join(role.name for role in ctx.guild.roles)) + "```")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def countmembers(self, ctx, *, role_name = None):
+        if role_name is None:
+            await ctx.send(f"Usage: `{self.bot.command_prefix}countmembers [role]`")
+            return
+
+        role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
+
+        if role is None:
+            await ctx.send(f"`{role_name}` was not found. Please make sure the spelling is correct.")
+        else:
+            await ctx.send(f"`{role_name}` has {len(role.members)} members.")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def removeunverified(self, ctx):
+        # This is Shrey's code don't @ me
+        i = 0
+        for member in ctx.guild.members:
+            if discord.utils.get(member.roles, name = 'unverified' ):
+                i += 1
+                await member.send(content = "You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
+                await member.kick(reason = "You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
+        
+        await ctx.send(f"Removed {i} unverified members")
+
+def setup(bot):
+    bot.add_cog(Roles(bot))
