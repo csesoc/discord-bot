@@ -1,9 +1,14 @@
 import discord
+from discord.errors import Forbidden, HTTPException, NotFound
 from discord.ext import commands
 
 import asyncio
+from discord.ext.commands.core import command
+from discord.ext.commands.errors import MemberNotFound
 from ruamel.yaml import YAML
 from lib.discordscroll.discordscroll import DiscordScrollHandler
+
+import sys
 
 yaml = YAML()
 
@@ -240,6 +245,61 @@ class Roles(commands.Cog):
                 await member.kick(reason = "You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
         
         await ctx.send(f"Removed {i} unverified members")
+    
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def bulkgive(self, ctx, *role_names):
+        if len(role_names) == 0 or len(ctx.message.attachments) == 0:
+            await ctx.send(f"Usage: `{self.bot.command_prefix}bulkgive [role1] [role2] ... `, attaching a file of discordname#number or IDs")
+            return
+        
+        await ctx.channel.trigger_typing() # Operation may take a bit
+        
+        members = set()
+        failed_member_lookups = []
+        for attachment in ctx.message.attachments:
+            uploaded = None
+            try:
+                uploaded = await attachment.read()
+            except HTTPException or Forbidden or NotFound:
+                await ctx.send(f"Could not read attachment {attachment.filename}, cancelling operation.")
+                continue
+
+            decoded = uploaded.decode(sys.getdefaultencoding()) # Could be just utf-8 if this causes issues
+            encoded_users = decoded.split("\n")
+            for encoded_user in encoded_users:
+                encoded_user = encoded_user.strip() # Remove whitespace
+                if not encoded_user: # String is empty
+                    continue
+                try:
+                    member = await commands.MemberConverter().convert(ctx, encoded_user)
+                    members.add(member)
+                except MemberNotFound:
+                    failed_member_lookups.append(encoded_user)
+        
+        failed_role_lookups = []
+        roles = set()
+        for role_name in role_names:
+            role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
+            if role is None:
+                failed_role_lookups.append(role_name)
+                continue
+            roles.add(role)
+        
+        for member in members:
+            await member.add_roles(*roles, reason=f"Bulk give operation by {ctx.message.author.id} ({ctx.message.author.name}))")
+        
+        reply = "```Bulk give complete\n"
+        reply += f"Added {len(roles)} roles to {len(members)} members.\n\n"
+        reply += f"Failed member lookups: {len(failed_member_lookups)}\n"
+        for failed in failed_member_lookups:
+            reply += failed + "\n"
+        reply += f"Failed role lookups: {len(failed_role_lookups)}\n"
+        for failed in failed_role_lookups:
+            reply += failed + "\n"
+        reply += "```"
+
+        await ctx.message.reply(reply)
 
 def setup(bot):
     bot.add_cog(Roles(bot))
