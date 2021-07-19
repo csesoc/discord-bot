@@ -57,23 +57,28 @@ class Carrotboard(commands.Cog):
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
         embed = Embed(
-            title=f"A new message has been Carrotted!",
+            title=f"A new message has been Carrotted! :partying_face: :tada:",
             description=f"{message.content} \n [Click here to go to message]({message.jump_url})",
             colour=message.author.colour,
             timestamp=datetime.utcnow()
         )
+        ######### NEED TO CHECK THIS ###########
+        embed.set_thumbnail(url = payload.user_id.avatar_url)
 
         await board_channel.send(embed=embed)
+
+        ########## Pins the message: pin_message(message)
 
     @commands.command()
     async def leaderboard(self, ctx):
         # Gets the carroted messages
         top_messages = self.storage.get_all('🥕')
 
-        
+        #sends leaderboard embed
         embed = Embed(
-            title  = f'Top carroted messages',
+            title  = f'Top carroted messages :trophy: :medal:',
             color = discord.Color(int(hex(random.randint(1, 16581374)), 16))
+            timestamp=datetime.utcnow()
         )
 
         index = 1
@@ -90,10 +95,16 @@ class Carrotboard(commands.Cog):
             embed.add_field(
                 name = f'{index}: {author}',
                 value = f'{message_content.content} with {count} {emoji} \n [Click here to go to message]({message_content.jump_url})', 
-                inline = False
+                inline = True
             )
-
+            embed.add_field(
+                name = f'number of {emoji}',
+                value = {count},
+                inline = True
+            )
             index += 1
+        
+        embed.set_thumbnail(url = {emoji})
 
         await ctx.send(embed = embed)
 
