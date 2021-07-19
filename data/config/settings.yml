@@ -14,6 +14,7 @@ enabled_extensions:
   - message_log
   - vote
   - utilities
+  - handbook
 
 ####################################################################
 #                        Token Settings                            #
