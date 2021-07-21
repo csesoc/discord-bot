@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import TypedDict, List  # remove this later
 import random
 
+from discord.raw_models import RawReactionActionEvent
+
 
 class Carrotboard(commands.Cog):
     def __init__(self, bot: discord.Client):
@@ -61,6 +63,8 @@ class Carrotboard(commands.Cog):
 
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
+        # await payload.message.pin(message.content)
+
         embed = Embed(
             title=f"A new message has been Carrotted! :partying_face: :tada:",
             description=f"{message.content} \n [Click here to go to message]({message.jump_url})",
@@ -68,12 +72,17 @@ class Carrotboard(commands.Cog):
             timestamp=datetime.utcnow()
         )
         # ######### NEED TO CHECK THIS ###########
-        # embed.set_thumbnail(url=payload.user_id.avatar_url) doesn't work just yet :(
+         # embed.set_thumbnail(url = (payload.user_id.avatar_url))
+        embed.set_thumbnail(url = 'https://stories.freepiklabs.com/storage/15806/messages-rafiki-1343.png')
 
         await board_channel.send(embed=embed)
 
-        # ########## Pins the message: pin_message(message)
+####### I really dont know :( #########
+ #   async def on_reaction_add(self, payload: discord.RawReactionActionEvent):
+ #       message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+ #       await discord.Client().pin_message(message.content)
 
+        
     @commands.command()
     async def carrotboard(self, ctx, cb_id_str=None):
         # prints out that carrotboard message
@@ -113,7 +122,8 @@ class Carrotboard(commands.Cog):
         # sends leaderboard embed
         embed = Embed(
             title=f'Top carroted messages :trophy: :medal:',
-            color=discord.Color(int(hex(random.randint(1, 16581374)), 16)),
+            color=0xf1c40f,
+            #random color generator: discord.Color(int(hex(random.randint(1, 16581374)), 16)),
             timestamp=datetime.utcnow()
         )
 
@@ -129,18 +139,23 @@ class Carrotboard(commands.Cog):
             emoji = str_to_chatable_emoji(entry["emoji"])
 
             embed.add_field(
-                name=f'{index}: {author}',
-                value=f'{message_content.content} with {count} {emoji} \n [Click here to go to message]({message_content.jump_url})',
+                name=f'{index}:  {author}',
+                value = '\u200b',
                 inline=True
             )
             embed.add_field(
-                name=f'number of {emoji}',
-                value={count},
+                name = 'Message',
+                value = f'{message_content.content}\n [Click here to go to message]({message_content.jump_url}) \n \u200b',
+                inline = True
+            )
+            embed.add_field(
+                name=f'Number of {emoji}',
+                value=count,
                 inline=True
             )
             index += 1
-
-        # embed.set_thumbnail(url={emoji}) doesn't work just yet :(
+            
+        embed.set_thumbnail(url= 'https://stories.freepiklabs.com/storage/28019/winners-cuate-4442.png')
 
         await ctx.send(embed=embed)
 
