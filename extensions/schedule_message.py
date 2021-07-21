@@ -6,7 +6,7 @@ import json
 class schedule_message(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.send_messages.start()
 
     @commands.command()
     async def schedule_send(self, ctx, date, time, channel_id):
@@ -39,8 +39,6 @@ class schedule_message(commands.Cog):
                     await channel.send(todo[2])
                     print("message sent!")
 
-
-    send_messages.start()
 
 def setup(bot):
     bot.add_cog(schedule_message(bot))
