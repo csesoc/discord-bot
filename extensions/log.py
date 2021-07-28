@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from discord.ext import commands
 import logging
@@ -5,6 +6,7 @@ import traceback
 from discord.ext.commands.errors import BadArgument
 import datetime
 from ruamel.yaml import YAML
+import tempfile
 
 yaml = YAML()
 
@@ -79,6 +81,26 @@ class Log(commands.Cog):
             return settings['local_directory']
         else:
             return settings['root_directory']
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def logs(self, ctx, type='Invalid', amount='100'):
+        if type != 'general' and type != 'error' and type != 'command_error' or (amount != 'all' and not amount.isdigit()):
+            await ctx.send('Usage: `$logs (general | error | command_error) [amount=100 | all]`')
+            return
+        with open(f'{self.root_dir}{type}.log', 'r') as file:
+            if amount == 'all':
+                await asyncio.sleep(0.1) # This is required, as this command executes something is
+                                            # written to the log file, which is temporarily cleared or
+                                            # something of the like. For a split second, the file appears
+                                            # empty and discord throws a 400 for an empty message / file.
+                await ctx.reply(file=discord.File(file.name, filename=f'{type}.log'))
+            amount = int(amount)
+            log_lines = file.readlines()[-amount:] # Only get the latest {amount} logs
+            file = tempfile.NamedTemporaryFile(mode='w+', delete=True)
+            file.writelines(log_lines)
+            file.flush()
+            await ctx.reply(file=discord.File(file.name, filename=f'{type}.log'))
 
 
 
