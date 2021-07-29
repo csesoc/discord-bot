@@ -9,6 +9,8 @@ from ruamel.yaml import YAML
 from lib.discordscroll.discordscroll import DiscordScrollHandler
 
 import sys
+import csv
+from io import StringIO
 
 yaml = YAML()
 
@@ -265,8 +267,17 @@ class Roles(commands.Cog):
                 await ctx.send(f"Could not read attachment {attachment.filename}, cancelling operation.")
                 continue
 
+            encoded_users = []
+
             decoded = uploaded.decode(sys.getdefaultencoding()) # Could be just utf-8 if this causes issues
-            encoded_users = decoded.split("\n")
+
+            if attachment.filename.endswith('.csv'):
+                reader = csv.reader(StringIO(decoded))
+                for row in reader:
+                    encoded_users.extend(row)
+            else:
+                encoded_users = decoded.split("\n")
+
             for encoded_user in encoded_users:
                 encoded_user = encoded_user.strip() # Remove whitespace
                 if not encoded_user: # String is empty
