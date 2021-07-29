@@ -9,6 +9,7 @@ class schedule_message(commands.Cog):
         self.send_messages.start()
 
     @commands.command()
+    @commands.has_permissions(administrator=True)
     async def schedule_send(self, ctx, date, time, channel_id):
         if ctx.message.reference:
             message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
@@ -19,7 +20,7 @@ class schedule_message(commands.Cog):
             with open("data/scheduled_messages.json", 'r') as f:
                 schedule_list = json.load(f)
             
-            schedule_list.append([scheduled_time, channel_id, message.content])
+            schedule_list.append([scheduled_time, channel_id[2:-1], message.content])
 
             with open("data/scheduled_messages.json", 'w') as f:
                 schedule_list = json.dump(schedule_list, f)
@@ -35,10 +36,9 @@ class schedule_message(commands.Cog):
             for todo in to_send_list:
                 send_time = datetime.strptime(todo[0], "%Y/%m/%d %H:%M")
                 if send_time == time_now:
-                    channel = self.bot.get_channel(todo[1][1:])
+                    channel = self.bot.get_channel(int(todo[1]))
                     await channel.send(todo[2])
                     print("message sent!")
-
 
 def setup(bot):
     bot.add_cog(schedule_message(bot))
