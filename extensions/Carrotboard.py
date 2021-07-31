@@ -3,12 +3,11 @@ from discord import partial_emoji
 from discord.ext import commands
 from discord import Embed
 from datetime import datetime
-from typing import TypedDict, List  # remove this later
+from typing import TypedDict  # remove this later
 import random
 import psycopg2
 import asyncio
-
-from discord.raw_models import RawReactionActionEvent
+from lib.discordscroll.discordscroll import DiscordScrollHandler
 
 
 class Carrotboard(commands.Cog):
@@ -16,23 +15,203 @@ class Carrotboard(commands.Cog):
         self.bot = bot
 
         self.board_channel_id = 869186939834757160  # put in config
+        self.leaderboard_id = 870642741103706132  # message id of leaderboard
         self.pin = 'U0001f4cc'  # put in config
         self.carrot = ':this:864812598485581884'  # put in config
 
-        self.storage = Database()  # remove this later
         self.minimum = 1  # put this in config
+        self.row_per_page = 5
+        self.storage = Database()  # remove this later
+        self.scroll_handler = DiscordScrollHandler(60)
+
+    @commands.command()
+    async def set_leaderboard(self, ctx, message_id=None):
+        # checking if message id is none and reply is none
+        reply = ctx.message.reference
+        if reply is None and message_id is None:
+            # they didn't reply, BUT they didn't give a message_id either
+            msg = await ctx.send('Please reply to the leaderboard message!')
+            await self._delete_messages(ctx, msg)
+
+        elif reply is None and message_id is not None:
+            # they didn't reply, BUT they gave a message_id
+            self.leaderboard_id = message_id
+            msg = await ctx.send('Leaderboard has been set')
+            await self._delete_messages(ctx, msg)
+        elif reply is not None and message_id is None:
+            # they replied and didn't give a message id
+            self.leaderboard_id = reply.message_id
+            msg = await ctx.send('Leaderboard has been set')
+            await self._delete_messages(ctx, msg)
+        elif reply is not None and message_id is not None:
+            # they replied and gave a message id LOL
+            msg = await ctx.send('Please either reply to leaderboard message or enter a valid message ID')
+            await self._delete_messages(ctx, msg)
+
+    @commands.command()
+    async def set_carrotboard(self, ctx):
+        self.board_channel_id = ctx.channel.id
+        msg = await ctx.send("Carrotboard channel Id has been set")
+        await self._delete_messages(ctx, msg)
+
+    # @commands.Cog.listener()
+    # async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+    #     # for reaction removing
+    #     if payload.user_id != self.bot_id:
+    #         # get the details
+    #         emoji = partial_emoji_to_str(payload.emoji)
+    #         message_id = payload.message_id
+
+    #         # subtract it from the storage
+    #         self.storage.subtract_real(message_id, emoji)
+
+    # @commands.Cog.listener()
+    # async def on_raw_reaction_clear(self, payload: discord.RawReactionClearEvent):
+    #     # for reaction clearing, just delete the message_id storage
+    #     # message_id = payload.message_id
+    #     # self.storage.delete_real(message_id)
+
+    @commands.command()
+    async def carrotboard(self, ctx, cb_id_str=None):
+        # prints out that carrotboard message
+        if cb_id_str is None:
+            # check if an id was given, if not print the leaderboard
+            embed_list = await self._generate_leaderboard()
+
+            await self.scroll_handler.new(ctx, embed_list)
+            return
+
+        # try convert the string into an int
+        try:
+            cb_id = int(cb_id_str)
+        except ValueError:
+            # it wasn't given an id
+            msg = await ctx.send("Please include a valid carrotboard ID!")
+            if ctx.message.channel.id == self.board_channel_id:
+                await self._delete_messages(ctx, msg)
+            return
+
+        # now get the carrotboard entry
+        cb_entry = self.storage.get_by_cb_id(cb_id)
+        if cb_entry is None:
+            # the id doesn't exist
+            msg = await ctx.send("Please include a valid carrotboard ID!")
+            if ctx.message.channel.id == self.board_channel_id:
+                await self._delete_messages(ctx, msg)
+            return
+
+        print(cb_entry)
+
+        # now send the embed
+        message_channel = self.bot.get_channel(cb_entry["channel_id"])
+        message_content = await message_channel.fetch_message(cb_entry["message_id"])
+        embed = Embed(
+            title=f'Carrot id {cb_id} message',
+            description=f'{message_content.content} [Click here to go to message]({message_content.jump_url})',
+            timestamp=datetime.utcnow(),
+            color=discord.Color(int(hex(random.randint(1, 16581374)), 16))
+        )
+
+        msg = await ctx.send(embed=embed)
+        # if command typed in carrotboard output channel
+        if ctx.message.channel.id == self.board_channel_id:
+            await self._delete_messages(ctx, msg)
+
+    @commands.command()
+    async def carrotboarduser(self, ctx, user_id_str=None):
+        user_id_str = user_id_str.replace("<", "").replace(">", "").replace("@", "").replace("!", "")
+
+        # prints out user messages that have been carroted
+        if user_id_str is None:
+            msg = await ctx.send("Please include a valid user ID!")
+            if ctx.message.channel.id == self.board_channel_id:
+                await self._delete_messages(ctx, msg)
+            return
+
+        # try convert the string into an int, or the username to user id
+        try:
+            user_id = int(user_id_str)
+        except ValueError:
+            # it wasn't given an id
+            msg = await ctx.send("Please include a valid user ID!")
+            if ctx.message.channel.id == self.board_channel_id:
+                await self._delete_messages(ctx, msg)
+            return
+
+        user = await self.bot.fetch_user(user_id)
+        if user is None:
+            # user didn't exist
+            msg = await ctx.send("Please include a valid user ID!")
+            if ctx.message.channel.id == self.board_channel_id:
+                await self._delete_messages(ctx, msg)
+            return
+
+        # gets the user's entry in carrotboard and send embed
+        user_entrys = self.storage.get_all(self.carrot, self.minimum)
+        # set found user entry to be false
+        entry_found = False
+        print("\nuser entrys", user_entrys, "\n")
+        embed = Embed(
+                title=f"{user.display_name}'s Carroted Messages",
+                timestamp=datetime.utcnow()
+                )
+        for entry in user_entrys:
+            print("\n", user_id, "\n", entry)
+            if user_id == entry["user_id"]:
+                # found user id in carrotboard database
+                entry_found = True
+                print("got in here for\n")
+                message_channel = self.bot.get_channel(entry["channel_id"])
+                message_content = await message_channel.fetch_message(entry["message_id"])
+                count = entry["count"]
+                emoji = str_to_chatable_emoji(entry["emoji"])
+
+                # desc = f"{entry['carrot_id']}. {message_content.content} with {count} {emoji} at {message_content.created_at}"
+                # desc += "\n[Click here to go to message]({message_content.jump_url})"
+
+                # sends carrroted messages by user
+                embed.add_field(
+                    name="Carrot ID",
+                    value=entry['carrot_id'],
+                    inline=True
+                )
+                embed.add_field(
+                    name="Message",
+                    value=f'{message_content.content}\n[Click here to go to message]({message_content.jump_url})\n Message created at {message_content.created_at}',
+                    inline=True
+                )
+                embed.add_field(
+                    name="Carrot Count",
+                    value=f'{count} {emoji}',
+                    inline=True
+                )
+
+        msg = await ctx.send(embed=embed)
+        if ctx.message.channel.id == self.board_channel_id:
+            await self._delete_messages(ctx, msg)
+
+        # no entries matched with user id
+        if entry_found is False:
+            msg = await ctx.send("The User does not have any Carroted Messages")
+            if ctx.message.channel.id == self.board_channel_id:
+                await self._delete_messages(ctx, msg)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        await self.scroll_handler.handle_reaction(reaction, user)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         # for reaction adding
-        if payload.user_id != self.bot.user.id:
+
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        # check that the reactor is not the bot, and that the author is not the bot
+        if payload.user_id != self.bot.user.id and message.author.id != self.bot.user.id:
             # get the details
             emoji = partial_emoji_to_str(payload.emoji)
             message_id = payload.message_id
             channel_id = payload.channel_id
-            reaction_user_id = payload.user_id
-
-            message = await self.bot.get_channel(channel_id).fetch_message(message_id)
             message_user_id = message.author.id
 
             # add it to storage
@@ -56,22 +235,7 @@ class Carrotboard(commands.Cog):
                 else:
                     await self.send_carrotboard_alert(payload)
 
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-    #     # for reaction removing
-    #     if payload.user_id != self.bot_id:
-    #         # get the details
-    #         emoji = partial_emoji_to_str(payload.emoji)
-    #         message_id = payload.message_id
-
-    #         # subtract it from the storage
-    #         self.storage.subtract_real(message_id, emoji)
-
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_clear(self, payload: discord.RawReactionClearEvent):
-    #     # for reaction clearing, just delete the message_id storage
-    #     # message_id = payload.message_id
-    #     # self.storage.delete_real(message_id)
+            await self._update_leaderboard()
 
     async def send_carrotboard_alert(self, payload: discord.RawReactionActionEvent, is_pin=False):
         board_channel = self.bot.get_channel(self.board_channel_id)
@@ -96,144 +260,97 @@ class Carrotboard(commands.Cog):
 
         await board_channel.send(embed=embed)
 
-    @commands.command()
-    async def carrotboard(self, ctx, cb_id_str=None):
-        # prints out that carrotboard message
-        if cb_id_str is None:
-            # check if an id was given
-            # here might go printing the entire carrotboard
-            await ctx.send("Please include a valid carrotboard ID! <a:party_blob:867059602176213032>")
-            # await ctx.send("$leaderboard")
-            return
-
-        # try convert the string into an int
-        try:
-            cb_id = int(cb_id_str)
-        except ValueError:
-            # it wasn't given an id
-            await ctx.send("Please include a valid carrotboard ID!")
-            return
-
-        # now get the carrotboard entry
-        cb_entry = self.storage.get_by_cb_id(cb_id)
-        if cb_entry is None:
-            # the id doesn't exist
-            await ctx.send("Please include a valid carrotboard ID!")
-            return
-
-        print(cb_entry)
-
-        # now send the embed
-        message_channel = self.bot.get_channel(cb_entry["channel_id"])
-        message_content = await message_channel.fetch_message(cb_entry["message_id"])
-        embed = Embed(
-            title=f'Carrot id {cb_id} message',
-            description=f'{message_content.content} [Click here to go to message]({message_content.jump_url})',
-            timestamp=datetime.utcnow()
-        )
-        msg = await ctx.send(embed=embed)
-
-        # if command typed in carrotboard output channel
-        if ctx.message.channel.id == self.board_channel_id:
-            await asyncio.sleep(5)
-            await msg.delete()
-            await ctx.message.delete()
-
-    @commands.command()
-    async def carrotboarduser(self, ctx, user_id_str=None):
-        # prints out user messages that have been carroted
-        if user_id_str is None:
-            await ctx.send("please include a valid user ID! <a:party_blob:867059602176213032>")
-            return
-
-        # try convert the string into an int
-        try:
-            user_id = int(user_id_str)
-        except ValueError:
-            # it wasn't given an id
-            await ctx.send("Please include a valid user ID!")
-            return
-
-        # gets the user's entry in carrotboard and send embed
-        user_entrys = self.storage.get_all(self.carrot, self.minimum)
-        # set found user entry to be false
-        entry_found = False
-        print("\nuser entrys", user_entrys, "\n")
-        for entry in user_entrys:
-            print("\n", user_id, "\n", entry)
-            if user_id == entry["user_id"]:
-                # found user id in carrotboard database
-                entry_found = True
-                print("got in here for\n")
-                message_channel = self.bot.get_channel(entry["channel_id"])
-                message_content = await message_channel.fetch_message(entry["message_id"])
-                count = entry["count"]
-                emoji = str_to_chatable_emoji(entry["emoji"])
-
-                # sends carrroted messages by user
-                embed = Embed(
-                    title=f"{user_id}'s Carroted Messages",
-                    description=f'{entry["carrot_id"]}{message_content.content} with {count} {emoji} at {message_content.created_at}\n [Click here to go to message]({message_content.jump_url})',
-                    timestamp=datetime.utcnow()
-                )
-                await ctx.send(embed=embed)
-
-        # no entries matched with user id
-        if entry_found is False:
-            await ctx.send("The User does not have any Carroted Messages")
-
-    @commands.command()
-    async def leaderboard(self, ctx):
+    # generates the leaderboard Embed
+    async def _generate_leaderboard(self, only_top_ten=False):
         # Gets the carroted messages
         carrot_emoji = self.carrot
-        # carrot_emoji = ":this:864812598485581884"
         top_messages = self.storage.get_all(carrot_emoji, self.minimum)
 
-        # sends leaderboard embed
-        embed = Embed(
-            title=f'Top carroted messages :trophy: :medal:',
-            color=0xf1c40f,
-            # random color generator: discord.Color(int(hex(random.randint(1, 16581374)), 16)),
-            timestamp=datetime.utcnow()
-        )
-
+        # leaderboard content
+        embed_pages = []
         index = 1
         for entry in top_messages:
-            print(entry)
-            # entry = (message_id, count, ...)
+            # get the page number and check if its a top ten only
+            page = int((index - 1) / self.row_per_page)
+            if only_top_ten and page > 0:
+                return embed_pages
+
+            # check if needs to make a new embed
+            if ((index - 1) % self.row_per_page) == 0:
+                # new page
+                new_embed_page = Embed(
+                    title=f'Top carroted messages :trophy: :medal:',
+                    color=0xf1c40f,
+                    timestamp=datetime.utcnow()
+                )
+                new_embed_page.set_thumbnail(url='https://stories.freepiklabs.com/storage/28019/winners-cuate-4442.png')
+                embed_pages.append(new_embed_page)
+
+            # get all the data
             message_author = await self.bot.fetch_user(entry["user_id"])
+            if message_author is None:
+                continue  # skip this user
             author = message_author.name
             message_channel = self.bot.get_channel(entry["channel_id"])
+            if message_channel is None:
+                continue  # skip this channel since it was deleted
             message_content = await message_channel.fetch_message(entry["message_id"])
+            if message_content is None:
+                continue  # skip this message as it was deleted
             count = entry["count"]
             emoji = str_to_chatable_emoji(entry["emoji"])
 
-            embed.add_field(
+            embed_pages[page].add_field(
                 name=f'{index}:  {author}',
                 value=f'Time:{message_content.created_at}',
                 inline=True
             )
-            embed.add_field(
+            embed_pages[page].add_field(
                 name='Message',
-                value=f'{message_content.content}\n [Click here to go to message]({message_content.jump_url}) \n Carrot id {entry["carrot_id"]} \n \u200b',
+                value=f'{message_content.content}\n [Click here to go to message]({message_content.jump_url}) \n Carrot ID {entry["carrot_id"]} \n \u200b',
                 inline=True
             )
-            embed.add_field(
+            embed_pages[page].add_field(
                 name=f'Number of {emoji}',
                 value=count,
                 inline=True
             )
             index += 1
 
-        embed.set_thumbnail(url='https://stories.freepiklabs.com/storage/28019/winners-cuate-4442.png')
+        if embed_pages is []:
+            sad_embed = Embed(title="There are no Carroted Messages :( :sob: :smiling_face_with_tear:", description='\u200b')
+            embed_pages.append(sad_embed)
 
-        await ctx.send(embed=embed)
+        return embed_pages
+
+    # creating permanent leaderboard
+    async def _update_leaderboard(self):
+        embed_pages = await self._generate_leaderboard(only_top_ten=True)
+        embed = embed_pages[0]
+
+        channel = self.bot.get_channel(self.board_channel_id)
+        if channel is None:
+            return
+
+        message = await channel.fetch_message(self.leaderboard_id)
+        if message is None:
+            return
+
+        await message.edit(embed=embed)
+
+    async def _delete_messages(self, ctx, msg):
+        await asyncio.sleep(5)
+        await msg.delete()
+        await ctx.message.delete()
 
 
 def setup(bot):
     bot.add_cog(Carrotboard(bot))
 
 
+#####################################
+#          OTHER FUNCTIONS          #
+#####################################
 def partial_emoji_to_str(emoji: discord.PartialEmoji):
     # converts the emoji into its future database identifier
     # normal emojis will be emoji.name.encode('unicode-escape').decode('ASCII')
@@ -286,7 +403,6 @@ def str_to_chatable_emoji(emoji_str: str):
 
 class carrotBoardEntry(TypedDict):
     cb_id: int
-    emojis: dict  # to be removed
     emoji: str
     count: int
     user_id: int
@@ -447,6 +563,7 @@ class Database():
                 }
             )
 
+        results.sort(key=lambda x: x["count"], reverse=True)
         return results
 
 
