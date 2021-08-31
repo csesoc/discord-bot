@@ -2,6 +2,9 @@ from discord.ext import commands
 from discord import Embed, Color
 import random
 import json
+from ruamel.yaml import YAML
+
+yaml = YAML()
 
 class vote(commands.Cog):
     """Handles all the voting related commands in any channel that the Bot has access to.
@@ -15,8 +18,11 @@ class vote(commands.Cog):
     """
     def __init__(self,bot):
         self.bot = bot
+        self.path = self.load_directory()
+        self.file_name = f'{self.path}data_vote.json'
+
         try:
-            with open("extensions/data_votes.json", 'r') as f:
+            with open(self.file_name, 'r') as f:
                 self.data_vote = json.load(f)
         except:
             self.data_vote = []
@@ -27,7 +33,7 @@ class vote(commands.Cog):
         # Checking the length of the vote string
         if len(message_data) == 0:
         
-            await ctx.send("Please enter a valid vote string")
+            await ctx.send("Command Syntax - [vote] Does pineapple belong on a pizza?")
             return
         
         else:
@@ -37,10 +43,11 @@ class vote(commands.Cog):
             vote_author_name = vote_author.name
             vote_author_id = vote_author.id
             message_text = f"{vote_string}, vote by {vote_author_name}"
-            
+            message_embed = self.send_vote_embed(message_text)
+
             # Send this vote to a channel
             # We can use ctx.send but this is done if in the future we need to create a different channel for the votes
-            message_sent = await ctx.send(message_text)
+            message_sent = await ctx.send(embed = message_embed)
 
             # To store the vote in the system
             temp= {
@@ -67,7 +74,7 @@ class vote(commands.Cog):
                 await self.utility_voteresult(ctx, msg)
                 
             except:
-                await ctx.send("Enter a valid message id")
+                await ctx.send("Command Syntax - [voteresult] message_id(optional)")
         
         # If the command was sent by sending a reply to a poll, then gives the result of that vote.
         elif message_id is None and ctx.message.reference is not None:
@@ -233,6 +240,13 @@ class vote(commands.Cog):
         embed.add_field(name = '👎', value = f'{thumbsdown_count}', inline=True)
         return embed
     
+    def send_vote_embed(self, vote_string):
+        embed = Embed(
+                title = vote_string,
+                colour = Color(int(hex(random.randint(1, 16581374)), 16))
+            )
+        return embed
+    
     def send_vote_message_users(self, vote_string, users_up, users_down):
         # Creating an embed to send the result in a pretty manner with the users list
         embed = Embed(
@@ -264,12 +278,22 @@ class vote(commands.Cog):
         return embed
     
     def save_data(self):
-        with open("extensions/data_votes.json", 'w') as f:
+        with open(self.file_name, 'w') as f:
             json.dump(self.data_vote, f, indent=2)
     
     def load_data(self):
-        with open("extensions/data_votes.json", 'r') as f:
+        with open(self.file_name, 'r') as f:
             self.data_vote = json.load(f)
+    
+    def load_directory(self):
+        with open('./data/config/settings.yml') as file:
+            settings = yaml.load(file)
+
+        if settings['enable_local_data']:
+            return settings['local_directory']
+        
+        else:
+            return settings['root_directory']
 
             
         

@@ -146,3 +146,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Ignore .DS_Store files for Mac users
+.DS_Store
