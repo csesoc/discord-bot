@@ -1,5 +1,4 @@
 import discord
-from discord import partial_emoji
 from discord.ext import commands
 from discord import Embed
 from datetime import datetime
@@ -20,6 +19,7 @@ class Carrotboard(commands.Cog):
         self.carrot = ':this:864812598485581884'  # put in config
 
         self.minimum = 1  # put this in config
+        self.max_msg_len = 50
         self.row_per_page = 5
         self.storage = Database()  # remove this later
         self.scroll_handler = DiscordScrollHandler(60)
@@ -36,12 +36,12 @@ class Carrotboard(commands.Cog):
         elif reply is None and message_id is not None:
             # they didn't reply, BUT they gave a message_id
             self.leaderboard_id = message_id
-            msg = await ctx.send('Leaderboard has been set')
+            msg = await ctx.send(f'Leaderboard has been set to {self.leaderboard_id}')
             await self._delete_messages(ctx, msg)
         elif reply is not None and message_id is None:
             # they replied and didn't give a message id
             self.leaderboard_id = reply.message_id
-            msg = await ctx.send('Leaderboard has been set')
+            msg = await ctx.send(f'Leaderboard has been set to {self.leaderboard_id}')
             await self._delete_messages(ctx, msg)
         elif reply is not None and message_id is not None:
             # they replied and gave a message id LOL
@@ -49,27 +49,18 @@ class Carrotboard(commands.Cog):
             await self._delete_messages(ctx, msg)
 
     @commands.command()
+    async def update_leaderboard(self, ctx):
+        # forces an update to the leaderabord
+        await self._update_leaderboard()
+
+        msg = await ctx.send("Leaderboard Force-Updated")
+        await self._delete_messages(ctx, msg)
+
+    @commands.command()
     async def set_carrotboard(self, ctx):
         self.board_channel_id = ctx.channel.id
         msg = await ctx.send("Carrotboard channel Id has been set")
         await self._delete_messages(ctx, msg)
-
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-    #     # for reaction removing
-    #     if payload.user_id != self.bot_id:
-    #         # get the details
-    #         emoji = partial_emoji_to_str(payload.emoji)
-    #         message_id = payload.message_id
-
-    #         # subtract it from the storage
-    #         self.storage.subtract_real(message_id, emoji)
-
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_clear(self, payload: discord.RawReactionClearEvent):
-    #     # for reaction clearing, just delete the message_id storage
-    #     # message_id = payload.message_id
-    #     # self.storage.delete_real(message_id)
 
     @commands.command()
     async def carrotboard(self, ctx, cb_id_str=None):
@@ -104,10 +95,22 @@ class Carrotboard(commands.Cog):
 
         # now send the embed
         message_channel = self.bot.get_channel(cb_entry["channel_id"])
-        message_content = await message_channel.fetch_message(cb_entry["message_id"])
+        try:
+            message_object = await message_channel.fetch_message(cb_entry["message_id"])
+        except discord.NotFound:
+            msg = await ctx.send("Please include a valid carrotboard ID!")
+            if ctx.message.channel.id == self.board_channel_id:
+                await self._delete_messages(ctx, msg)
+            return
+
+        # get the message content, trim it if needed
+        message_text = message_object.content
+        if len(message_text) > self.max_msg_len:
+            message_text = message_text[:self.max_msg_len] + "..."
+
         embed = Embed(
             title=f'Carrot id {cb_id} message',
-            description=f'{message_content.content} [Click here to go to message]({message_content.jump_url})',
+            description=f'{message_text} [Click here to go to message]({message_object.jump_url})',
             timestamp=datetime.utcnow(),
             color=discord.Color(int(hex(random.randint(1, 16581374)), 16))
         )
@@ -146,56 +149,12 @@ class Carrotboard(commands.Cog):
                 await self._delete_messages(ctx, msg)
             return
 
-        # gets the user's entry in carrotboard and send embed
-        user_entrys = self.storage.get_all(self.carrot, self.minimum)
-        # set found user entry to be false
-        entry_found = False
-        print("\nuser entrys", user_entrys, "\n")
-        embed = Embed(
-                title=f"{user.display_name}'s Carroted Messages",
-                timestamp=datetime.utcnow()
-                )
-        for entry in user_entrys:
-            print("\n", user_id, "\n", entry)
-            if user_id == entry["user_id"]:
-                # found user id in carrotboard database
-                entry_found = True
-                print("got in here for\n")
-                message_channel = self.bot.get_channel(entry["channel_id"])
-                message_content = await message_channel.fetch_message(entry["message_id"])
-                count = entry["count"]
-                emoji = str_to_chatable_emoji(entry["emoji"])
+        # send the users leaderboard
+        embed_list = await self._generate_leaderboard(specific_user_id=user_id)
 
-                # desc = f"{entry['carrot_id']}. {message_content.content} with {count} {emoji} at {message_content.created_at}"
-                # desc += "\n[Click here to go to message]({message_content.jump_url})"
+        await self.scroll_handler.new(ctx, embed_list)
 
-                # sends carrroted messages by user
-                embed.add_field(
-                    name="Carrot ID",
-                    value=entry['carrot_id'],
-                    inline=True
-                )
-                embed.add_field(
-                    name="Message",
-                    value=f'{message_content.content}\n[Click here to go to message]({message_content.jump_url})\n Message created at {message_content.created_at}',
-                    inline=True
-                )
-                embed.add_field(
-                    name="Carrot Count",
-                    value=f'{count} {emoji}',
-                    inline=True
-                )
-
-        msg = await ctx.send(embed=embed)
-        if ctx.message.channel.id == self.board_channel_id:
-            await self._delete_messages(ctx, msg)
-
-        # no entries matched with user id
-        if entry_found is False:
-            msg = await ctx.send("The User does not have any Carroted Messages")
-            if ctx.message.channel.id == self.board_channel_id:
-                await self._delete_messages(ctx, msg)
-
+    # for scroller handling
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         await self.scroll_handler.handle_reaction(reaction, user)
@@ -228,7 +187,7 @@ class Carrotboard(commands.Cog):
             # check whether you need to send a new carrot alert, equal so it doesn't happen everytime
             if cb_entry["count"] == self.minimum:
                 # check whether it is a pin
-                if cb_entry["emoji"] == self.pin:
+                if str_to_chatable_emoji(cb_entry["emoji"]) == str_to_chatable_emoji(self.pin):
                     message = await self.bot.get_channel(channel_id).fetch_message(message_id)
                     await message.pin(reason="New Community Pin")
                     await self.send_carrotboard_alert(payload, is_pin=True)
@@ -237,14 +196,60 @@ class Carrotboard(commands.Cog):
 
             await self._update_leaderboard()
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        # for reaction removing
+
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        # check that the reactor is not the bot, and that the author is not the bot
+        if payload.user_id != self.bot.user.id and message.author.id != self.bot.user.id:
+            # get the details
+            emoji = partial_emoji_to_str(payload.emoji)
+            message_id = payload.message_id
+            channel_id = payload.channel_id
+            message_user_id = message.author.id
+
+            # subtract it from storage storage
+            self.storage.sub_value(emoji, message_id, message_user_id, channel_id)
+
+            print("just subbed from", emoji, str(payload.emoji), str(payload.emoji.name), str(payload.emoji.id))
+
+            await self._update_leaderboard()
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_clear(self, payload: discord.RawReactionClearEvent):
+        # for reaction clearing
+        # remove it from storage, wont do anything if doesnt exist for some reason
+        self.storage.del_entry(payload.message_id, payload.channel_id)
+
+        print("just cleared from", payload.message_id)
+
+        await self._update_leaderboard()
+
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
+        # for message deletion, same as reaction_clear
+        # remove from storage
+        self.storage.del_entry(payload.message_id, payload.channel_id)
+
+        print("just deleted", payload.message_id)
+
+        await self._update_leaderboard()
+
     async def send_carrotboard_alert(self, payload: discord.RawReactionActionEvent, is_pin=False):
         board_channel = self.bot.get_channel(self.board_channel_id)
 
-        message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        message_object = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+
+        # get the message content, trim it if needed
+        message_text = message_object.content
+        if len(message_text) > self.max_msg_len:
+            message_text = message_text[:self.max_msg_len] + "..."
 
         embed = Embed(
-            description=f"{message.content} \n [Click here to go to message]({message.jump_url})",
-            colour=message.author.colour,
+            description=f"{message_text} \n [Click here to go to message]({message_object.jump_url})",
+            colour=message_object.author.colour,
             timestamp=datetime.utcnow()
         )
 
@@ -261,15 +266,24 @@ class Carrotboard(commands.Cog):
         await board_channel.send(embed=embed)
 
     # generates the leaderboard Embed
-    async def _generate_leaderboard(self, only_top_ten=False):
+    async def _generate_leaderboard(self, only_top_ten=False, specific_user_id=None):
         # Gets the carroted messages
-        carrot_emoji = self.carrot
-        top_messages = self.storage.get_all(carrot_emoji, self.minimum)
+        top_messages = self.storage.get_all(self.carrot, self.minimum)
 
         # leaderboard content
         embed_pages = []
         index = 1
         for entry in top_messages:
+            # for specific userboard, skip if specific userid given, but not current
+            if specific_user_id is not None and entry["user_id"] != specific_user_id:
+                print(f"skipping {entry['user_id']} != {specific_user_id}")
+                continue
+
+            # skip if count = 0, print error message as this shouldnt happen
+            if entry['count'] <= 0:
+                print(f"Error: Count <= 0: {entry['message_id']}")
+                continue
+
             # get the page number and check if its a top ten only
             page = int((index - 1) / self.row_per_page)
             if only_top_ten and page > 0:
@@ -291,23 +305,35 @@ class Carrotboard(commands.Cog):
             if message_author is None:
                 continue  # skip this user
             author = message_author.name
+
             message_channel = self.bot.get_channel(entry["channel_id"])
             if message_channel is None:
                 continue  # skip this channel since it was deleted
-            message_content = await message_channel.fetch_message(entry["message_id"])
-            if message_content is None:
+
+            # print("\ngetting", entry["message_id"], "\n")
+            try:
+                message_object = await message_channel.fetch_message(entry["message_id"])
+            except discord.NotFound:
+                # print("WOW NONE\n\n")
                 continue  # skip this message as it was deleted
+            # print(message_object)
+
             count = entry["count"]
             emoji = str_to_chatable_emoji(entry["emoji"])
 
+            # get the message content, trim it if needed
+            message_text = message_object.content
+            if len(message_text) > self.max_msg_len:
+                message_text = message_text[:self.max_msg_len] + "..."
+
             embed_pages[page].add_field(
                 name=f'{index}:  {author}',
-                value=f'Time:{message_content.created_at}',
+                value=f'Time:{message_object.created_at}',
                 inline=True
             )
             embed_pages[page].add_field(
                 name='Message',
-                value=f'{message_content.content}\n [Click here to go to message]({message_content.jump_url}) \n Carrot ID {entry["carrot_id"]} \n \u200b',
+                value=f'{message_text}\n [Click here to go to message]({message_object.jump_url}) \n Carrot ID {entry["carrot_id"]} \n \u200b',
                 inline=True
             )
             embed_pages[page].add_field(
@@ -317,9 +343,13 @@ class Carrotboard(commands.Cog):
             )
             index += 1
 
-        if embed_pages is []:
+        print(embed_pages)
+
+        if embed_pages == []:
             sad_embed = Embed(title="There are no Carroted Messages :( :sob: :smiling_face_with_tear:", description='\u200b')
             embed_pages.append(sad_embed)
+
+        print(embed_pages)
 
         return embed_pages
 
@@ -332,8 +362,9 @@ class Carrotboard(commands.Cog):
         if channel is None:
             return
 
-        message = await channel.fetch_message(self.leaderboard_id)
-        if message is None:
+        try:
+            message = await channel.fetch_message(self.leaderboard_id)
+        except discord.NotFound:
             return
 
         await message.edit(embed=embed)
@@ -384,7 +415,7 @@ def str_to_chatable_emoji(emoji_str: str):
         unicode_str = "\\\\" + str_array[0]
         unicode = unicode_str.encode('ASCII').decode('unicode-escape')
         print("JUST CONVERTED", unicode_str, unicode)
-        return str(unicode)
+        return str(unicode).replace(" ", "")
 
     elif len(str_array) == 3 and str_array[0] != 'a':
         # assume its a custom emoji
@@ -422,11 +453,11 @@ class Database():
         # Create table statement
         sqlCreateTable = '''CREATE TABLE CARROT_BOARD(
                CARROT_ID SERIAL PRIMARY KEY,
-               EMOJI CHAR(20) NOT NULL,
-               MESSAGE_ID INT NOT NULL,
-               USER_ID INT NOT NULL,
-               CHANNEL_ID INT NOT NULL,
-               COUNT INT
+               EMOJI CHAR(40) NOT NULL,
+               MESSAGE_ID BIGINT NOT NULL,
+               USER_ID BIGINT NOT NULL,
+               CHANNEL_ID BIGINT NOT NULL,
+               COUNT BIGINT
             )'''
 
         try:
@@ -449,8 +480,8 @@ class Database():
 
     def count_values(self, emoji, message_id, user_id, channel_id):
         print("count the value", (emoji, message_id, user_id, channel_id))
-        cursor = self.postgresConnection.cursor()
         print((emoji, message_id, user_id, channel_id))
+        cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT count(*) FROM carrot_board WHERE emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
 
         record_to_insert = (emoji, message_id, user_id, channel_id)
@@ -461,9 +492,10 @@ class Database():
         return record[0][0]
 
     def get_count(self, emoji, message_id, user_id, channel_id):
-        cursor = self.postgresConnection.cursor()
         print("getting count", (emoji, message_id, user_id, channel_id))
+        cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
+
         record_to_insert = (emoji, message_id, user_id, channel_id)
         cursor.execute(postgres_insert_query, record_to_insert)
         record = cursor.fetchone()
@@ -471,7 +503,7 @@ class Database():
 
         # None check
         if record is None:
-            return 0
+            return None
 
         return record[5]
 
@@ -479,16 +511,17 @@ class Database():
         print("adding input into database", (emoji, message_id, user_id, channel_id))
         # Increase the count if the value exists else create a new value
 
-        if (self.count_values(emoji, message_id, user_id, channel_id)) == 0:
+        count = self.get_count(emoji, message_id, user_id, channel_id)
+
+        if count is None:
+            # doesnt exist already in database
             cursor = self.postgresConnection.cursor()
             postgres_insert_query = ''' INSERT INTO carrot_board (EMOJI, MESSAGE_ID, USER_ID, CHANNEL_ID, COUNT) VALUES (%s,%s,%s,%s,%s)'''
             record_to_insert = (emoji, message_id, user_id, channel_id, 1)
             cursor.execute(postgres_insert_query, record_to_insert)
             self.postgresConnection.commit()
             cursor.close()
-
         else:
-            count = self.get_count(emoji, message_id, user_id, channel_id)
             count = count + 1
             cursor = self.postgresConnection.cursor()
             postgres_insert_query = ''' UPDATE carrot_board SET count = %s  where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
@@ -496,6 +529,39 @@ class Database():
             cursor.execute(postgres_insert_query, record_to_insert)
             self.postgresConnection.commit()
             cursor.close()
+
+    # subtract a count
+    def sub_value(self, emoji, message_id, user_id, channel_id):
+        print("subbing input into database", (emoji, message_id, user_id, channel_id))
+        # Increase the count if the value exists else create a new value
+
+        count = self.get_count(emoji, message_id, user_id, channel_id)
+
+        if count is None:
+            # doesnt exist already in database
+            print("uhm subbing", emoji, message_id, user_id, channel_id)
+            return
+        elif (count - 1) <= 0:
+            # remove from database
+            self.del_entry(message_id, channel_id)
+        else:
+            count = count - 1
+            cursor = self.postgresConnection.cursor()
+            postgres_insert_query = ''' UPDATE carrot_board SET count = %s  where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
+            record_to_insert = (count, emoji, message_id, user_id, channel_id)
+            cursor.execute(postgres_insert_query, record_to_insert)
+            self.postgresConnection.commit()
+            cursor.close()
+
+    def del_entry(self, message_id, channel_id):
+        print("deleting:", (message_id, channel_id))
+
+        cursor = self.postgresConnection.cursor()
+        postgres_delete_query = '''DELETE FROM carrot_board where message_id = %s and channel_id = %s'''
+        record_to_delete = (message_id, channel_id)
+        cursor.execute(postgres_delete_query, record_to_delete)
+        self.postgresConnection.commit()
+        cursor.close()
 
     def get_by_cb_id(self, cb_id):
         print("getting carrotboard id", (cb_id))
@@ -565,103 +631,3 @@ class Database():
 
         results.sort(key=lambda x: x["count"], reverse=True)
         return results
-
-
-# class TempStorage():
-#     def __init__(self):
-#         self._data: dict[int, carrotBoardEntry] = {}
-#         self._data_real: dict[int, carrotBoardEntry] = {}
-#         self._next_id: int = 0
-
-#     def get_by_cb_id(self, cb_id: int):
-#         # gets the cb entry by cb id
-#         if cb_id is None:
-#             return None
-
-#         return self._data_real.get(cb_id)
-
-#     def get_real(self, message_id: int, emoji: str):
-#         # get that message id's entry
-#         cb_id = self._reaction_to_cb_id(message_id, emoji)
-#         if cb_id is not None:
-#             # if its in the database
-#             return self._data_real[cb_id]
-#         else:
-#             # otherwise increment it
-#             return None
-
-#     def get_all_real(self, emoji: str, count_min: int):
-#         # iterate through all entries and check if they have that emoji
-#         results: List[carrotBoardEntry] = []
-#         for cb_id in self._data_real:
-#             print(self._data_real[cb_id])
-#             # get the entry
-#             curr_emoji = self._data_real[cb_id].get("emoji")
-#             if curr_emoji == emoji:
-#                 # found an entry, check the count
-#                 if self._data_real[cb_id]["count"] >= count_min:
-#                     # found a valid entry, now append it
-#                     results.append(self._data_real[cb_id])
-
-#         results.sort(key=lambda x: x["count"], reverse=True)
-#         return results
-
-#     def add_real(self, message_id: int, emoji: str, user_id: int, channel_id: int):
-#         # check if its in the database
-#         cb_id = self._reaction_to_cb_id(message_id, emoji)
-#         if cb_id is not None:
-#             # found it, increase the count
-#             self._data_real[cb_id]["count"] += 1
-#             return
-
-#         # wasn't in the database, so create a new one
-#         self._data_real[self._next_id] = carrotBoardEntry(
-#             cb_id=self._next_id,
-#             emoji=emoji,
-#             count=1,
-#             user_id=user_id,
-#             msg_id=message_id,
-#             channel_id=channel_id,
-#         )
-
-#         # increment the next id
-#         self._next_id += 1
-
-#     def subtract_real(self, message_id: int, emoji: str):
-#         # check if its in the database
-#         cb_id = self._reaction_to_cb_id(message_id, emoji)
-#         if cb_id is not None:
-#             # it was found, decrease it
-#             if self._data_real[cb_id]["count"] > 0:
-#                 self._data_real[cb_id]["count"] -= 1
-#             else:
-#                 self._data_real[cb_id]["count"] = 0
-
-#     def delete_real(self, message_id):
-#         # delete the message_id
-#         deleting_ids = []
-#         # getting all the cb_ids for this message_id
-#         for cb_id in self._data_real:
-#             curr_message_id = self._data_real[cb_id].get("msg_id")
-#             if curr_message_id is not None and curr_message_id == message_id:
-#                 # found it in the database, add it to the list
-#                 deleting_ids.append(cb_id)
-
-#         # now delete them all
-#         for cb_id in deleting_ids:
-#             del self._data_real[cb_id]
-
-#     def _reaction_to_cb_id(self, message_id, emoji):
-#         if message_id is None or emoji is None:
-#             return None
-
-#         # find the cb_id of the message_id
-#         for cb_id in self._data_real:
-#             curr_message_id = self._data_real[cb_id].get("msg_id")
-#             curr_emoji = self._data_real[cb_id].get("emoji")
-#             if curr_message_id == message_id and curr_emoji == emoji:
-#                 # found it in the database, return it
-#                 return cb_id
-
-#         # wasnt found
-#         return None
