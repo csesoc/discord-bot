@@ -1,0 +1,18 @@
+#######################################
+#          Channel settings           #
+#######################################
+
+carrotboard_channel_id = 869186939834757160 # put carrotboard channel id here 
+leaderboard_message_id = 870642741103706132 # put pinned/primary carrot leaderboard message id here
+
+#######################################
+#        Carrot count settings        #
+#######################################
+
+carrot_emoji = ':this:864812598485581884' 
+minimum_carrot_count = 3
+
+########################################
+#       Pinned message settings        #
+
+pin_emoji = 'U0001f4cc'

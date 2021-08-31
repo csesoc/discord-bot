@@ -7,18 +7,23 @@ import random
 import psycopg2
 import asyncio
 from lib.discordscroll.discordscroll import DiscordScrollHandler
+from ruamel.yaml import YAML
 
 
 class Carrotboard(commands.Cog):
     def __init__(self, bot: discord.Client):
         self.bot = bot
 
-        self.board_channel_id = 869186939834757160  # put in config
-        self.leaderboard_id = 870642741103706132  # message id of leaderboard
-        self.pin = 'U0001f4cc'  # put in config
-        self.carrot = ':this:864812598485581884'  # put in config
+        # Load settings and set variables
+        with open('.data/config/carroatboard.yml') as file:
+            settings = YAML().load(file)
 
-        self.minimum = 1  # put this in config
+        self.board_channel_id = settings['carrotboard_channel_id']
+        self.leaderboard_id = settings['leaderboard_message_id'] 
+        self.pin = settings['pin_emoji'] 
+        self.carrot = settings['carrot_emoji']  
+
+        self.minimum = settings['minimum_carrot_count']  
         self.max_msg_len = 50
         self.row_per_page = 5
         self.storage = Database()  # remove this later
