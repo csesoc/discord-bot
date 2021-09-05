@@ -9,26 +9,23 @@ class reminders(commands.Cog):
         self.send_messages.start()
 
     @commands.command()
-    async def schedule_reminder(self, ctx, date, time, *title):
-        if ctx.message.reference and title:
+    async def schedule_reminder(self, ctx, date, time, *contents):
+        try:
+            scheduled_time = datetime.strptime(date + " " + time, "%Y/%m/%d %H:%M")
+            if contents:
+                print(date, time, ctx.message.id)
 
-            scheduled_time = date + " " + time
-            title = " ".join(title)
-            message_id = ctx.message.reference.message_id
-            user = ctx.message.author
+                with open("data/reminders.json", 'r') as f:
+                    reminders_list = json.load(f)
 
-            await ctx.message.delete()
-            react_message = await ctx.send(f'React to this message to receive a reminder about "{title}" at {scheduled_time}.\nThis reminder was created by {user}.')
-            react_message_id = react_message.id
+                reminders_list.append([date + " " + time, ctx.channel.id, ctx.message.id])
 
-            with open("data/reminders.json", 'r') as f:
-                reminders_list = json.load(f)
-
-            reminders_list.append([scheduled_time, ctx.channel.id, message_id, title, react_message_id])
-
-            with open("data/reminders.json", 'w') as f:
-                reminders_list = json.dump(reminders_list, f)
-
+                with open("data/reminders.json", 'w') as f:
+                    json.dump(reminders_list, f)
+            else:
+                raise ValueError
+        except ValueError:
+            await ctx.send("USAGE for schedule_reminder:\n\n$schedule_reminder YYYY/MM/DD HH:MM\nfollowed by the message contents on a new line.", delete_after=5)
 
 
     @tasks.loop(seconds=60)
@@ -40,15 +37,19 @@ class reminders(commands.Cog):
             send_time = datetime.strptime(to_send[0], "%Y/%m/%d %H:%M")
             if send_time == time_now:
                 original_channel = self.bot.get_channel(to_send[1])
-                original_message = await original_channel.fetch_message(to_send[2])
-                react_message = await original_channel.fetch_message(to_send[4])
+                message = await original_channel.fetch_message(to_send[2])
+
                 users = set()
-                for reaction in react_message.reactions:
+                for reaction in message.reactions:
                     async for user in reaction.users():
                         users.add(user)
+
+                content = message.content.split("\n")
+                content = "\n".join(content[1:])
+                e = discord.Embed(title="Reminder!", description=content, color=0xFF0000)
                 for user in users:
-                    await user.send("Here's a reminder that you've opted to receive: ")
-                    await user.send(original_message.content)
+                    await user.send(embed=e)
+                    print("Done")
 
 def setup(bot):
     bot.add_cog(reminders(bot))
