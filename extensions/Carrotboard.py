@@ -63,7 +63,11 @@ class Carrotboard(commands.Cog):
 
     @commands.command()
     async def set_carrotboard(self, ctx):
-        self.board_channel_id = ctx.channel.id
+        #setting the carrotboard channel id into the config file
+        with open('.data/config/carroatboard.yml') as file:
+            settings = YAML().load(file) 
+        settings['leaderboard_message_id'] = ctx.channel.id # would need to check this
+
         msg = await ctx.send("Carrotboard channel Id has been set")
         await self._delete_messages(ctx, msg)
 
@@ -71,7 +75,7 @@ class Carrotboard(commands.Cog):
     async def carrotboard(self, ctx, cb_id_str=None):
         # prints out that carrotboard message
         if cb_id_str is None:
-            # check if an id was given, if not print the leaderboard
+            # check if an id was given, if nothing given then print the leaderboard
             embed_list = await self._generate_leaderboard()
 
             await self.scroll_handler.new(ctx, embed_list)
@@ -87,7 +91,7 @@ class Carrotboard(commands.Cog):
                 await self._delete_messages(ctx, msg)
             return
 
-        # now get the carrotboard entry
+        # Gets the carrotboard entry
         cb_entry = self.storage.get_by_cb_id(cb_id)
         if cb_entry is None:
             # the id doesn't exist
@@ -127,6 +131,7 @@ class Carrotboard(commands.Cog):
 
     @commands.command()
     async def carrotboarduser(self, ctx, user_id_str=None):
+        # replaces certain symbols after the command
         user_id_str = user_id_str.replace("<", "").replace(">", "").replace("@", "").replace("!", "")
 
         # prints out user messages that have been carroted
@@ -184,7 +189,7 @@ class Carrotboard(commands.Cog):
             # now get the entry and None check it
             cb_entry = self.storage.get_by_msg_emoji(message_id, emoji)
             if cb_entry is None:
-                print("wtf this shouldn't happen")
+                print("this shouldn't happen")
                 return
 
             print("just added", cb_entry, emoji, str(payload.emoji), str(payload.emoji.name), str(payload.emoji.id))
@@ -333,7 +338,7 @@ class Carrotboard(commands.Cog):
 
             embed_pages[page].add_field(
                 name=f'{index}:  {author}',
-                value=f'Time:{message_object.created_at}',
+                value= '\u200b', # Waleed said to delete, maybe try shorten time to only dates and no time? f'Time:{message_object.created_at}'
                 inline=True
             )
             embed_pages[page].add_field(
@@ -349,7 +354,8 @@ class Carrotboard(commands.Cog):
             index += 1
 
         print(embed_pages)
-
+        
+        #if no carroted message
         if embed_pages == []:
             sad_embed = Embed(title="There are no Carroted Messages :( :sob: :smiling_face_with_tear:", description='\u200b')
             embed_pages.append(sad_embed)
