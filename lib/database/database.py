@@ -2,9 +2,9 @@ import psycopg2
 import datetime
 
 # Connect to the PostgreSQL database server
-postgresConnection = psycopg2.connect(user="user", password="pass", host="localhost", port="5432")
+postgresConnection = psycopg2.connect(dbname = "bot", user="user", password="pass", host="localhost", port="40041")
 
-# this function creates tables in the PostgreSQL database
+# this function creates tables in the PostgreSQL database -- WORKING
 def create_user_tables():
     
     # Creating 4 different tables
@@ -62,13 +62,12 @@ def create_user_tables():
         postgresConnection.commit()
 
 
-# This functions counts total number of users in the server.
+# This functions counts total number of users in the server. -- WORKING
 def count_users():
     cur = postgresConnection.cursor()
-    cur.execute('''select * from information_schema.tables 
-                    where table_name=users 
-                    and users.userleft = False''')
-    return (cur.rowcount)
+    cur.execute('''select count(userid) from users where userleft=False''')
+    record = cur.fetchone()
+    return record[0]
 
 # This functions counts total number of roles a user has.
 def count_user_roles(userid):
@@ -151,55 +150,57 @@ def user_leave(userid):
         postgresConnection.commit()
         cursor.close()
 
-# Add user role
+# Add user role -- WORKING
 def add_user_role(userid, role):
 
     cursor = postgresConnection.cursor()
     # get count
-    postgres_insert_query = ''' SELECT max(rid) from user_roles '''
-    count = cursor.fetchall()
+    cursor.execute( ''' SELECT count(rid) from user_roles ''')
+    records = cursor.fetchone()
+    count = records[0]
     count = count + 1
     
-    postgres_insert_query = ''' INSERT INTO user_roles (RID, USERID, ROLE) VALUES (%s,%s,%s,%s)'''
+    postgres_insert_query = ''' INSERT INTO user_roles (RID, USERID, ROLE) VALUES (%s,%s,%s)'''
     record_to_insert = (count, userid, role)
     cursor.execute(postgres_insert_query, record_to_insert)
     postgresConnection.commit()
     cursor.close()
 
-# Delete User role
+# Delete User role -- WORKING
 def remove_user_role(userid, role):
 
     cursor = postgresConnection.cursor()
-    postgres_insert_query = ''' DELETE FROM user_roles
+    postgres_delete_query = ''' DELETE FROM user_roles
                                 where userid = %s and role = %s '''
-    record_to_insert = (userid, role)
-    cursor.execute(postgres_insert_query, record_to_insert)
-    postgresConnection.commit()
+    record_to_delete = (userid, role)
+    cursor.execute(postgres_delete_query, record_to_delete)
     cursor.close()
-
-# Add User Permission
+    postgresConnection.commit()
+    
+# Add User Permission --WORKING
 def add_user_permission(userid, permission):
 
     cursor = postgresConnection.cursor()
     # get count
-    postgres_insert_query = ''' SELECT max(pid) from user_permissions '''
-    count = cursor.fetchall()
+    cursor.execute( ''' SELECT count(pid) from user_permissions ''')
+    records = cursor.fetchone()
+    count = records[0]
     count = count + 1
     
-    postgres_insert_query = ''' INSERT INTO user_permissions (RID, USERID, PERMISSION) VALUES (%s,%s,%s)'''
+    postgres_insert_query = ''' INSERT INTO user_permissions (PID, USERID, PERMISSION) VALUES (%s,%s,%s)'''
     record_to_insert = (count, userid, permission)
     cursor.execute(postgres_insert_query, record_to_insert)
     postgresConnection.commit()
     cursor.close()
 
-# Delete User Permission
+# Delete User Permission -- WORKING
 def remove_user_permission(userid, permission):
 
     cursor = postgresConnection.cursor()
-    postgres_insert_query = ''' DELETE FROM user_permissions
+    postgres_delete_query = ''' DELETE FROM user_permissions
                                 where userid = %s and permission = %s '''
-    record_to_insert = (userid, permission)
-    cursor.execute(postgres_insert_query, record_to_insert)
+    record_to_delete = (userid, permission)
+    cursor.execute(postgres_delete_query, record_to_delete)
     postgresConnection.commit()
     cursor.close()
 
@@ -220,35 +221,7 @@ def user_join_channel(userid, channel):
 ################################################ TESTING ##############################################
 
 def main():
-    
-    cur = postgresConnection.cursor()
-
-    # Delete table if exists.
-    cur.execute("""select exists(select * from information_schema.tables where table_name=%s)""", ('users',))
-    if cur.fetchone()[0]:
-        cur.execute('''DROP TABLE users cascade;''')
-
-    cur.execute("""select exists(select * from information_schema.tables where table_name=%s)""", ('user_roles',))
-    if cur.fetchone()[0]:
-        cur.execute('''DROP TABLE user_roles;''')
-    
-    cur.execute("""select exists(select * from information_schema.tables where table_name=%s)""", ('user_channels',))
-    if cur.fetchone()[0]:
-        cur.execute('''DROP TABLE user_channels;''')
-    
-    cur.execute("""select exists(select * from information_schema.tables where table_name=%s)""", ('user_permissons',))
-    if cur.fetchone()[0]:
-        cur.execute('''DROP TABLE user_permissions;''')    
-    
-    # Insert into users table and print out to test
-    create_user_tables()
-    time = datetime.datetime.now().replace(microsecond=0).isoformat()
-    params = (1, time, False)
-    cur.execute('''insert into users values (%s,%s,NULL,%s);''', params)
-    cur.execute('''SELECT * FROM users;''')
-    for row in enumerate(cur.fetchall()):
-        print(row)
-
+    pass
 
 if __name__ == "__main__":
     main()
