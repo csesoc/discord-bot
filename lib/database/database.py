@@ -69,44 +69,40 @@ def count_users():
     record = cur.fetchone()
     return record[0]
 
-# This functions counts total number of roles a user has.
+# This functions counts total number of roles a user has. -- WORKING
 def count_user_roles(userid):
     cursor = postgresConnection.cursor()
-    postgres_insert_query = ''' SELECT count(*) FROM users u
-                                JOIN user_roles ur ON u.userid = ur.userid
-                                where u.userid = %s '''
-    
-    record_to_insert = (userid)
-    cursor.execute(postgres_insert_query, record_to_insert)
-    record = cursor.fetchall()
+    postgres_query = ''' SELECT COUNT(DISTINCT role) from user_roles where userid = %s '''
+    record_query = (userid,)
+    cursor.execute(postgres_query, record_query)
+    records = cursor.fetchone()
     cursor.close()
-    return record[0][0]
+    count = records[0]
+    return count
 
-# This functions counts total number of channels a user is in.
+# This functions counts total number of channels a user is in. -- WORKING
 def count_user_channels(userid):
     cursor = postgresConnection.cursor()
-    postgres_insert_query = ''' SELECT count(*) FROM users u
-                                JOIN user_channels uc ON u.userid = uc.userid
-                                where u.userid = %s '''
+    postgres_query = ''' SELECT COUNT(DISTINCT channel) from user_channels where userid = %s '''
     
-    record_to_insert = (userid)
-    cursor.execute(postgres_insert_query, record_to_insert)
-    record = cursor.fetchall()
+    record_query = (userid,)
+    cursor.execute(postgres_query, record_query)
+    records = cursor.fetchone()
     cursor.close()
-    return record[0][0]
+    count = records[0]
+    return count
 
-# This functions counts total number of permissions a user has.
+# This functions counts total number of permissions a user has. -- WORKING
 def count_user_permissions(userid):
     cursor = postgresConnection.cursor()
-    postgres_insert_query = ''' SELECT count(*) FROM users u
-                                JOIN user_permissions up ON u.userid = up.userid
-                                where u.userid = %s '''
+    postgres_query = ''' SELECT COUNT(DISTINCT permission) from user_permissions where userid = %s '''
     
-    record_to_insert = (userid)
-    cursor.execute(postgres_insert_query, record_to_insert)
-    record = cursor.fetchall()
+    record_query = (userid,)
+    cursor.execute(postgres_query, record_query)
+    records = cursor.fetchone()
     cursor.close()
-    return record[0][0]
+    count = records[0]
+    return count
 
 # Query if user has left server - if the user has left the server, we update userleft to True
 def user_leave(userid):
@@ -204,12 +200,13 @@ def remove_user_permission(userid, permission):
     postgresConnection.commit()
     cursor.close()
 
-# Add User Channel
+# Add User Channel -- WORKING
 def user_join_channel(userid, channel):
     cursor = postgresConnection.cursor()
     # get count
-    postgres_insert_query = ''' SELECT max(cid) from user_channels '''
-    count = cursor.fetchall()
+    cursor.execute( ''' SELECT count(cid) from user_channels ''')
+    records = cursor.fetchone()
+    count = records[0]
     count = count + 1
     
     postgres_insert_query = ''' INSERT INTO user_channels (CID, USERID, CHANNEL) VALUES (%s,%s,%s)'''
@@ -218,10 +215,21 @@ def user_join_channel(userid, channel):
     postgresConnection.commit()
     cursor.close()
 
+# Leave user channel -- WORKING
+def user_leave_channel(userid, channel):
+
+    cursor = postgresConnection.cursor()
+    postgres_delete_query = ''' DELETE FROM user_channels
+                                where userid = %s and channel = %s '''
+    record_to_delete = (userid, channel)
+    cursor.execute(postgres_delete_query, record_to_delete)
+    postgresConnection.commit()
+    cursor.close()
 ################################################ TESTING ##############################################
 
 def main():
     pass
+    
 
 if __name__ == "__main__":
     main()

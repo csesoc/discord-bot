@@ -4,6 +4,7 @@ import psycopg2
 # Connect to the PostgreSQL database server
 postgresConnection = psycopg2.connect(dbname = "bot", user="user", password="pass", host="localhost", port="40041")
 
+# Creates a table to store the data for the carrotBoard
 def create_table():
     # Get cursor object from the database connection
     cursor = postgresConnection.cursor()
@@ -30,11 +31,13 @@ def create_table():
     finally:
         cursor.close()
         postgresConnection.commit()
- 
+
+# Checks if the table exists
 def check_table(table_name):
     cur = postgresConnection.cursor()
     cur.execute("select * from information_schema.tables where table_name=%s", (table_name,))
     return bool(cur.rowcount)
+
 
 def count_values(emoji,message_id, user_id, channel_id):
     cursor = postgresConnection.cursor()
@@ -120,14 +123,3 @@ def get_all(emoji, count_min):
     cursor.close()
     return records
 
-
-'''
---- DONE --- get_by_cb_id(cb_id: int) -> carrotBoardEntry | None  # like normal get by PK
-
---- DONE --- get(message_id: int, emoji: str) -> carrotBoardEntry | None  # like select where message_id and emoji
-
---- DONE --- get_all(emoji: str, count_min: int) -> List[carrotBoardEntry]  # like select where emoji
-
---- DONE --- insert(message_id: int, emoji: str, user_id: int, channel_id: int) -> None  # like insert with the next valid PK, all these values      
-
-'''
