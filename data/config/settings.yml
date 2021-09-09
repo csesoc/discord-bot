@@ -9,12 +9,13 @@ prefix: $
 ####################################################################
 
 enabled_extensions:
-  - log
+  # - log
   - roles
   - message_log
   - vote
   - utilities
   - handbook
+  - Carrotboard
 
 ####################################################################
 #                        Token Settings                            #
