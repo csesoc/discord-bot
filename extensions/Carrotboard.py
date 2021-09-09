@@ -10,26 +10,6 @@ from lib.discordscroll.discordscroll import DiscordScrollHandler
 from ruamel.yaml import YAML
 from emoji import UNICODE_EMOJI
 
-# TODO:
-# - make the message more big
-# - simplify
-# - move the url to the bottom of the embed
-#
-# - fix storage of emojis methods
-# - change self.* to only use settings where it can, store settings
-# - possibly remove set_leaderboard without replying
-# - reaction clear needs to not do it on scroller messages
-# - sub_value doesnt need userid
-# - carrotboardall -> emojiboard
-#
-# qs:
-# - seperate pin minimum? possibly higher then normal carrot min?
-# - change command names, make shorter, change set_leaderboard -> cb_set_updated, and set_carrotboard -> cb_set_channel,
-#   and more
-# - store channel and msg id for both output and leaderboard channel (because if leaderboard in diff channel)
-# - remove $set_leaderboard <id> and only have the reply method for less potential errors?
-#   also note channel doesnt allow for id
-
 
 class Carrotboard(commands.Cog):
     def __init__(self, bot: discord.Client):
@@ -47,37 +27,28 @@ class Carrotboard(commands.Cog):
     #####################################
     #           ADMIN COMMANDS          #
     #####################################
-    @commands.command(brief="Sets the updated leaderboard message.", usage="[message id|reply]", name="setcarrotboardperma", aliases=["cbsetperma"])
+    @commands.command(brief="Sets the updated leaderboard message.", usage="<reply to board>", name="setcarrotboardperma", aliases=["cbsetperma"])
     @commands.has_permissions(administrator=True)
-    async def set_carrotboard_perma(self, ctx, message_id=None):
+    async def set_carrotboard_perma(self, ctx):
         # checking if message id is none and reply is none
         reply = ctx.message.reference
-        if reply is None and message_id is None:
+        if reply is None:
             # they didn't reply, BUT they didn't give a message_id either
             msg = await ctx.send('Please reply to the leaderboard message!')
             await self._delete_messages(ctx, msg)
             return
-        elif (reply is not None and message_id is not None) or ():
-            # they replied and gave a message id LOL or they gave an invalid id
-            msg = await ctx.send('Please either reply to leaderboard message or enter a valid message ID')
-            await self._delete_messages(ctx, msg)
-            return
-        elif reply is None and message_id is not None:
-            # they didn't reply, BUT they gave a message_id
-            print(type(message_id))
-            self.leaderboard_id = message_id
-            msg = await ctx.send(f'Leaderboard has been set to {self.leaderboard_id}')
-            await self._delete_messages(ctx, msg)
-        elif reply is not None and message_id is None:
-            # they replied and didn't give a message id
-            self.leaderboard_id = reply.message_id
-            msg = await ctx.send(f'Leaderboard has been set to {self.leaderboard_id}')
-            await self._delete_messages(ctx, msg)
+
+        # save the change
+        self.leaderboard_id = reply.message_id
+        self.perma_channel_id = ctx.channel.id
+        msg = await ctx.send(f'Leaderboard has been set to {self.leaderboard_id}')
+        await self._delete_messages(ctx, msg)
 
         # update settings file
         with open('./data/config/carrotboard.yml') as file:
             settings = YAML().load(file)
             settings['leaderboard_message_id'] = self.leaderboard_id  # would need to check this
+            settings['leaderboard_channel_id'] = self.perma_channel_id
 
         # saving it to the file
         if settings is not None:
@@ -90,8 +61,8 @@ class Carrotboard(commands.Cog):
         # setting the carrotboard channel id into the config file
         with open('./data/config/carrotboard.yml') as file:
             settings = YAML().load(file)
-            settings['carrotboard_channel_id'] = ctx.channel.id  # would need to check this
-            self.board_channel_id = ctx.channel.id
+            settings['carrotboard_alert_channel_id'] = ctx.channel.id  # would need to check this
+            self.alert_channel_id = ctx.channel.id
 
         # saving it to the file
         if settings is not None:
@@ -99,7 +70,7 @@ class Carrotboard(commands.Cog):
                 YAML().dump(settings, file)
 
         msg = await ctx.send("Carrotboard channel Id has been set")
-        if ctx.message.channel.id == self.board_channel_id:
+        if ctx.message.channel.id == self.alert_channel_id:
             await self._delete_messages(ctx, msg)
 
     @commands.command(brief="Sets the used carrot emoji.", usage="<emoji>", name="setcarrot", aliases=["cbsetcarrot"])
@@ -160,7 +131,7 @@ class Carrotboard(commands.Cog):
         except ValueError:
             # it wasn't given an id
             msg = await ctx.send("Please include a valid carrotboard ID!")
-            if ctx.message.channel.id == self.board_channel_id:
+            if ctx.message.channel.id == self.alert_channel_id:
                 await self._delete_messages(ctx, msg)
             return
 
@@ -169,7 +140,7 @@ class Carrotboard(commands.Cog):
         if cb_entry is None:
             # the id doesn't exist
             msg = await ctx.send("Please include a valid carrotboard ID!")
-            if ctx.message.channel.id == self.board_channel_id:
+            if ctx.message.channel.id == self.alert_channel_id:
                 await self._delete_messages(ctx, msg)
             return
 
@@ -179,7 +150,7 @@ class Carrotboard(commands.Cog):
         message_channel = self.bot.get_channel(cb_entry["channel_id"])
         if message_channel is None:
             msg = await ctx.send("Channel no longer exists.")
-            if ctx.message.channel.id == self.board_channel_id:
+            if ctx.message.channel.id == self.alert_channel_id:
                 await self._delete_messages(ctx, msg)
             return
 
@@ -187,7 +158,7 @@ class Carrotboard(commands.Cog):
         message_object = message_channel.get_partial_message(cb_entry["message_id"])
         if message_object is None:  # shouldn't happen really I believe
             msg = await ctx.send("Message ID was not found.")
-            if ctx.message.channel.id == self.board_channel_id:
+            if ctx.message.channel.id == self.alert_channel_id:
                 await self._delete_messages(ctx, msg)
             return
 
@@ -205,7 +176,7 @@ class Carrotboard(commands.Cog):
 
         msg = await ctx.send(embed=embed)
         # if command typed in carrotboard output channel
-        if ctx.message.channel.id == self.board_channel_id:
+        if ctx.message.channel.id == self.alert_channel_id:
             await self._delete_messages(ctx, msg)
 
     @commands.command(brief="Sends carrotboard for a specific user.", usage="<user>", aliases=["cbuser"])
@@ -213,7 +184,7 @@ class Carrotboard(commands.Cog):
         # check if a user was given
         if user_id_str is None:
             msg = await ctx.send("Please give a valid user ID or tag the user in the command!")
-            if ctx.message.channel.id == self.board_channel_id:
+            if ctx.message.channel.id == self.alert_channel_id:
                 await self._delete_messages(ctx, msg)
             return
 
@@ -226,7 +197,7 @@ class Carrotboard(commands.Cog):
         except ValueError:
             # it wasn't given an id
             msg = await ctx.send("Please include a valid user ID!")
-            if ctx.message.channel.id == self.board_channel_id:
+            if ctx.message.channel.id == self.alert_channel_id:
                 await self._delete_messages(ctx, msg)
             return
 
@@ -234,7 +205,7 @@ class Carrotboard(commands.Cog):
         if user is None:
             # user didn't exist
             msg = await ctx.send("Please include a valid user ID!")
-            if ctx.message.channel.id == self.board_channel_id:
+            if ctx.message.channel.id == self.alert_channel_id:
                 await self._delete_messages(ctx, msg)
             return
 
@@ -287,7 +258,7 @@ class Carrotboard(commands.Cog):
         message = await channel.fetch_message(payload.message_id)
 
         # check that the reactor is not the bot, and that the author is not the bot
-        if payload.user_id != self.bot.user.id and message.author.id != self.bot.user.id:
+        if not message.author.bot and payload.user_id != self.bot.user.id and message.author.id != self.bot.user.id:
             # get the details
             emoji = partial_emoji_to_str(payload.emoji)
             message_id = payload.message_id
@@ -329,7 +300,7 @@ class Carrotboard(commands.Cog):
             return  # it was the scroller X so ignore
 
         # check that the reactor is not the bot, and that the author is not the bot
-        if payload.user_id != self.bot.user.id and message.author.id != self.bot.user.id:
+        if not message.author.bot and payload.user_id != self.bot.user.id and message.author.id != self.bot.user.id:
             # get the details
             emoji = partial_emoji_to_str(payload.emoji)
             message_id = payload.message_id
@@ -368,7 +339,7 @@ class Carrotboard(commands.Cog):
     #####################################
     # sends the carrotboard alert
     async def _send_carrotboard_alert(self, payload: discord.RawReactionActionEvent, cb_id, cb_emoji):
-        board_channel = self.bot.get_channel(self.board_channel_id)
+        board_channel = self.bot.get_channel(self.alert_channel_id)
         if board_channel is None:
             return  # skip if no valid board channel set
 
@@ -380,11 +351,12 @@ class Carrotboard(commands.Cog):
             message_text = message_text[:self.max_msg_len] + "..."
 
         embed = Embed(
-            description=f"{message_text} \n [Click here to go to message]({message_object.jump_url})",
+            # title=f"{message_text}",
+            description=f"**{message_text}**",
             colour=message_object.author.colour,
-            timestamp=datetime.utcnow()
         )
         embed.set_footer(text=f"ID: {cb_id}")
+        embed.url = message_object.jump_url
 
         # now check if it was a special pin board
         emoji = str_to_chatable_emoji(cb_emoji)
@@ -500,7 +472,7 @@ class Carrotboard(commands.Cog):
         embed = embed_pages[0]
 
         # get the leaderboard channel
-        channel = self.bot.get_channel(self.board_channel_id)
+        channel = self.bot.get_channel(self.perma_channel_id)
         if channel is None:
             return
 
@@ -526,14 +498,17 @@ class Carrotboard(commands.Cog):
             settings = YAML().load(file)
 
         self.leaderboard_id = settings.get('leaderboard_message_id')
-        self.board_channel_id = settings.get('carrotboard_channel_id')
+        self.perma_channel_id = settings.get('leaderboard_channel_id')
+        self.alert_channel_id = settings.get('carrotboard_alert_channel_id')
         self.carrot = settings.get('carrot_emoji')
         self.minimum = settings.get('minimum_carrot_count')
         self.pin_minimum = settings.get("minimum_pin_count")
 
         # check if any were None
         missing_keys = []
-        required_key_list = ["leaderboard_message_id", "carrotboard_channel_id", "carrot_emoji", "minimum_carrot_count", "minimum_pin_count"]
+        required_key_list = [
+            "leaderboard_message_id", "leaderboard_channel_id", "carrotboard_alert_channel_id", "carrot_emoji", "minimum_carrot_count", "minimum_pin_count"
+        ]
         for required_key in required_key_list:
             if settings.get(required_key) is None:
                 missing_keys.append(required_key)
