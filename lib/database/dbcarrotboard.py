@@ -7,7 +7,8 @@ yaml = YAML()
 class DBcarrotboard:
 
     def __init__(self):
-        # Connect to the PostgreSQL database server
+        
+        # Loads the credential for the db
         data = self.load_db_login()
         dbname = data['dbname']
         user = data['user']
@@ -17,7 +18,10 @@ class DBcarrotboard:
         
         self.table_name = 'CARROT_BOARD'
 
+        # Connect to the PostgreSQL database server
         self.postgresConnection = psycopg2.connect(dbname = dbname, user=user, password=password, host=host, port=port)
+
+        # Try to create a table if it doesn't exist
 
         try:
             if self.check_table(self.table_name) is False:
@@ -27,8 +31,7 @@ class DBcarrotboard:
         finally:
             self.postgresConnection.commit()
 
-        # Creates a table to store the data for the carrotBoard
-    
+    # Creates a table to store the data for the carrotBoard
     def create_table(self):
         # Get cursor object from the database connection
         cursor = self.postgresConnection.cursor()
@@ -56,12 +59,13 @@ class DBcarrotboard:
             cursor.close()
             self.postgresConnection.commit()
 
-    # Checks if the table exists
+    # Checks if the given table exists
     def check_table(self,table_name):
         cur = self.postgresConnection.cursor()
         cur.execute("select * from information_schema.tables where table_name=%s", (table_name,))
         return bool(cur.rowcount)
 
+    # Count the number of specific reacts on a given message
     def count_values(self,emoji,message_id, user_id, channel_id):
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT count(*) from carrot_board where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
@@ -84,16 +88,16 @@ class DBcarrotboard:
         cursor.close()
         return record[5]
  
-
+    # Loads the db credentials from the file
     def load_db_login():
         with open('./data/config/database.yml') as file:
             settings = yaml.load(file)
-
         return settings
 
+    # Inserts a given message to the database
     def add_value(self,emoji,message_id, user_id, channel_id):
+
         # Increase the count if the value exists else create a new value
-        
         if(self.count_values(emoji,message_id, user_id, channel_id)) == 0:
             cursor = self.postgresConnection.cursor()
             postgres_insert_query = ''' INSERT INTO carrot_board (EMOJI, MESSAGE_ID, USER_ID, CHANNEL_ID, COUNT) VALUES (%s,%s,%s,%s,%s)'''
@@ -112,13 +116,13 @@ class DBcarrotboard:
             self.postgresConnection.commit()
             cursor.close()
 
+    # Retrieve an entry by carrotboard_id
     def get_by_cb_id(self,cb_id):
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT * from carrot_board where carrot_id = %s'''
         record_to_insert = (str(cb_id))
         cursor.execute(postgres_insert_query, record_to_insert)
         record = cursor.fetchone()
-        print(record)
         cursor.close()
         return {
             'carrot_id':record[0],
@@ -129,6 +133,7 @@ class DBcarrotboard:
             'count':record[5]
         }
 
+    # Retrieve an entry by message id
     def get_by_msg_emoji(self,message_id, emoji):
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT * from carrot_board where message_id = %s and emoji = %s'''
@@ -145,6 +150,7 @@ class DBcarrotboard:
             'count':record[5]
         }
 
+    # Get all the messages of a given react above a minimum threshold
     def get_all(self,emoji, count_min):
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and count >= %s'''
