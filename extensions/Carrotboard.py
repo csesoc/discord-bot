@@ -1,13 +1,14 @@
 import discord
 from discord.ext import commands
 from discord import Embed
-from datetime import datetime
-from typing import TypedDict  # remove this later
-import random
-import psycopg2
-import asyncio
+
 from lib.discordscroll.discordscroll import DiscordScrollHandler
+from lib.database.dbcarrotboard import DBcarrotboard
+
 from ruamel.yaml import YAML
+import asyncio
+import random
+from datetime import datetime
 from emoji import UNICODE_EMOJI
 
 
@@ -21,7 +22,7 @@ class Carrotboard(commands.Cog):
         self.pin = "U0001f4cc"
         self.max_msg_len = 50
         self.row_per_page = 5
-        self.storage = Database()  # remove this later
+        self.storage = DBcarrotboard()
         self.scroll_handler = DiscordScrollHandler(60)
 
     #####################################
@@ -144,7 +145,7 @@ class Carrotboard(commands.Cog):
                 await self._delete_messages(ctx, msg)
             return
 
-        print(cb_entry)
+        # print(cb_entry)
 
         # get the channel of the message
         message_channel = self.bot.get_channel(cb_entry["channel_id"])
@@ -274,10 +275,10 @@ class Carrotboard(commands.Cog):
             # now get the entry and None check it
             cb_entry = self.storage.get_by_msg_emoji(message_id, emoji)
             if cb_entry is None:
-                print("this shouldn't happen")
+                # print("this shouldn't happen")
                 return
 
-            print("just added", cb_entry, emoji, str(payload.emoji), str(payload.emoji.name), str(payload.emoji.id))
+            # print("just added", cb_entry, emoji, str(payload.emoji), str(payload.emoji.name), str(payload.emoji.id))
 
             # check whether it is a pin
             if str_to_chatable_emoji(cb_entry["emoji"]) == str_to_chatable_emoji(self.pin):
@@ -310,7 +311,7 @@ class Carrotboard(commands.Cog):
             # subtract it from storage storage
             self.storage.sub_value(emoji, message_id, message_user_id, channel_id)
 
-            print("just subbed from", emoji, str(payload.emoji), str(payload.emoji.name), str(payload.emoji.id))
+            # print("just subbed from", emoji, str(payload.emoji), str(payload.emoji.name), str(payload.emoji.id))
 
             await self._update_leaderboard()
 
@@ -320,7 +321,7 @@ class Carrotboard(commands.Cog):
         # remove it from storage, wont do anything if doesnt exist for some reason
         self.storage.del_entry(payload.message_id, payload.channel_id)
 
-        print("just cleared from", payload.message_id)
+        # print("just cleared from", payload.message_id)
 
         await self._update_leaderboard()
 
@@ -330,7 +331,7 @@ class Carrotboard(commands.Cog):
         # remove from storage
         self.storage.del_entry(payload.message_id, payload.channel_id)
 
-        print("just deleted", payload.message_id)
+        # print("just deleted", payload.message_id)
 
         await self._update_leaderboard()
 
@@ -376,7 +377,7 @@ class Carrotboard(commands.Cog):
 
     # generates the leaderboard Embed
     async def _generate_leaderboard(self, only_first_page=False, specific_user_id=None, specific_emoji=None):
-        print("\ngenerating leaderboard\n")
+        # print("\ngenerating leaderboard\n")
 
         # Gets the carroted messages
         if specific_user_id is not None:
@@ -393,7 +394,7 @@ class Carrotboard(commands.Cog):
         for entry in top_messages:
             # skip if count = 0, print error message as this shouldnt happen
             if entry['count'] <= 0:
-                print(f"Error: Count <= 0: {entry['message_id']}")
+                # print(f"Error: Count <= 0: {entry['message_id']}")
                 continue
 
             # get the page number and check if its a top ten only
@@ -414,7 +415,7 @@ class Carrotboard(commands.Cog):
 
             # get the user data (only if its not already cached)
             if entry["user_id"] not in cached_users.keys():
-                print(f"caching {entry['user_id']}")
+                # print(f"caching {entry['user_id']}")
                 fetched_message_author = await self.bot.fetch_user(entry["user_id"])
                 cached_users[entry["user_id"]] = fetched_message_author
 
@@ -463,7 +464,7 @@ class Carrotboard(commands.Cog):
             sad_embed = Embed(title="There are no Carroted Messages :( :sob: :smiling_face_with_tear:", description='\u200b')
             embed_pages.append(sad_embed)
 
-        print(embed_pages)
+        # print(embed_pages)
         return embed_pages
 
     # updates the permanent leaderboard
@@ -525,9 +526,6 @@ def setup(bot):
 #          OTHER FUNCTIONS          #
 #####################################
 def partial_emoji_to_str(emoji: discord.PartialEmoji):
-    # DEBUG:
-    # return str(emoji)
-
     # converts the emoji into its future database identifier
     # normal emojis will be emoji.name.encode('unicode-escape').decode('ASCII')
     # custom emojis will be :name:id
@@ -548,7 +546,7 @@ def partial_emoji_to_str(emoji: discord.PartialEmoji):
             # is a normal emoji
             emoji_unicode = emoji.name
             result = str(emoji_unicode.encode('unicode-escape').decode('ASCII')).replace("\\", "")
-            print("RESULT YOO", result)
+            # print("RESULT YOO", result)
             return result
     else:
         return "error"
@@ -569,7 +567,7 @@ def str_to_chatable_emoji(emoji_str: str):
         # assume its a normal emoji
         unicode_str = "\\" + str_array[0]
         unicode = unicode_str.encode('ASCII').decode('unicode-escape')
-        print("JUST CONVERTED", unicode_str, unicode)
+        # print("JUST CONVERTED", unicode_str, unicode)
         return str(unicode)
 
     elif len(str_array) == 3 and str_array[0] != 'a':
@@ -583,265 +581,3 @@ def str_to_chatable_emoji(emoji_str: str):
         name = str_array[1]
         id = str_array[2]
         return f"<a:{name}:{id}>"
-
-
-# STUFF FOR STORAGE TO BE REMOVED LATER ONCE DATABASE
-
-class carrotBoardEntry(TypedDict):
-    cb_id: int
-    emoji: str
-    count: int
-    user_id: int
-    msg_id: int
-    channel_id: int
-    contents: str
-
-
-class Database():
-    def __init__(self):
-        # Connect to the PostgreSQL database server
-        self.postgresConnection = psycopg2.connect(user="user", password="pass", host="192.168.0.16", port="44444")
-
-    def create_table(self):
-        # Get cursor object from the database connection
-        cursor = self.postgresConnection.cursor()
-
-        # Create table statement
-        sqlCreateTable = '''CREATE TABLE CARROT_BOARD(
-               CARROT_ID SERIAL PRIMARY KEY,
-               EMOJI CHAR(40) NOT NULL,
-               MESSAGE_ID BIGINT NOT NULL,
-               USER_ID BIGINT NOT NULL,
-               CHANNEL_ID BIGINT NOT NULL,
-               COUNT BIGINT,
-               MESSAGE_CONTENTS CHAR(50)
-            )'''
-
-        try:
-            # Create a table in PostgreSQL database
-            cursor.execute(sqlCreateTable)
-            cursor.close()
-            self.postgresConnection.commit()
-
-        except(Exception, psycopg2.DatabaseError) as error:
-            print(error)
-
-        finally:
-            cursor.close()
-            self.postgresConnection.commit()
-
-    def check_table(self, table_name):
-        cur = self.postgresConnection.cursor()
-        cur.execute("select * from information_schema.tables where table_name=%s", (table_name,))
-        return bool(cur.rowcount)
-
-    def count_values(self, emoji, message_id, user_id, channel_id):
-        print("count the value", (emoji, message_id, user_id, channel_id))
-        print((emoji, message_id, user_id, channel_id))
-        cursor = self.postgresConnection.cursor()
-        postgres_insert_query = ''' SELECT count(*) FROM carrot_board WHERE emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
-
-        record_to_insert = (emoji, message_id, user_id, channel_id)
-        cursor.execute(postgres_insert_query, record_to_insert)
-        record = cursor.fetchall()
-        cursor.close()
-
-        return record[0][0]
-
-    def get_count(self, emoji, message_id, user_id, channel_id):
-        print("getting count", (emoji, message_id, user_id, channel_id))
-        cursor = self.postgresConnection.cursor()
-        postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
-
-        record_to_insert = (emoji, message_id, user_id, channel_id)
-        cursor.execute(postgres_insert_query, record_to_insert)
-        record = cursor.fetchone()
-        cursor.close()
-
-        # None check
-        if record is None:
-            return None
-
-        return record[5]
-
-    def add_value(self, emoji, message_id, user_id, channel_id, message_contents):
-        print("adding input into database", (emoji, message_id, user_id, channel_id))
-        # Increase the count if the value exists else create a new value
-
-        count = self.get_count(emoji, message_id, user_id, channel_id)
-
-        if count is None:
-            # doesnt exist already in database
-            cursor = self.postgresConnection.cursor()
-            postgres_insert_query = ''' INSERT INTO carrot_board (EMOJI, MESSAGE_ID, USER_ID, CHANNEL_ID, COUNT, MESSAGE_CONTENTS) VALUES (%s,%s,%s,%s,%s,%s)'''
-            record_to_insert = (emoji, message_id, user_id, channel_id, 1, message_contents)
-            cursor.execute(postgres_insert_query, record_to_insert)
-            self.postgresConnection.commit()
-            cursor.close()
-        else:
-            count = count + 1
-            cursor = self.postgresConnection.cursor()
-            postgres_insert_query = ''' UPDATE carrot_board SET count = %s  where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
-            record_to_insert = (count, emoji, message_id, user_id, channel_id)
-            cursor.execute(postgres_insert_query, record_to_insert)
-            self.postgresConnection.commit()
-            cursor.close()
-
-    # subtract a count
-    def sub_value(self, emoji, message_id, user_id, channel_id):
-        print("subbing input into database", (emoji, message_id, user_id, channel_id))
-        # Increase the count if the value exists else create a new value
-
-        count = self.get_count(emoji, message_id, user_id, channel_id)
-
-        if count is None:
-            # doesnt exist already in database
-            print("uhm subbing", emoji, message_id, user_id, channel_id)
-            return
-        elif (count - 1) <= 0:
-            # remove from database
-            self.del_entry(message_id, channel_id)
-        else:
-            count = count - 1
-            cursor = self.postgresConnection.cursor()
-            postgres_insert_query = ''' UPDATE carrot_board SET count = %s  where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
-            record_to_insert = (count, emoji, message_id, user_id, channel_id)
-            cursor.execute(postgres_insert_query, record_to_insert)
-            self.postgresConnection.commit()
-            cursor.close()
-
-    def del_entry(self, message_id, channel_id):
-        print("deleting:", (message_id, channel_id))
-
-        cursor = self.postgresConnection.cursor()
-        postgres_delete_query = '''DELETE FROM carrot_board where message_id = %s and channel_id = %s'''
-        record_to_delete = (message_id, channel_id)
-        cursor.execute(postgres_delete_query, record_to_delete)
-        self.postgresConnection.commit()
-        cursor.close()
-
-    def get_by_cb_id(self, cb_id):
-        print("getting carrotboard id", (cb_id))
-        cursor = self.postgresConnection.cursor()
-        postgres_insert_query = ''' SELECT * from carrot_board where carrot_id = %s'''
-        record_to_insert = (cb_id,)
-        cursor.execute(postgres_insert_query, record_to_insert)
-        record = cursor.fetchone()
-        cursor.close()
-
-        # None check
-        if record is None:
-            return None
-
-        print(record)
-
-        return {
-            'carrot_id': record[0],
-            'emoji': record[1],
-            'message_id': record[2],
-            'user_id': record[3],
-            'channel_id': record[4],
-            'count': record[5],
-            'contents': record[6].rstrip(" "),
-        }
-
-    def get_by_msg_emoji(self, message_id, emoji):
-        print("getting by msg emoji", (message_id, emoji))
-        cursor = self.postgresConnection.cursor()
-        postgres_insert_query = ''' SELECT * from carrot_board where message_id = %s and emoji = %s'''
-        record_to_insert = (message_id, emoji)
-        cursor.execute(postgres_insert_query, record_to_insert)
-        record = cursor.fetchone()
-        cursor.close()
-
-        # None check
-        if record is None:
-            return None
-
-        return {
-            'carrot_id': record[0],
-            'emoji': record[1],
-            'message_id': record[2],
-            'user_id': record[3],
-            'channel_id': record[4],
-            'count': record[5],
-            'contents': record[6].rstrip(" "),
-        }
-
-    def get_all(self, count_min):
-        print("getting all inputs", (count_min))
-        cursor = self.postgresConnection.cursor()
-        postgres_insert_query = ''' SELECT * from carrot_board where count >= %s'''
-        record_to_insert = (str(count_min))
-        cursor.execute(postgres_insert_query, record_to_insert)
-        records = cursor.fetchall()
-        cursor.close()
-
-        results = []
-        for record in records:
-            results.append(
-                {
-                    'carrot_id': record[0],
-                    'emoji': record[1],
-                    'message_id': record[2],
-                    'user_id': record[3],
-                    'channel_id': record[4],
-                    'count': record[5],
-                    'contents': record[6].rstrip(" "),
-                }
-            )
-
-        results.sort(key=lambda x: x["count"], reverse=True)
-        return results
-
-    def get_all_by_emoji(self, emoji, count_min):
-        print("getting all inputs by emoji", (emoji, count_min))
-        cursor = self.postgresConnection.cursor()
-        postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and count >= %s'''
-        record_to_insert = (emoji, count_min)
-        cursor.execute(postgres_insert_query, record_to_insert)
-        records = cursor.fetchall()
-        cursor.close()
-
-        results = []
-        for record in records:
-            results.append(
-                {
-                    'carrot_id': record[0],
-                    'emoji': record[1],
-                    'message_id': record[2],
-                    'user_id': record[3],
-                    'channel_id': record[4],
-                    'count': record[5],
-                    'contents': record[6].rstrip(" "),
-                }
-            )
-
-        results.sort(key=lambda x: x["count"], reverse=True)
-        return results
-
-    def get_all_by_user(self, emoji, count_min, user):
-        print("getting all inputs from user", (emoji, count_min, user))
-        cursor = self.postgresConnection.cursor()
-        postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and count >= %s and user_id = %s'''
-        record_to_insert = (emoji, count_min, user)
-        cursor.execute(postgres_insert_query, record_to_insert)
-        records = cursor.fetchall()
-        cursor.close()
-
-        results = []
-        for record in records:
-            results.append(
-                {
-                    'carrot_id': record[0],
-                    'emoji': record[1],
-                    'message_id': record[2],
-                    'user_id': record[3],
-                    'channel_id': record[4],
-                    'count': record[5],
-                    'contents': record[6].rstrip(" "),
-                }
-            )
-
-        results.sort(key=lambda x: x["count"], reverse=True)
-        return results
