@@ -4,7 +4,7 @@
 
 user: user
 dbname: bot
-passowrd: pass
+password: pass
 host: localhost
 port: 40041
 
