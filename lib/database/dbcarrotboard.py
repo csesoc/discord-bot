@@ -43,7 +43,8 @@ class DBcarrotboard:
             MESSAGE_ID INT NOT NULL,
             USER_ID INT NOT NULL,
             CHANNEL_ID INT NOT NULL,
-            COUNT INT
+            COUNT BIGINT,
+            MESSAGE_CONTENTS CHAR(50)
             )'''
 
         try:
@@ -70,12 +71,11 @@ class DBcarrotboard:
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT count(*) from carrot_board where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
         
-        record_to_insert = (emoji, message_id, user_id, channel_id)
+        record_to_insert = (emoji, message_id,user_id, channel_id)
         cursor.execute(postgres_insert_query, record_to_insert)
         record = cursor.fetchall()
         cursor.close()
         return record[0][0]
-    
     
     def get_count(self,emoji,message_id, user_id, channel_id):
         cursor = self.postgresConnection.cursor()
@@ -86,22 +86,28 @@ class DBcarrotboard:
 
         record = cursor.fetchone()
         cursor.close()
+
+        # None check
+        if record is None:
+            return None
+        
         return record[5]
  
     # Loads the db credentials from the file
-    def load_db_login():
+    def load_db_login(self):
         with open('./data/config/database.yml') as file:
             settings = yaml.load(file)
         return settings
 
     # Inserts a given message to the database
-    def add_value(self,emoji,message_id, user_id, channel_id):
+    def add_value(self,emoji,message_id, user_id, channel_id,message_contents):
 
+        count_val = self.count_values(emoji,message_id, user_id, channel_id)
         # Increase the count if the value exists else create a new value
-        if(self.count_values(emoji,message_id, user_id, channel_id)) == 0:
+        if count_val == 0 or count_val == None:
             cursor = self.postgresConnection.cursor()
-            postgres_insert_query = ''' INSERT INTO carrot_board (EMOJI, MESSAGE_ID, USER_ID, CHANNEL_ID, COUNT) VALUES (%s,%s,%s,%s,%s)'''
-            record_to_insert = (emoji, message_id, user_id, channel_id,1)
+            postgres_insert_query = ''' INSERT INTO carrot_board (EMOJI, MESSAGE_ID, USER_ID, CHANNEL_ID, COUNT, MESSAGE_CONTENTS) VALUES (%s,%s,%s,%s,%s,%s)'''
+            record_to_insert = (emoji, message_id, user_id, channel_id,1, message_contents)
             cursor.execute(postgres_insert_query, record_to_insert)
             self.postgresConnection.commit()
             cursor.close()
@@ -130,7 +136,8 @@ class DBcarrotboard:
             'message_id':record[2],
             'user_id':record[3],
             'channel_id':record[4],
-            'count':record[5]
+            'count':record[5],
+            'contents': record[6].rstrip(" "),
         }
 
     # Retrieve an entry by message id
@@ -147,7 +154,8 @@ class DBcarrotboard:
             'message_id':record[2],
             'user_id':record[3],
             'channel_id':record[4],
-            'count':record[5]
+            'count':record[5],
+            'contents': record[6].rstrip(" "),
         }
 
     # Get all the messages of a given react above a minimum threshold
@@ -159,5 +167,91 @@ class DBcarrotboard:
         records = cursor.fetchall()
         cursor.close()
         return records
+
+    def del_entry(self, message_id, channel_id):
+        cursor = self.postgresConnection.cursor()
+        postgres_delete_query = '''DELETE FROM carrot_board where message_id = %s and channel_id = %s'''
+        record_to_delete = (message_id, channel_id)
+        cursor.execute(postgres_delete_query, record_to_delete)
+        self.postgresConnection.commit()
+        cursor.close()
+
+    def del_entry_emoji(self, emoji, message_id, user_id, channel_id):
+        cursor = self.postgresConnection.cursor()
+        postgres_delete_query = '''DELETE FROM carrot_board where message_id = %s and channel_id = %s  and user_id = %s and emoji = %s'''
+        record_to_delete = (message_id, channel_id, user_id, emoji)
+        cursor.execute(postgres_delete_query, record_to_delete)
+        self.postgresConnection.commit()
+        cursor.close()
+
+    def sub_value(self, emoji, message_id, user_id, channel_id):
+
+            count = self.get_count(emoji, message_id, user_id, channel_id)
+            
+            if count is None:
+                return
+            
+            elif (count - 1) <= 0:
+                # remove from database
+                self.del_entry_emoji(emoji,message_id,user_id, channel_id)
+            else:
+                count = count - 1
+                cursor = self.postgresConnection.cursor()
+                postgres_insert_query = ''' UPDATE carrot_board SET count = %s  where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
+                record_to_insert = (count, emoji, message_id, user_id, channel_id)
+                cursor.execute(postgres_insert_query, record_to_insert)
+                self.postgresConnection.commit()
+                cursor.close()
+
+    def get_all_by_emoji(self, emoji, count_min):
+        cursor = self.postgresConnection.cursor()
+        postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and count >= %s ORDER BY count DESC'''
+        record_to_insert = (emoji, count_min)
+        cursor.execute(postgres_insert_query, record_to_insert)
+        records = cursor.fetchall()
+        cursor.close()
+
+        results = []
+        for record in records:
+            results.append(
+                {
+                    'carrot_id': record[0],
+                    'emoji': record[1],
+                    'message_id': record[2],
+                    'user_id': record[3],
+                    'channel_id': record[4],
+                    'count': record[5],
+                    'contents': record[6].rstrip(" "),
+                }
+            )
+
+        # results.sort(key=lambda x: x["count"], reverse=True)
+        return results
+    
+    def get_all_by_user(self, emoji, count_min, user):
+
+        cursor = self.postgresConnection.cursor()
+        postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and count >= %s and user_id = %s ORDER BY count DESC'''
+        record_to_insert = (emoji, count_min, user)
+        cursor.execute(postgres_insert_query, record_to_insert)
+        records = cursor.fetchall()
+        cursor.close()
+
+        results = []
+        for record in records:
+            results.append(
+                {
+                    'carrot_id': record[0],
+                    'emoji': record[1],
+                    'message_id': record[2],
+                    'user_id': record[3],
+                    'channel_id': record[4],
+                    'count': record[5],
+                    'contents': record[6].rstrip(" "),
+                }
+            )
+
+        #results.sort(key=lambda x: x["count"], reverse=True)
+        return results
 
 
