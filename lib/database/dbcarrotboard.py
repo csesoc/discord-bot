@@ -66,7 +66,7 @@ class DBcarrotboard:
         cur.execute("select * from information_schema.tables where table_name=%s", (table_name,))
         return bool(cur.rowcount)
 
-    # Count the number of specific reacts on a given message
+    # Count the number of entries in the db for a specific message
     def count_values(self,emoji,message_id, user_id, channel_id):
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT count(*) from carrot_board where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
@@ -77,6 +77,7 @@ class DBcarrotboard:
         cursor.close()
         return record[0][0]
     
+    # Get the react count on a given message
     def get_count(self,emoji,message_id, user_id, channel_id):
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and message_id = %s and user_id = %s and channel_id = %s'''
@@ -168,6 +169,7 @@ class DBcarrotboard:
         cursor.close()
         return records
 
+    # Deletes an entry from the db - An entry is all the rows with the same message_id
     def del_entry(self, message_id, channel_id):
         cursor = self.postgresConnection.cursor()
         postgres_delete_query = '''DELETE FROM carrot_board where message_id = %s and channel_id = %s'''
@@ -176,6 +178,7 @@ class DBcarrotboard:
         self.postgresConnection.commit()
         cursor.close()
 
+    # Deletes the specific emoji entry for a given message
     def del_entry_emoji(self, emoji, message_id, user_id, channel_id):
         cursor = self.postgresConnection.cursor()
         postgres_delete_query = '''DELETE FROM carrot_board where message_id = %s and channel_id = %s  and user_id = %s and emoji = %s'''
@@ -184,6 +187,7 @@ class DBcarrotboard:
         self.postgresConnection.commit()
         cursor.close()
 
+    # Subtracts the count of an emoji for a given message id by 1
     def sub_value(self, emoji, message_id, user_id, channel_id):
 
             count = self.get_count(emoji, message_id, user_id, channel_id)
@@ -203,6 +207,7 @@ class DBcarrotboard:
                 self.postgresConnection.commit()
                 cursor.close()
 
+    # Get all the messages by emoji
     def get_all_by_emoji(self, emoji, count_min):
         cursor = self.postgresConnection.cursor()
         postgres_insert_query = ''' SELECT * from carrot_board where emoji = %s and count >= %s ORDER BY count DESC'''
@@ -228,6 +233,7 @@ class DBcarrotboard:
         # results.sort(key=lambda x: x["count"], reverse=True)
         return results
     
+    # Get all the messages by user_id
     def get_all_by_user(self, emoji, count_min, user):
 
         cursor = self.postgresConnection.cursor()
