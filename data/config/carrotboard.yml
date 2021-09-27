@@ -1,0 +1,16 @@
+#######################################
+#          Channel settings           #
+#######################################
+
+carrotboard_alert_channel_id: 869186939834757160
+leaderboard_message_id: 885514172819996683
+leaderboard_channel_id: 885512225283010560
+
+#######################################
+#        Carrot count settings        #
+#######################################
+
+# please set this with $set_carrot command
+carrot_emoji: :this:864812598485581884
+minimum_carrot_count: 1
+minimum_pin_count: 2
