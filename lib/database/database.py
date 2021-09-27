@@ -141,7 +141,7 @@ class DBuser:
         cursor.close()
 
     # Query if user has joined server
-    def user_leave(self, userid):
+    def user_join(self, userid):
 
         time = datetime.datetime.now().replace(microsecond=0).isoformat()
         cursor = self.postgresConnection.cursor()
