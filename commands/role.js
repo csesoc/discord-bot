@@ -90,6 +90,7 @@ module.exports = {
 
             await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "whitelist") {
+            // TODO: Convert to scroller?
             const rolesPerPage = 10;
 
             const embedList = [];
@@ -116,7 +117,7 @@ module.exports = {
         } else if (interaction.options.getSubcommand() === "count") {
             const role = await interaction.options.getRole("role");
 
-            interaction.reply(`The role \`${role.name}\` has ${role.members.size} members.`);
+            interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
         }
     },
 };
