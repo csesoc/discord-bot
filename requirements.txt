@@ -16,3 +16,4 @@ six==1.16.0
 typing-extensions==3.10.0.0
 yarl==1.6.3
 bleach==3.3.0
+tweepy==3.10.0
