@@ -17,7 +17,7 @@ class Covid_Tweet(commands.Cog):
         # to see if the behaviour is as expected.
 
         self.bot = bot
-        self.handle = "alwin_joshy"
+        self.handle = "NSWHealth"
         self.url = "https://twitter.com/twitter/statuses/"
         self.queries = ["NSW recorded [\d,]+ new",
                         "PUBLIC HEALTH ALERT"]
