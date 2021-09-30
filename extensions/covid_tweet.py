@@ -68,7 +68,7 @@ class Covid_Tweet(commands.Cog):
         # we loop from the end.     
         for tweet in reversed(tweets):
             # Check if the contents of the tweet matches any of the queries
-            if any (re.match(query, tweet.text) for query in self.queries):
+            if any (re.search(query, tweet.text) for query in self.queries):
                 # Send message in channel
                 await self.bot.get_channel(self.channel).send(self.url + str(tweet.id))
 
