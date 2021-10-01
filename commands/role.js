@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const paginationEmbed = require("discordjs-button-pagination");
-const { MessageEmbed, MessageButton } = require("discord.js");
+const { MessageEmbed, MessageButton, DiscordAPIError } = require("discord.js");
 const { allowedRoles } = require("../config/role.json");
 
 module.exports = {
@@ -37,7 +37,11 @@ module.exports = {
             subcommand
                 .setName("count")
                 .setDescription("Displays the number of members with a role.")
-                .addRoleOption(option => option.setName("role").setDescription("Role to count members").setRequired(true))),
+                .addRoleOption(option => option.setName("role").setDescription("Role to count members").setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName("removeunverified")
+                .setDescription("Removes all members with the unverified role.")),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === "give") {
             const role = await interaction.options.getRole("role");
@@ -118,6 +122,18 @@ module.exports = {
             const role = await interaction.options.getRole("role");
 
             interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
+        } else if (interaction.options.getSubcommand() === "removeunverified") {
+            const role = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
+
+            // Member list in the role is cached
+            let numRemoved = 0;
+            role.members.each(member => {
+                // No error handling or user message
+                member.kick("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome");
+                ++numRemoved;
+            });
+
+            await interaction.reply(`Removed ${numRemoved} unverified members.`);
         }
     },
 };
