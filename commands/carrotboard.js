@@ -2,6 +2,11 @@
 const { SlashCommandBuilder, SlashCommandSubcommandGroupBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
 const { CommandInteraction, ContextMenuInteraction, Client } = require("discord.js");
 
+const { CarrotboardStorage } = require("../lib/carrotboard");
+
+/** @type {CarrotboardStorage} */
+const cbStorage = global.cbStorage;
+
 //////////////////////////////////////////////
 ////////// SETTING UP THE COMMANDS ///////////
 //////////////////////////////////////////////
@@ -99,8 +104,6 @@ async function handleInteraction(interaction) {
 
 /** @param {CommandInteraction} interaction */
 async function handleCBACarrot(interaction) {
-    //@ts-expect-error
-    console.log(interaction.client.cbStuff.pin);
     await interaction.reply("admin carrot");
     // do stuff
 }
