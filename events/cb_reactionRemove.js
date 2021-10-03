@@ -17,7 +17,7 @@ module.exports = {
         
         if (!message.author.bot && !reaction.me) {
             // get the details
-            const emoji = reaction.emoji.name;
+            const emoji = reaction.emoji.toString();
             const messageID = message.id;
             const channelID = message.channelId;
             const authorID = message.author.id;
