@@ -1,8 +1,0 @@
-{
-    "leaderboard_message_id": 1,
-    "leaderboard_channel_id": 1,
-    "carrotboard_alert_channel_id": 1,
-    "carrot_emoji": "a",
-    "minimum_carrot_count": 1,
-    "minimum_pin_count": 1
-}

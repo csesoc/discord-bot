@@ -4,9 +4,6 @@ const { CommandInteraction, ContextMenuInteraction, Client } = require("discord.
 
 const { CarrotboardStorage } = require("../lib/carrotboard");
 
-/** @type {CarrotboardStorage} */
-const cbStorage = global.cbStorage;
-
 //////////////////////////////////////////////
 ////////// SETTING UP THE COMMANDS ///////////
 //////////////////////////////////////////////
@@ -19,8 +16,9 @@ const commandCBACarrot = new SlashCommandSubcommandBuilder()
 
 // cb admin channel
 const commandCBAChannel = new SlashCommandSubcommandBuilder()
-    .setName("channel")
-    .setDescription("Sets the current channel to be the output channel.");
+    .setName("output")
+    .setDescription("Sets the current channel to be the output channel of type.")
+    .addStringOption(option => option.setName("type").setDescription("The type of output channel").addChoice("leaderboard", "leaderboard").addChoice("alert", "alert").setRequired(true));
 
 // cb main
 const commandCBMain = new SlashCommandSubcommandBuilder()
@@ -69,15 +67,18 @@ const baseCommand = new SlashCommandBuilder()
 // handle the command
 /** @param {CommandInteraction} interaction */
 async function handleInteraction(interaction) {
+    /** @type {CarrotboardStorage} */
+    const cbStorage = global.cbStorage;
+
     const commandGroup = interaction.options.getSubcommandGroup();
     const subcommand = interaction.options.getSubcommand();
     if (commandGroup == "admin") {
         switch (subcommand) {
             case "carrot":
-                await handleCBACarrot(interaction);
+                await handleCBACarrot(interaction, cbStorage);
                 break;
-            case "channel":
-                await handleCBAChannel(interaction);
+            case "output":
+                await handleCBAOutput(interaction, cbStorage);
                 break;
             default:
                 await interaction.reply("error");
@@ -85,16 +86,16 @@ async function handleInteraction(interaction) {
     } else {
         switch (subcommand) {
             case "main":
-                await handleCBMain(interaction);
+                await handleCBMain(interaction, cbStorage);
                 break;
             case "user":
-                await handleCBUser(interaction);
+                await handleCBUser(interaction, cbStorage);
                 break;
             case "emoji":
-                await handleCBAll(interaction);
+                await handleCBAll(interaction, cbStorage);
                 break;
             case "id":
-                await handleCBID(interaction);
+                await handleCBID(interaction, cbStorage);
                 break;
             default:
                 await interaction.reply("error2");
@@ -102,38 +103,86 @@ async function handleInteraction(interaction) {
     }
 }
 
-/** @param {CommandInteraction} interaction */
-async function handleCBACarrot(interaction) {
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {CarrotboardStorage} cbStorage
+ */
+async function handleCBACarrot(interaction, cbStorage) {
     await interaction.reply("admin carrot");
     // do stuff
 }
 
-/** @param {CommandInteraction} interaction */
-async function handleCBAChannel(interaction) {
-    await interaction.reply("admin channel");
-    // do stuff
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {CarrotboardStorage} cbStorage
+ */
+async function handleCBAOutput(interaction, cbStorage) {
+    // console.log("Setting Channel");
+    // console.log(interaction);
+
+    // get details
+    const channelID = interaction.channelId;
+    const choice = interaction.options.getString("type");
+
+    // perform the choice
+    if (choice == "alert") {
+        // update the config
+        try {
+            cbStorage.config.alertChannelID = channelID;
+            cbStorage.config.saveToFile();
+            await interaction.reply({content: "Alert Output Channel Set.", ephemeral: true});
+        } catch (e) {
+            console.error(e);
+            await interaction.reply({content: "Error occurred, please check logs.", ephemeral: true});
+        }
+    } else {
+        // update the config
+        try {
+            cbStorage.config.permaChannelID = channelID;
+            const leaderboard = await cbStorage.generateLeaderboard({ onlyFirstPage: true, emoji: cbStorage.config.carrot });
+            const message = await interaction.channel.send({embeds: [leaderboard[0]]});
+            cbStorage.config.leaderboardID = message.id;
+            cbStorage.config.saveToFile();
+            await interaction.reply({content: "Leaderboard Channel Set.", ephemeral: true});
+        } catch (e) {
+            console.error(e);
+            await interaction.reply({content: "Error occurred, please check logs.", ephemeral: true});
+        }
+    } 
 }
 
-/** @param {CommandInteraction} interaction */
-async function handleCBMain(interaction) {
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {CarrotboardStorage} cbStorage
+ */
+async function handleCBMain(interaction, cbStorage) {
     await interaction.reply("main");
     // do stuff
 }
 
-/** @param {CommandInteraction} interaction */
-async function handleCBUser(interaction) {
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {CarrotboardStorage} cbStorage
+ */
+async function handleCBUser(interaction, cbStorage) {
     await interaction.reply("user");
     // do stuff
 }
 
-/** @param {CommandInteraction} interaction */
-async function handleCBAll(interaction) {
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {CarrotboardStorage} cbStorage
+ */
+async function handleCBAll(interaction, cbStorage) {
     await interaction.reply("emoji");
     // do stuff
 }
 
-/** @param {CommandInteraction} interaction */
-async function handleCBID(interaction) {
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {CarrotboardStorage} cbStorage
+ */
+async function handleCBID(interaction, cbStorage) {
     await interaction.reply("id");
     // do stuff
 }

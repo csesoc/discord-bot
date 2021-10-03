@@ -4,7 +4,8 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-        global.cbStorage = new CarrotboardStorage(client);
+        const cbStorage = new CarrotboardStorage(client);
+        global.cbStorage = cbStorage;
     },
 };
 
