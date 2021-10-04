@@ -26,10 +26,6 @@ module.exports = {
                 return await interaction.reply({ content: "Invalid course code.", ephemeral: true });
             }
 
-            console.log(data);
-
-            console.log(data["enrolment_requirements"]);
-
             const courseInfo =
                 new MessageEmbed()
                     .setTitle(data["title"])
@@ -37,7 +33,6 @@ module.exports = {
                     .setColor(0x3A76F8)
                     .setAuthor(`Course Info: ${courseCode} (${data["credit_points"]} UOC)`, "https://i.imgur.com/EE3Q40V.png")
                     .addFields(
-                        // Need to parse (and fix hardcoded length)
                         {
                             name: "Overview",
                             value: textVersion(data["description"])
