@@ -4,7 +4,7 @@ require("dotenv").config();
 
 // Create a new client instance
 const intentValue = [Intents.FLAGS.GUILDS | Intents.FLAGS.GUILD_MESSAGES | Intents.FLAGS.GUILD_MESSAGE_REACTIONS];
-const client = new Client({ intents: intentValue });
+const client = new Client({ intents: intentValue, partials: ['MESSAGE', 'REACTION'] });
 
 // Add commands to the client
 client.commands = new Collection();
@@ -29,10 +29,9 @@ for (const file of eventFiles) {
 
 // Handle commands
 client.on("interactionCreate", async interaction => {
-    if (!interaction.isCommand()) return;
+    if (!(interaction.isCommand() || interaction.isContextMenu())) return;
 
     const command = client.commands.get(interaction.commandName);
-
     if (!command) return;
 
     try {

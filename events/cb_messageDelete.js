@@ -10,6 +10,11 @@ module.exports = {
      * @param {Message} message 
      */
     async execute(message) {
+        // check if partial
+        if (message.partial) {
+            message = await message.fetch();
+        }
+
         /** @type {CarrotboardStorage} */
         const cbStorage = global.cbStorage;
         

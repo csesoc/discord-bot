@@ -9,18 +9,6 @@ const { DiscordScroll } = require("../lib/discordscroll/scroller");
 ////////// SETTING UP THE COMMANDS ///////////
 //////////////////////////////////////////////
 
-// cb admin carrot :emoji:
-const commandCBACarrot = new SlashCommandSubcommandBuilder()
-    .setName("carrot")
-    .setDescription("Sets the given emoji as the carrot.")
-    .addStringOption(option => option.setName("emoji").setDescription("The emoji.").setRequired(true));
-
-// cb admin channel
-const commandCBAChannel = new SlashCommandSubcommandBuilder()
-    .setName("output")
-    .setDescription("Sets the current channel to be the output channel of type.")
-    .addStringOption(option => option.setName("type").setDescription("The type of output channel").addChoice("leaderboard", "leaderboard").addChoice("alert", "alert").setRequired(true));
-
 // cb main
 const commandCBMain = new SlashCommandSubcommandBuilder()
     .setName("main")
@@ -44,13 +32,6 @@ const commandCBID = new SlashCommandSubcommandBuilder()
     .setDescription("Get a specific carrotted message.")
     .addIntegerOption(option => option.setName("cbid").setDescription("The specific id.").setRequired(true));
 
-// setting up groups
-const adminCommands = new SlashCommandSubcommandGroupBuilder()
-    .setName("admin")
-    .setDescription("cb Admin commands")
-    .addSubcommand(commandCBACarrot)
-    .addSubcommand(commandCBAChannel);
-
 // the base command
 const baseCommand = new SlashCommandBuilder()
     .setName("cb")
@@ -59,7 +40,6 @@ const baseCommand = new SlashCommandBuilder()
     .addSubcommand(commandCBUser)
     .addSubcommand(commandCBAll)
     .addSubcommand(commandCBID)
-    .addSubcommandGroup(adminCommands);
 
 //////////////////////////////////////////////
 /////////// HANDLING THE COMMANDS ////////////
@@ -71,101 +51,24 @@ async function handleInteraction(interaction) {
     /** @type {CarrotboardStorage} */
     const cbStorage = global.cbStorage;
 
-    const commandGroup = interaction.options.getSubcommandGroup(false);
+    // figure out which command was called
     const subcommand = interaction.options.getSubcommand(false);
-    if (commandGroup == "admin") {
-        switch (subcommand) {
-            case "carrot":
-                await handleCBACarrot(interaction, cbStorage);
-                break;
-            case "output":
-                await handleCBAOutput(interaction, cbStorage);
-                break;
-            default:
-                await interaction.reply("error");
-        }
-    } else {
-        switch (subcommand) {
-            case "main":
-                await handleCBMain(interaction, cbStorage);
-                break;
-            case "user":
-                await handleCBUser(interaction, cbStorage);
-                break;
-            case "emoji":
-                await handleCBAll(interaction, cbStorage);
-                break;
-            case "id":
-                await handleCBID(interaction, cbStorage);
-                break;
-            default:
-                await interaction.reply("error2");
-        }
+    switch (subcommand) {
+        case "main":
+            await handleCBMain(interaction, cbStorage);
+            break;
+        case "user":
+            await handleCBUser(interaction, cbStorage);
+            break;
+        case "emoji":
+            await handleCBAll(interaction, cbStorage);
+            break;
+        case "id":
+            await handleCBID(interaction, cbStorage);
+            break;
+        default:
+            await interaction.reply("Internal Error AHHHHHHH! CONTACT ME PLEASE!");
     }
-}
-
-/** 
- * @param {CommandInteraction} interaction
- * @param {CarrotboardStorage} cbStorage
- */
-async function handleCBACarrot(interaction, cbStorage) {
-    // known something given
-    const messageStr = interaction.options.getString("emoji");
-
-    // emoji was given get the emoji
-    const result = extractOneEmoji(messageStr);
-    if (result == null) {
-        // none were given
-        await interaction.reply({ content: "Please give one emoji.", ephemeral: true });
-        return;
-    } else if (result.index != 0) {
-        // not at the front
-        await interaction.reply({ content: "Please give only an emoji.", ephemeral: true });
-        return;
-    }
-
-    // successful
-    cbStorage.config.carrot = result.emoji;
-    cbStorage.config.saveToFile();
-    await interaction.reply({ content: `Carrot emoji set to ${result.emoji}`, ephemeral: true });
-}
-
-/** 
- * @param {CommandInteraction} interaction
- * @param {CarrotboardStorage} cbStorage
- */
-async function handleCBAOutput(interaction, cbStorage) {
-    // get details
-    const channelID = interaction.channelId;
-    const choice = interaction.options.getString("type");
-
-    // perform the choice
-    if (choice == "alert") {
-        // update the config
-        try {
-            cbStorage.config.alertChannelID = channelID;
-            cbStorage.config.saveToFile();
-
-            await interaction.reply({content: "Alert Output Channel Set.", ephemeral: true});
-        } catch (e) {
-            console.error(e);
-            await interaction.reply({content: "Error occurred, please check logs.", ephemeral: true});
-        }
-    } else {
-        // update the config
-        try {
-            cbStorage.config.permaChannelID = channelID;
-            const leaderboard = await cbStorage.generateLeaderboard({ onlyFirstPage: true, emoji: cbStorage.config.carrot });
-            const message = await interaction.channel.send({embeds: [leaderboard[0]]});
-            cbStorage.config.leaderboardID = message.id;
-            cbStorage.config.saveToFile();
-
-            await interaction.reply({content: "Leaderboard Channel Set.", ephemeral: true});
-        } catch (e) {
-            console.error(e);
-            await interaction.reply({content: "Error occurred, please check logs.", ephemeral: true});
-        }
-    } 
 }
 
 /** 
@@ -263,8 +166,10 @@ async function handleCBID(interaction, cbStorage) {
         title: `Carrotboard ${id}`,
         description: content,
         color: Math.floor(Math.random() * 16581374),
+        url: url,
     });
 
+    // send the embed
     await interaction.reply({ embeds: [embed] });
 }
 

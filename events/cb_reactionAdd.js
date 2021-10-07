@@ -11,11 +11,16 @@ module.exports = {
      * @param {User} user
      */
     async execute(reaction, user) {
+        // check if partial
+        if (reaction.partial) {
+            reaction = await reaction.fetch();
+        }
         
         /** @type {CarrotboardStorage} */
         const cbStorage = global.cbStorage;
         const message = reaction.message;
         
+        // make sure not a bot and not this client
         if (!message.author.bot && !reaction.me) {
             const emoji = reaction.emoji.toString();
             const messageID = message.id;
@@ -34,11 +39,13 @@ module.exports = {
 
             // check whether its a pin
             if (emoji == cbStorage.pin) {
-                if (entry["count"] == cbStorage.config.pinMinimum) {
+                if (Number(entry["count"]) == Number(cbStorage.config.pinMinimum)) {
                     await message.pin();
+                    // send pin alert
                     await cbStorage.sendCBAlert(reaction, entry["carrot_id"], emoji);
                 }
-            } else if (entry["count"] == cbStorage.config.minimum)  {
+            } else if (Number(entry["count"]) == Number(cbStorage.config.minimum))  {
+                // send normal alert
                 await cbStorage.sendCBAlert(reaction, entry["carrot_id"], emoji);
             }
 
