@@ -24,7 +24,7 @@
     "discordjs-button-pagination": "^2.0.0",
     "dotenv": "^10.0.0",
     "pg": "^8.7.1",
-    "yaml": "^1.10.2"
+    "yaml": "2.0.0-8"
   },
   "devDependencies": {
     "eslint": "^7.32.0"
