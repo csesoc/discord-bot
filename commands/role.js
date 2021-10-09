@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const paginationEmbed = require("discordjs-button-pagination");
-const { MessageEmbed, MessageButton, DiscordAPIError } = require("discord.js");
+const { MessageEmbed, MessageButton, Permissions } = require("discord.js");
 const { allowedRoles } = require("../config/role.json");
 
 module.exports = {
@@ -18,30 +18,29 @@ module.exports = {
                 .setName("remove")
                 .setDescription("Removes a role from the user.")
                 .addRoleOption(option => option.setName("role").setDescription("Role to remove").setRequired(true)))
-        // TODO: Make these commands admin only
         .addSubcommand(subcommand =>
             subcommand
                 .setName("allow")
-                .setDescription("Allows a role to be added.")
+                .setDescription("[ADMIN] Allows a role to be added.")
                 .addRoleOption(option => option.setName("role").setDescription("Role to allow").setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName("disallow")
-                .setDescription("Disallows a role to be added.")
+                .setDescription("[ADMIN] Disallows a role to be added.")
                 .addRoleOption(option => option.setName("role").setDescription("Role to disallow").setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName("whitelist")
-                .setDescription("Displays the list of allowed roles."))
+                .setDescription("[ADMIN] Displays the list of allowed roles."))
         .addSubcommand(subcommand =>
             subcommand
                 .setName("count")
-                .setDescription("Displays the number of members with a role.")
+                .setDescription("[ADMIN] Displays the number of members with a role.")
                 .addRoleOption(option => option.setName("role").setDescription("Role to count members").setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName("removeunverified")
-                .setDescription("Removes all members with the unverified role.")),
+                .setDescription("[ADMIN] Removes all members with the unverified role.")),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === "give") {
             const role = await interaction.options.getRole("role");
@@ -67,7 +66,14 @@ module.exports = {
             await interaction.member.roles.remove(role);
 
             await interaction.reply({ content: `✅ | Removed the role \`${role.name}\`.`, ephemeral: true });
-        } else if (interaction.options.getSubcommand() === "allow") {
+        }
+
+        // Admin permission check
+        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            return await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
+        }
+
+        if (interaction.options.getSubcommand() === "allow") {
             const role = await interaction.options.getRole("role");
 
             if (allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
