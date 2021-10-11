@@ -3,7 +3,11 @@ const { Client, Collection, Intents } = require("discord.js");
 require("dotenv").config();
 
 // Create a new client instance
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({
+	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
+	partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
+});
+
 
 // Add commands to the client
 client.commands = new Collection();
