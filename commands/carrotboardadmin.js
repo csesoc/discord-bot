@@ -1,9 +1,8 @@
 //@ts-check
-const { SlashCommandBuilder, SlashCommandSubcommandGroupBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { CommandInteraction, ContextMenuInteraction, Client, MessageEmbed } = require("discord.js");
+const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
+const { CommandInteraction, Permissions } = require("discord.js");
 
 const { CarrotboardStorage, extractOneEmoji } = require("../lib/carrotboard");
-const { DiscordScroll } = require("../lib/discordscroll/scroller");
 
 //////////////////////////////////////////////
 ////////// SETTING UP THE COMMANDS ///////////
@@ -12,20 +11,19 @@ const { DiscordScroll } = require("../lib/discordscroll/scroller");
 // cb admin carrot :emoji:
 const commandCBACarrot = new SlashCommandSubcommandBuilder()
     .setName("carrot")
-    .setDescription("Sets the given emoji as the carrot.")
+    .setDescription("[ADMIN] Sets the given emoji as the carrot.")
     .addStringOption(option => option.setName("emoji").setDescription("The emoji.").setRequired(true));
 
 // cb admin channel
 const commandCBAChannel = new SlashCommandSubcommandBuilder()
     .setName("output")
-    .setDescription("Sets the current channel to be the output channel of type.")
+    .setDescription("[ADMIN] Sets the current channel to be the output channel of type.")
     .addStringOption(option => option.setName("type").setDescription("The type of output channel").addChoice("leaderboard", "leaderboard").addChoice("alert", "alert").setRequired(true));
 
 // the base command
 const baseCommand = new SlashCommandBuilder()
     .setName("cbadmin")
-    .setDescription("Master carrotboard admin command")
-    .setDefaultPermission(false)
+    .setDescription("[ADMIN] Master carrotboard admin command")
     .addSubcommand(commandCBACarrot)
     .addSubcommand(commandCBAChannel);
 
@@ -36,6 +34,12 @@ const baseCommand = new SlashCommandBuilder()
 // handle the command
 /** @param {CommandInteraction} interaction */
 async function handleInteraction(interaction) {
+    // Admin permission check (this may not work uhm)
+    if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
+        return;
+    }
+
     /** @type {CarrotboardStorage} */
     const cbStorage = global.cbStorage;
 
