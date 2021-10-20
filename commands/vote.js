@@ -26,23 +26,29 @@ module.exports = {
 
     ,
     async execute(interaction) {
+        // Starting a vote
         if (interaction.options.getSubcommand() === 'vote') {
-
+            
+            // Getting the required string and data from the input
             var votestring = await interaction.options.getString("votestring");
             var voteauthorid = interaction.user.id;
             var voteauthorname = interaction.user.username;
             var channelid = interaction.channelId;
 
+            // Generating the vote string
             votestring = votestring + ', vote by ' + voteauthorname;
 
+            // Generating the embed
             const embed = new MessageEmbed()
                 .setTitle(votestring)
             const message = await interaction.reply({ embeds: [embed], fetchReply: true });
+            // Adding the default reacts
             message.react('👍');
             message.react('👎');
 
             var messageid = message.id;
 
+            // Writing to the data file
             data.unshift({ 'string': votestring, 'authorid': voteauthorid, 'channelid': channelid, 'messageid': messageid })
             fs.writeFileSync("./config/votes.json", JSON.stringify({ data: data }, null, 4));
 
@@ -50,8 +56,9 @@ module.exports = {
             // Get the last messageid of the vote done on this channel
             var channelid = interaction.channelId;
 
+            // Finding the required vote
             const found = data.find(element => element.channelid == channelid);
-
+            
             if (found == undefined) {
                 const embed = new MessageEmbed()
                     .setTitle("0 votes found on this channel");
@@ -90,6 +97,7 @@ module.exports = {
                     });
                 }
                 else {
+                    // If an error occurs, Delete everything on the file
                     await interaction.reply("An error occurred");
                     data = [];
                     fs.writeFileSync("./config/votes.json", JSON.stringify({ data: data }, null, 4));
@@ -103,6 +111,7 @@ module.exports = {
             //await interaction.reply("Done");
 
         } else if (interaction.options.getSubcommand() === 'voteresultfull') {
+            // Returns the list of all users who voted
             // Get the last messageid of the vote done on this channel
             var channelid = interaction.channelId;
 
