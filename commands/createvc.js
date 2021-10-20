@@ -8,13 +8,11 @@ module.exports = {
         .setDescription("Create a temporary voice channel")
         ,
     async execute(interaction) {
-        
-        try{
-            var authorid = interaction.user.id;
-        
+        const limit = 2
+        var authorid = interaction.user.id;
         const found = data.users.find(element => element.authorid == authorid);
 
-        if(found == undefined || found.count > 0) {
+        if(found == undefined || found.count < limit) {
             var temp = {"authorid":authorid,"count":1};
             data.users.unshift(temp);
             
@@ -30,10 +28,6 @@ module.exports = {
         else {
             await interaction.reply("Sorry, daily voice channel limit reached!");
         }
-    }
-    catch(err) {
-        console.log(err.message);
-    }
 
     },
 };
