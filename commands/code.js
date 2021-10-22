@@ -38,17 +38,11 @@ module.exports = {
 
             if (!result || !result.valid) {
                 return await interaction.reply({ content: "Invalid code!", ephemeral: true });
-            }
-
-            if (result.users.includes(interaction.member.id)) {
+            } else if (result.users.includes(interaction.member.id)) {
                 return await interaction.reply({ content: "You have already redeemed this code!", ephemeral: true });
-            }
-
-            if (result.oneTime && result.users.length > 0) {
+            } else if (result.oneTime && result.users.length > 0) {
                 return await interaction.reply({ content: "One time code has already been redeemed!", ephemeral: true });
-            }
-
-            if (result.expiry !== -1 && result.expiry < Date.now()) {
+            } else if (result.expiry !== -1 && result.expiry < Date.now()) {
                 return await interaction.reply({ content: "Code has expired!", ephemeral: true });
             }
 
