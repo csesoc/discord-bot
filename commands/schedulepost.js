@@ -47,6 +47,6 @@ module.exports = {
         });
 
 
-        await interaction.reply({ content: "Posted scheduled!", ephemeral: true});
+        await interaction.reply({ content: "Message scheduled!", ephemeral: true});
     },
 };
