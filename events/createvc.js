@@ -1,3 +1,4 @@
+const { channel } = require('diagnostics_channel');
 const fs = require('fs');
 
 module.exports = {
@@ -13,20 +14,57 @@ module.exports = {
                     return
                 }
                 else {
-                    const data = JSON.parse(jsonString);
-                    console.log(data["channels"]);
+                    var data = JSON.parse(jsonString);
+
+                    b = data.channels.filter(e=>e.delete == true);
+                    b.forEach(f => data.channels.splice(data.channels.findIndex(e => e.delete === f.delete),1));
+
+
+                    fs.writeFileSync("./data/createvc.json", JSON.stringify({ users: data.users, channels:data.channels}, null, 4));
+
+                    // console.log(data);
+
                     data.channels.forEach(function (item, index) {
-                        var channel = client.channels.fetch(parseInt(item));
-                        console.log(channel.id);
-                        if( channel.members.size == 0) {
-                            console.log("Found a channel with 0 members " + item);
-                        }
-                      });
+                        // item here is the channel id
+                        if (item.delete == false)
+                        {
+                            client.channels.fetch(item.channel_id)
+                        .then(
+                            channel => 
+                            {
+                                channel.fetch().then(
+                                    channel =>
+                                    {
+                                        if( channel.members.size == 0) {
+                                            
+                                            // console.log(channel.name);
+                                            // console.log(channel.members.size);
+
+                                            item.delete = true;
+                                            fs.writeFileSync("./data/createvc.json", JSON.stringify({ users: data.users, channels:data.channels}, null, 4));
+                                            channel.delete().then(console.log)
+                                            .catch(console.error);
+
+                                            
+                                        }
+                                        
+
+                                    }
+                                ).catch(console.error);
+                            }
+                        )
+                        .catch(console.error);
+                    }
+                    });
+                    
+
+                    // console.log(data.channels);
+                    
                     
                 }
             });
             // Write back to the file
             
-        }, 120)
+        }, 30*1000)
     },
 };
