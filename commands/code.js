@@ -1,7 +1,8 @@
 const fs = require("fs");
 const voucher_codes = require("voucher-code-generator");
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+const paginationEmbed = require("discordjs-button-pagination");
+const { MessageEmbed, MessageButton, Permissions } = require("discord.js");
 const { redeemableCodes } = require("../config/code.json");
 
 module.exports = {
@@ -29,7 +30,12 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName("list")
-                .setDescription("[ADMIN] Displays the list of codes.")),
+                .setDescription("[ADMIN] Displays the list of codes."))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName("getusers")
+                .setDescription("[ADMIN] Displays the list of users who have redeemed a code.")
+                .addStringOption(option => option.setName("code").setDescription("Code to get users for").setRequired(true))),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === "redeem") {
             const code = interaction.options.getString("code");
@@ -61,7 +67,7 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === "generate") {
             const prefix = await interaction.options.getString("prefix");
-            const count = await interaction.options.getInteger("count");
+            const count = Math.min(await interaction.options.getInteger("count"), 10);
             const expiry = Date.parse(await interaction.options.getString("expiry")) || -1;
             const oneTime = await interaction.options.getBoolean("onetime") ?? false;
 
@@ -71,21 +77,23 @@ module.exports = {
                 pattern: "-####################",
             }).map(code => ({ code, expiry, oneTime, valid: true, users: [] }));
 
-            console.log(codes);
-
             redeemableCodes.push(...codes);
 
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/code.json", JSON.stringify({ redeemableCodes }, null, 4));
 
-            await interaction.reply(
-                "Generated codes:\n" +
-                "```\n" +
-                `${codes.map(el => el.code).join("\n")}\n` +
-                "```\n" +
-                `Expiry: ${expiry === -1 ? "Never" : (new Date(expiry)).toString()}\n` +
-                `One time: ${oneTime ? "Yes" : "No"}\n`,
-            );
+            const codeInfo =
+                new MessageEmbed()
+                    .setTitle("Generated Codes")
+                    .setDescription(
+                        "```\n" +
+                        `${codes.map(el => el.code).join("\n")}\n` +
+                        "```\n" +
+                        `Expiry: ${expiry === -1 ? "Never" : (new Date(expiry)).toString()}\n` +
+                        `One time: ${oneTime ? "Yes" : "No"}\n`,
+                    );
+
+            await interaction.reply({ embeds: [codeInfo] });
         } else if (interaction.options.getSubcommand() === "invalidate") {
             const code = interaction.options.getString("code");
 
@@ -102,14 +110,79 @@ module.exports = {
 
             await interaction.reply(`Invalidated code: \`${code}\``);
         } else if (interaction.options.getSubcommand() === "list") {
-            // Really temporary display
-            // TODO: Embed/paginated display with information about expiry, users, etc.
-            await interaction.reply(
-                "Codes:\n" +
-                "```\n" +
-                `${redeemableCodes.map(el => el.code).join("\n")}\n` +
-                "```",
-            );
+            const codesPerPage = 10;
+
+            const embedList = [];
+            for (let i = 0; i < redeemableCodes.length; i += codesPerPage) {
+                embedList.push(
+                    new MessageEmbed()
+                        .setTitle("Code List")
+                        .setDescription(
+                            redeemableCodes
+                                .slice(i, i + codesPerPage)
+                                .map(el => {
+                                    return (
+                                        "```diff\n" +
+                                        `${el.valid ? "+" : "-"} ${el.code}\n` +
+                                        "```\n" +
+                                        `Expiry: ${el.expiry === -1 ? "Never" : (new Date(el.expiry)).toString()}\n` +
+                                        `One time: ${el.oneTime ? el.users.length > 0 ? "Yes [USED]" : "Yes" : "No"}\n`
+                                    );
+                                })
+                                .join("\n\n"),
+                        ),
+                );
+            }
+
+            const buttonList = [
+                new MessageButton()
+                    .setCustomId("previousbtn")
+                    .setLabel("Previous")
+                    .setStyle("DANGER"),
+                new MessageButton()
+                    .setCustomId("nextbtn")
+                    .setLabel("Next")
+                    .setStyle("SUCCESS"),
+            ];
+
+            paginationEmbed(interaction, embedList, buttonList);
+        } else if (interaction.options.getSubcommand() === "getusers") {
+            const usersPerPage = 20;
+
+            const code = interaction.options.getString("code");
+
+            const result = redeemableCodes.find(el => el.code === code);
+
+            if (!result) {
+                return await interaction.reply({ content: "Code does not exist!", ephemeral: true });
+            }
+
+            const embedList = [];
+            for (let i = 0; i < result.users.length; i += usersPerPage) {
+                embedList.push(
+                    new MessageEmbed()
+                        .setTitle("Users")
+                        .setDescription(
+                            result.users
+                                .slice(i, i + usersPerPage)
+                                .map(el => `<@${el}>`)
+                                .join("\n"),
+                        ),
+                );
+            }
+
+            const buttonList = [
+                new MessageButton()
+                    .setCustomId("previousbtn")
+                    .setLabel("Previous")
+                    .setStyle("DANGER"),
+                new MessageButton()
+                    .setCustomId("nextbtn")
+                    .setLabel("Next")
+                    .setStyle("SUCCESS"),
+            ];
+
+            paginationEmbed(interaction, embedList, buttonList);
         }
     },
 };
