@@ -18,11 +18,14 @@ module.exports = {
                 const response = await axios.get("https://emkc.org/api/v2/piston/runtimes");
                 data = response.data;
             } catch (e) {
-                console.log(e);
+                return message.reply("Could not retrieve runtimes.");
             }
 
             const version = data.find(runtime => runtime.language === language).version;
-            // TODO: Error check runtime doesn't exist
+
+            if (!version) {
+                return message.reply("Language not found.");
+            }
 
             try {
                 const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
@@ -37,13 +40,19 @@ module.exports = {
                 });
                 data = response.data;
             } catch (e) {
-                console.log(e);
+                return message.reply("Could not execute code.");
+            }
+
+            const output = data.run.output.length > 1000 ? data.run.output.substring(0, 1000) + `\n...${data.run.output.length - 1000} more characters` : data.run.output;
+
+            if (!output) {
+                return message.reply("No output.");
             }
 
             message.reply(
                 "Output:\n" +
                 "```\n" +
-                `${data.run.output}` +
+                `${output}` +
                 "```\n",
             );
         }
