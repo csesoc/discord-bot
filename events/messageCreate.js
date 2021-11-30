@@ -21,11 +21,13 @@ module.exports = {
                 return message.reply("Could not retrieve runtimes.");
             }
 
-            const version = data.find(runtime => runtime.language === language).version;
+            const runtime = data.find(r => r.language === language);
 
-            if (!version) {
+            if (!runtime) {
                 return message.reply("Language not found.");
             }
+
+            const version = runtime.version;
 
             try {
                 const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
