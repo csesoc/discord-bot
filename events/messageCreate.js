@@ -4,14 +4,23 @@ module.exports = {
     name: "messageCreate",
     async execute(message) {
         // console.log(message);
-        if (message.content.startsWith("!```")) {
-            const rawContent = message.content.substring(4, message.content.length - 3);
+        if (message.content.startsWith("/run")) {
+            const newlineIndex = message.content.indexOf("\n");
 
-            const newlineIndex = rawContent.indexOf("\n");
+            const language = message.content.substring(5, newlineIndex);
 
-            const language = rawContent.substring(0, newlineIndex);
+            // Message without the "/run language" part
+            const rawContent = message.content.substring(newlineIndex + 1);
 
-            const code = rawContent.substring(newlineIndex + 1);
+            const firstLine = rawContent.split("\n")[0];
+            const args = firstLine.startsWith("args") ? firstLine.substring(5).split(" ") : [];
+
+            const lastLine = rawContent.split("\n").slice(-1)[0];
+            const stdin = lastLine.startsWith("stdin") ? lastLine.substring(6) : "";
+
+            // Remove the first and last line from rawContent
+            // Remove extra lines for args and stdin if needed
+            const code = rawContent.split("\n").slice(args.length === 0 ? 1 : 2, stdin === "" ? -1 : -2).join("\n");
 
             let data;
             try {
@@ -36,15 +45,15 @@ module.exports = {
                     "files": [
                         { "content": code },
                     ],
-                // TODO: Support stdin and args
-                // "stdin": "",
-                // "args": [],
+                    "args": args,
+                    "stdin": stdin,
                 });
                 data = response.data;
             } catch (e) {
                 return message.reply("Could not execute code.");
             }
 
+            // Trim the output if it is too long
             const output = data.run.output.length > 1000 ? data.run.output.substring(0, 1000) + `\n...${data.run.output.length - 1000} more characters` : data.run.output;
 
             if (!output) {
