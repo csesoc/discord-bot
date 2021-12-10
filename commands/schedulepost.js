@@ -12,6 +12,7 @@ module.exports = {
     async execute(interaction) {
         const message_id = interaction.options.getString('messageid');
         const channel_obj = interaction.options.getChannel('channelid');
+        const channel_name = channel_obj.name
         let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
         const datetime = interaction.options.getString('datetime');
         if (!re.test(datetime)) {
@@ -25,7 +26,7 @@ module.exports = {
         var message = await interaction.channel.messages.fetch(message_id);
         message = message.content;
 
-        var data = [message, channel_obj.id, datetime];
+        var data = [message, channel_obj.id, datetime, message_id];
 
         var fs = require('fs');
         fs.readFile(path.join(__dirname, '../data/schedulemessage.json'), (err, jsonString) => {
@@ -47,6 +48,6 @@ module.exports = {
         });
 
 
-        await interaction.reply({ content: "Message scheduled!", ephemeral: true});
+        await interaction.reply({ content: "Message #" + message_id + " for channel '" + channel_name + "' scheduled at " + datetime, ephemeral: false});
     },
 };
