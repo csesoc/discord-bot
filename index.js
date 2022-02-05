@@ -3,8 +3,8 @@ const { Client, Collection, Intents } = require("discord.js");
 require("dotenv").config();
 
 // Create a new client instance
-const client = new Client({
 
+const client = new Client({
 	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES],
 	partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
 });
@@ -31,10 +31,9 @@ for (const file of eventFiles) {
 
 // Handle commands
 client.on("interactionCreate", async interaction => {
-    if (!interaction.isCommand()) return;
+    if (!(interaction.isCommand() || interaction.isContextMenu())) return;
 
     const command = client.commands.get(interaction.commandName);
-
     if (!command) return;
 
     try {
