@@ -6,9 +6,9 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("schedulepost")
         .setDescription("Schedule a message to be sent to a nominated channel at a specific time.")
-        .addStringOption(option => option.setName('messageid').setDescription("Enter ID of the message you want to be scheduled"))
-        .addChannelOption(option => option.setName('channelid').setDescription("Select the channel to send the message"))
-        .addStringOption(option => option.setName('datetime').setDescription("Enter the time as YYYY-MM-DD HH:MM")),
+        .addStringOption(option => option.setName('messageid').setDescription("Enter ID of the message you want to be scheduled").setRequired(true))
+        .addChannelOption(option => option.setName('channelid').setDescription("Select the channel to send the message").setRequired(true))
+        .addStringOption(option => option.setName('datetime').setDescription("Enter the time as YYYY-MM-DD HH:MM").setRequired(true)),
     async execute(interaction) {
         const message_id = interaction.options.getString('messageid');
         const channel_obj = interaction.options.getChannel('channelid');
