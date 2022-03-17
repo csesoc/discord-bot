@@ -16,12 +16,38 @@ module.exports = {
         let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
         const datetime = interaction.options.getString('datetime');
         if (!re.test(datetime)) {
-            await interaction.reply( { content: "One or more required fields were missing or incorrect!", ephemeral: true});
+            await interaction.reply( { content: "Please enter the date as YYYY-MM-DD HH:MM exactly", ephemeral: true});
             return;
         };
 
-        var bits = interaction.options.getString('datetime').split(/\D/);
-        const curr_channel = interaction.channelId;
+        var send_time = new Date(datetime)
+        var today = new Date();
+        now_time = new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours(), today.getMinutes(), 0);
+        time_send_in = send_time - now_time
+
+        if (time_send_in <= 0) {
+            await interaction.reply( { content: "Please enter a date in the future", ephemeral: true});
+            return;
+        }
+
+        seconds = Number(time_send_in / 1000);
+
+        var d = Math.floor(seconds / (3600*24));
+        var h = Math.floor(seconds % (3600*24) / 3600);
+        var m = Math.floor(seconds % 3600 / 60);
+        var s = Math.floor(seconds % 60);
+
+        var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
+        var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+        var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+        var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+
+        send_in = ("in " + dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
+
+        
+
+        // var bits = interaction.options.getString('datetime').split(/\D/);
+        // const curr_channel = interaction.channelId;
 
         var message = await interaction.channel.messages.fetch(message_id);
         message = message.content;
@@ -47,7 +73,6 @@ module.exports = {
             }
         });
 
-
-        await interaction.reply({ content: "Message #" + message_id + " for channel '" + channel_name + "' scheduled at " + datetime, ephemeral: false});
+        await interaction.reply({ content: "Message #" + message_id + " for channel '" + channel_name + "' scheduled at " + datetime + " which is in " + send_in, ephemeral: false});
     },
 };
