@@ -7,7 +7,7 @@ discord==1.0.1
 discord.py==1.7.2
 idna==3.1
 multidict==5.1.0
-pycparser==2.20
+pycparser==2.21
 PyNaCl==1.4.0
 python-dotenv==0.17.1
 ruamel.yaml==0.17.7
