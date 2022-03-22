@@ -139,10 +139,23 @@ module.exports = {
             // Member list in the role is cached
             let numRemoved = 0;
             role.members.each(member => {
-                member.send("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
-                    .catch(e => {console.log(e);});
-                member.kick("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
-                    .then(() => {++numRemoved;}).catch(e => {console.log(e);});
+                member.createDM()
+                .then((DMChannel) => {
+                    // Send direct message to user being kicked
+                    DMChannel
+                    .send("You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome")
+                    .then(() => {
+                        // Message sent, time to kick.
+                        member
+                        .kick("You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome")
+                        .then(() => {++numRemoved;})
+                        .catch((e) => {console.log('Failed to kick!', e);});
+                    });
+                });
+                // member.send("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
+                //     .catch(e => {console.log(e);});
+                // member.kick("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
+                //     .then(() => {++numRemoved;}).catch(e => {console.log('Kick member error: ' + e);});
             });
 
             return await interaction.reply(`Removed ${numRemoved} unverified members.`);
