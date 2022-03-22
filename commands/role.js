@@ -130,6 +130,11 @@ module.exports = {
             interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "removeunverified") {
             const role = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
+            
+            // Make sure that the "unverified" role exists
+            if (role == undefined) {
+                return await interaction.reply('No "unverified" role exists.');
+            }
 
             // Member list in the role is cached
             let numRemoved = 0;
