@@ -132,32 +132,34 @@ module.exports = {
             const role = await interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
             
             // Make sure that the "unverified" role exists
-            if (role == undefined) {
-                return await interaction.reply('No "unverified" role exists.');
+            if (role === undefined) {
+                return await interaction.reply('Error: no "unverified" role exists.');
             }
+
+            const kickMessage = 'You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome'
 
             // Member list in the role is cached
             let numRemoved = 0;
-            role.members.each(member => {
+            await role.members.each(member => {
                 member.createDM()
                 .then((DMChannel) => {
+
                     // Send direct message to user being kicked
-                    DMChannel
-                    .send("You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome")
+                    DMChannel.send(kickMessage)
                     .then(() => {
+                        
                         // Message sent, time to kick.
-                        member
-                        .kick("You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome")
-                        .then(() => {++numRemoved;})
-                        .catch((e) => {console.log('Failed to kick!', e);});
+                        member.kick(kickMessage)
+                        .then(() => {
+                            ++numRemoved;
+                            console.log('Here ' + numRemoved);
+                            //interaction.reply(`Removed ${numRemoved} unverified members.`)
+                        })
+                        .catch((e) => {console.log(e);});
                     });
                 });
-                // member.send("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
-                //     .catch(e => {console.log(e);});
-                // member.kick("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
-                //     .then(() => {++numRemoved;}).catch(e => {console.log('Kick member error: ' + e);});
             });
-
+            console.log('second here ' + numRemoved);
             return await interaction.reply(`Removed ${numRemoved} unverified members.`);
         }
     },
