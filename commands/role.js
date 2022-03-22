@@ -53,7 +53,7 @@ module.exports = {
 
             await interaction.member.roles.add(role);
 
-            await interaction.reply({ content: `✅ | Gave you the role \`${role.name}\`.`, ephemeral: true });
+            return await interaction.reply({ content: `✅ | Gave you the role \`${role.name}\`.`, ephemeral: true });
         } else if (interaction.options.getSubcommand() === "remove") {
             const role = await interaction.options.getRole("role");
 
@@ -65,7 +65,7 @@ module.exports = {
 
             await interaction.member.roles.remove(role);
 
-            await interaction.reply({ content: `✅ | Removed the role \`${role.name}\`.`, ephemeral: true });
+            return await interaction.reply({ content: `✅ | Removed the role \`${role.name}\`.`, ephemeral: true });
         }
 
         // Admin permission check
@@ -85,7 +85,7 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
 
-            await interaction.reply(`✅ | Allowed the role \`${role.name}\`.`);
+            return await interaction.reply(`✅ | Allowed the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "disallow") {
             const role = await interaction.options.getRole("role");
 
@@ -98,7 +98,7 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
 
-            await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
+            return await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "whitelist") {
             // TODO: Convert to scroller?
             const rolesPerPage = 10;
@@ -127,9 +127,9 @@ module.exports = {
         } else if (interaction.options.getSubcommand() === "count") {
             const role = await interaction.options.getRole("role");
 
-            interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
+            return await interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "removeunverified") {
-            const role = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
+            const role = await interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
             
             // Make sure that the "unverified" role exists
             if (role == undefined) {
@@ -145,7 +145,7 @@ module.exports = {
                     .then(() => {++numRemoved;}).catch(e => {console.log(e);});
             });
 
-            await interaction.reply(`Removed ${numRemoved} unverified members.`);
+            return await interaction.reply(`Removed ${numRemoved} unverified members.`);
         }
     },
 };
