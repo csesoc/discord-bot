@@ -152,15 +152,13 @@ module.exports = {
                         member.kick(kickMessage)
                         .then(() => {
                             ++numRemoved;
-                            console.log('Here ' + numRemoved);
-                            //interaction.reply(`Removed ${numRemoved} unverified members.`)
+                            console.log(numRemoved + ' people removed.');
                         })
                         .catch((e) => {console.log(e);});
                     });
                 });
             });
-            console.log('second here ' + numRemoved);
-            return await interaction.reply(`Removed ${numRemoved} unverified members.`);
+            return await interaction.reply(`Removed unverified members.`);
         }
     },
 };
