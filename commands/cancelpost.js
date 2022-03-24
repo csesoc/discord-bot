@@ -5,7 +5,7 @@ const path = require("path");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("cancelpost")
-        .setDescription("Need to cancel .")
+        .setDescription("Cancel a scheduled post.")
         .addStringOption(option => option.setName('messageid').setDescription("Enter ID of the message you want to cancel sending.").setRequired(true))
         .addChannelOption(option => option.setName('channelid').setDescription("Select the channel where the message is scheduled to send.").setRequired(true)),
     async execute(interaction) {
