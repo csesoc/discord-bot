@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { channel } = require("diagnostics_channel");
+const { MessageEmbed, Permissions } = require("discord.js");
 const path = require("path");
 
 module.exports = {
@@ -10,7 +11,23 @@ module.exports = {
         .addChannelOption(option => option.setName('channelid').setDescription("Select the channel to send the message").setRequired(true))
         .addStringOption(option => option.setName('datetime').setDescription("Enter the time as YYYY-MM-DD HH:MM").setRequired(true)),
     async execute(interaction) {
+
+        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            return await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
+        }
+
         const message_id = interaction.options.getString('messageid');
+
+        var message = await interaction.channel.messages.fetch(message_id);
+
+        var num_attachments = message.attachments.size
+        if (num_attachments > 0) {
+            await interaction.reply({ content: "Cannot have attachments (yet) :(", ephemeral: true});
+            return;
+        }
+
+        message = message.content;
+
         const channel_obj = interaction.options.getChannel('channelid');
         const channel_name = channel_obj.name
         let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
@@ -46,11 +63,10 @@ module.exports = {
 
         
 
-        // var bits = interaction.options.getString('datetime').split(/\D/);
-        // const curr_channel = interaction.channelId;
-
-        var message = await interaction.channel.messages.fetch(message_id);
-        message = message.content;
+        const preview = new MessageEmbed()
+        .setColor('#C492B1')
+        .setTitle('Message Preview')
+        .setDescription(message.length === 0 ? ' ' : message)
 
         var data = [message, channel_obj.id, datetime, message_id];
 
@@ -73,6 +89,10 @@ module.exports = {
             }
         });
 
-        await interaction.reply({ content: "Message #" + message_id + " for channel '" + channel_name + "' scheduled at " + datetime + " which is in " + send_in, ephemeral: false});
+        await interaction.reply({ 
+            content: "Message #" + message_id + " for channel '" + channel_name + "' scheduled at " + datetime + " which is in " + send_in, 
+            ephemeral: false, 
+            embeds: [preview]
+        });
     },
 };
