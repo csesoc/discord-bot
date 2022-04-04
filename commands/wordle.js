@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { wordOfTheDay, words } = require("../config/words.json");
 const fs = require("fs");
@@ -15,38 +16,19 @@ module.exports = {
         .addSubcommand(subcommand => subcommand
             .setName("guess")
             .setDescription("Guess a word.")
-            .addArgument(argument => argument
+            .addStringOption(option => option
                 .setName("word")
                 .setDescription("The word to guess.")
-                .setType("string")
-                .setRequired(true)
-            )
+                .setRequired(true),
+            ),
         ),
 
 
     async execute(interaction) {
-        if (interaction.options.length === 0) {
-            interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
-            return;
-        } else if (interaction.options.getSubcommand() === "play") {
-            // Pick a new word if not selected
-            if (this.selectedWord === "") {
-                this.selectedWord = getRandomWord();
-            }
-            this.guesses = [];
-            // Start a new game
 
-            selectedWord = wordOfTheDay;
-            guesses = [];
-            const message = interaction.message;
-            LoadGame(message, selectedWord, guesses);
-
-            // make a blank canvas 
-
-        }
 
         let selectedWord = wordOfTheDay;
-        let guesses = [];
+
 
         function getRandomWord() {
             return words[Math.floor(Math.random() * words.length)];
@@ -61,28 +43,68 @@ module.exports = {
             // letter is not in word
             else {return 3;}
         };
-        async function LoadGame(msg, selectedWord, guesses) {
-            // make a blank canvas 
-            let canvas = Canvas.createCanvas(330, 397);
+        async function LoadGame(msg, guesses, answer) {
+            // make a blank canvas
+            const canvas = Canvas.createCanvas(330, 397);
             const context = canvas.getContext("2d");
 
-            const background = await Canvas.loadImage("../config/wordle_images/grey_box.png");
+            const background = await Canvas.loadImage("config/wordle_images/grey_box.png");
             context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
             context.font = "42px Clear Sans, Helvetica Neue, Arial, sans-serif";
             context.textAlign = "center";
             context.fillStyle = "#d7dadc";
 
-            const absentSquare = await Canvas.loadImage("../config/wordle_images/grey_box.png");
-            const emptySquare = await Canvas.loadImage("../config/wordle_images/clear_box.png");
-            const greenSquare = await Canvas.loadImage("../config/wordle_images/green_box.png");
-            const yellowSquare = await Canvas.loadImage("../config/wordle_images/yellow_box.png");
+            const absentSquare = await Canvas.loadImage("config/wordle_images/grey_box.png");
+            const emptySquare = await Canvas.loadImage("config/wordle_images/clear_box.png");
+            const greenSquare = await Canvas.loadImage("config/wordle_images/green_box.png");
+            const yellowSquare = await Canvas.loadImage("config/wordle_images/yellow_box.png");
+            const square_arr = [absentSquare, emptySquare, greenSquare, yellowSquare];
             let square = absentSquare;
 
-            let squareSize = 62;
+            const squareSize = 62;
             let rowOffset = 0;
             let buffer = 0;
 
+            for (let j = 0; j < 6; j++) {
+                for (let i = 0; i < 5; i++) {
+                    // eslint-disable-next-line no-undef
+                    const imageNumber = GetImage(guesses[j], answer, i);
+                    square = square_arr[imageNumber];
+
+                    context.drawImage(square, i * squareSize + buffer, rowOffset, squareSize, squareSize);
+                    if (guesses[j] != undefined) {
+                        context.fillText(guesses[j].charAt(i), (squareSize / 2) + buffer + squareSize * i, rowOffset + 42);
+                    }
+
+                    buffer += 5;
+                }
+                buffer = 0;
+                rowOffset += squareSize + 5;
+            }
+            msg.reply({ files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
         }
+
+
+        if (interaction.options.length === 0) {
+            interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
+            return;
+        } else if (interaction.options.getSubcommand() === "play") {
+            // Pick a new word if not selected
+            if (this.selectedWord === "") {
+                this.selectedWord = getRandomWord();
+            }
+            this.guesses = [];
+            // Start a new game
+
+            selectedWord = wordOfTheDay;
+
+            const message = interaction.message;
+            LoadGame(message, "", "");
+
+            // make a blank canvas
+
+        }
+
     },
 };
