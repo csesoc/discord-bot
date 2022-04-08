@@ -7,11 +7,7 @@ module.exports = {
     once: false,
     async execute(message) {
         // creates a new text file
-        await fsLibrary.writeFile('message_log.txt', "Messages logs from CSE discord channel", (error) => {
-        
-        // in case of error throw err exception
-        if (error) throw err
-        });
+        fsLibrary.appendFileSync('./message_log.txt', "Messages logs from CSE discord channel\n");
 
         // ignore messages sent from bot
         if (message.author.bot) {return;}
@@ -19,6 +15,7 @@ module.exports = {
         let log = `${Date.now()} - ${message.author.id} sent "${message.content}" in "${message.channelId}"`
             
         // add new logged message into message_log file
-        await fsLibrary.appendFile('message_log.txt', log) 
+        fsLibrary.appendFileSync('./message_log.txt', log+"\n");
+        console.log("gets here");
     }
 };
