@@ -1,8 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
-const { data } = require("../config/standup.json");
+const { MessageEmbed,Permissions } = require("discord.js");
+var { data } = require("../config/standup.json");
 const fs = require("fs");
-const { notDeepEqual } = require("assert");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,18 +11,7 @@ module.exports = {
             subcommand
                 .setName("recordstandup")
                 .setDescription("Records a standup")
-                .addStringOption(option =>
-                    option.setName('teamname')
-                        .setDescription('Choose the team name')
-                        .setRequired(true)
-                        .addChoice('Notangles','Notangles')
-                        .addChoice('Circles','Circles')
-                        .addChoice('CSElectives','CSElectives')
-                        .addChoice('Discord Bot', 'Discord Bot')
-                        .addChoice('FreeRooms', 'FreeRooms')
-                        .addChoice('Jobsboard', 'Jobsboard')
-                        .addChoice('Website',  'Website')
-                        )
+                .addMentionableOption(option => option.setName("team").setDescription("Mention the Team role").setRequired(true))
                 .addStringOption(option => option.setName("whatyoudid").setDescription("What you did?").setRequired(true))
                 .addStringOption(option => option.setName("whatyouwilldo").setDescription("What you will do").setRequired(true))
                 .addStringOption(option => option.setName("anyproblems").setDescription("Just say none with nothing").setRequired(true))
@@ -50,23 +38,25 @@ module.exports = {
     async execute(interaction) {
         // Starting a vote
         if (interaction.options.getSubcommand() === 'recordstandup') {
-            
+            var teamRole = await interaction.options.getMentionable("team");
             // Getting the required string and data from the input
-            var teamName = await interaction.options.getString("teamname");
+            var teamName = teamRole.name;
             var voteauthorid = interaction.user.id;
             var voteauthorname = interaction.member.nickname;
-            
+            if(voteauthorname == null) {
+                vote = interaction.user.username;
+            }
             var whatyoudid = await interaction.options.getString("whatyoudid");
             var whatyouwilldo = await interaction.options.getString("whatyouwilldo");
             var anyproblems = await interaction.options.getString("anyproblems");
             
-            console.log('Team Name: ' + teamName);
-            console.log('Vote Author ID: ' + voteauthorid);
-            console.log('Vote Author Name: ' + voteauthorname);
+            //console.log('Team Name: ' + teamName);
+            //console.log('Vote Author ID: ' + voteauthorid);
+            //console.log('Vote Author Name: ' + voteauthorname);
 
 
             await interaction.reply("Done! Standup recorded!");
-            console.log(data);
+            //console.log(data);
 
             // Writing to the data file
             if(teamName in data) {
@@ -87,7 +77,7 @@ module.exports = {
                     "anyproblems": anyproblems
                 }];
             }
-            console.log(data);
+            //console.log(data);
 
             // data.unshift({ 'string': votestring, 'authorid': voteauthorid, 'channelid': channelid, 'messageid': messageid })
             fs.writeFileSync("./config/standup.json", JSON.stringify({ data: data }, null, 4));
@@ -115,6 +105,7 @@ module.exports = {
 
         }
         else if (interaction.options.getSubcommand() === 'resetstandups') {
+            data = {};
             fs.writeFileSync("./config/standup.json", JSON.stringify({ data: {} }, null, 4));
             await interaction.reply("Standups reset!");
         }
@@ -156,7 +147,12 @@ module.exports = {
                     
                 difference.forEach(element => {
                     var member = interaction.guild.members.cache.get(element);
-                    notDoneNames += member.nickname + '\n';
+                    if(member.nickname != null){
+                        notDoneNames += member.nickname + '\n';
+                    }
+                    else {
+                        notDoneNames += member.user.username + '\n';
+                    }
                     //console.log(notDoneNames);
                    })
             
