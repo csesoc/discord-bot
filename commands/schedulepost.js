@@ -9,7 +9,8 @@ module.exports = {
         .setDescription("Schedule a message to be sent to a nominated channel at a specific time.")
         .addStringOption(option => option.setName('messageid').setDescription("Enter ID of the message you want to be scheduled").setRequired(true))
         .addChannelOption(option => option.setName('channelid').setDescription("Select the channel to send the message").setRequired(true))
-        .addStringOption(option => option.setName('datetime').setDescription("Enter the time as YYYY-MM-DD HH:MM").setRequired(true)),
+        .addStringOption(option => option.setName('datetime').setDescription("Enter the time as YYYY-MM-DD HH:MM").setRequired(true))
+        .addStringOption(option => option.setName('reminder').setDescription("Optional: Send a reminder to users who react with ⏰ at YYYY-MM-DD HH:MM")),
     async execute(interaction) {
 
         if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
@@ -18,24 +19,32 @@ module.exports = {
 
         const message_id = interaction.options.getString('messageid');
 
-        var message = await interaction.channel.messages.fetch(message_id);
-
-        var num_attachments = message.attachments.size
-        if (num_attachments > 0) {
-            await interaction.reply({ content: "Cannot have attachments (yet) :(", ephemeral: true});
-            return;
+        try {
+            var message = await interaction.channel.messages.fetch(message_id);
+        } catch (err) {
+            console.log(err)
+            return await interaction.reply({ content: "Invalid message ID", ephemeral: true });
         }
-
-        message = message.content;
 
         const channel_obj = interaction.options.getChannel('channelid');
         const channel_name = channel_obj.name
         let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
         const datetime = interaction.options.getString('datetime');
         if (!re.test(datetime)) {
-            await interaction.reply( { content: "Please enter the date as YYYY-MM-DD HH:MM exactly", ephemeral: true});
+            await interaction.reply( { content: "Please enter the datetime as YYYY-MM-DD HH:MM exactly", ephemeral: true});
             return;
         };
+
+        const user_reminder = interaction.options.getString('reminder')
+        if (user_reminder && !re.test(user_reminder)) {
+            await interaction.reply( { content: "Please enter the reminder as YYYY-MM-DD HH:MM exactly", ephemeral: true});
+            return;
+        };
+
+        if (user_reminder && user_reminder <= datetime) {
+            await interaction.reply( { content: "Please enter a reminder date that is after the datetime of the scheduled post", ephemeral: true});
+            return;
+        }
 
         var send_time = new Date(datetime)
         var today = new Date();
@@ -43,7 +52,12 @@ module.exports = {
         time_send_in = send_time - now_time
 
         if (time_send_in <= 0) {
-            await interaction.reply( { content: "Please enter a date in the future", ephemeral: true});
+            await interaction.reply( { content: "Please enter a datetime in the future for 'datetime'", ephemeral: true});
+            return;
+        }
+
+        if (user_reminder && new Date(user_reminder) - now_time <= 0) {
+            await interaction.reply( { content: "Please enter a datetime in the future for 'reminder'", ephemeral: true});
             return;
         }
 
@@ -61,16 +75,15 @@ module.exports = {
 
         send_in = ("in " + dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
 
+        var fs = require('fs');
         
-
         const preview = new MessageEmbed()
         .setColor('#C492B1')
         .setTitle('Message Preview')
-        .setDescription(message.length === 0 ? ' ' : message)
-
-        var data = [message, channel_obj.id, datetime, message_id];
-
-        var fs = require('fs');
+        .setDescription(message.content.length === 0 ? ' ' : message.content + (user_reminder ? "\n \n react ⏰ to be notified about this event!": ""))
+        
+        var data = [message_id, channel_obj.id, datetime, user_reminder];
+        
         fs.readFile(path.join(__dirname, '../data/schedulemessage.json'), (err, jsonString) => {
             if (err) {
                 console.log("Error reading file from disk:", err)
@@ -85,12 +98,19 @@ module.exports = {
                         console.log(err);
                     }
                 })
-                
             }
         });
 
+        var reply_msg = `Message # ${message_id} for channel '${channel_name}' schedule at ${datetime} which is in ${send_in}.`
+        var num_msg_attachments = message.attachments.size
+        if (num_msg_attachments) {
+            reply_msg += ` This message has ${num_msg_attachments} attachment${num_msg_attachments === 1 ? "": "s"}.`
+        }
+        if (user_reminder) {
+            reply_msg += ` Reminders will be sent to users who react '⏰' at ${user_reminder}.`
+        }
         await interaction.reply({ 
-            content: "Message #" + message_id + " for channel '" + channel_name + "' scheduled at " + datetime + " which is in " + send_in, 
+            content: reply_msg,
             ephemeral: false, 
             embeds: [preview]
         });
