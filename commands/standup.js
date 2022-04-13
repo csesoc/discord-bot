@@ -44,7 +44,7 @@ module.exports = {
             var voteauthorid = interaction.user.id;
             var voteauthorname = interaction.member.nickname;
             if(voteauthorname == null) {
-                vote = interaction.user.username;
+                voteauthorname = interaction.user.username;
             }
             var whatyoudid = await interaction.options.getString("whatyoudid");
             var whatyouwilldo = await interaction.options.getString("whatyouwilldo");
