@@ -48,14 +48,14 @@ module.exports = {
             const canvas = Canvas.createCanvas(330, 397);
             const context = canvas.getContext("2d");
 
-            const background = await Canvas.loadImage("config/wordle_images/grey_box.png");
+            const background = await Canvas.loadImage("config/wordle_images/blank_box.png");
             context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
             context.font = "42px Clear Sans, Helvetica Neue, Arial, sans-serif";
             context.textAlign = "center";
             context.fillStyle = "#d7dadc";
 
-            const absentSquare = await Canvas.loadImage("config/wordle_images/grey_box.png");
+            const absentSquare = await Canvas.loadImage("config/wordle_images/empty_box.png");
             const emptySquare = await Canvas.loadImage("config/wordle_images/clear_box.png");
             const greenSquare = await Canvas.loadImage("config/wordle_images/green_box.png");
             const yellowSquare = await Canvas.loadImage("config/wordle_images/yellow_box.png");
@@ -99,8 +99,9 @@ module.exports = {
 
             selectedWord = wordOfTheDay;
 
-            const message = interaction.message;
-            LoadGame(message, "", "");
+
+            console.log(interaction);
+            LoadGame(interaction, "", "");
 
             // make a blank canvas
 
