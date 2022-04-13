@@ -53,7 +53,7 @@
         {
             "name" : "Code execution",
             "description" : "Run some code in discord!",
-            "usage" : "/run <language> ```\n<code>\n``` (Note: put code in newlines)"
+            "usage" : "/run <language> ```\n<code>\n``` (Note: put code in backticks(```) and newlines)"
         }
     ]
 }
