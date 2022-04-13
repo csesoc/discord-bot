@@ -16,13 +16,13 @@ module.exports = {
             .setColor(0x3A76F8)
             .setAuthor("CSESoc Bot", "https://i.imgur.com/EE3Q40V.png");
         for (let i = 0; i < commands.length; i++) {
-            const name = i + 1 + ". " +commands[i].name;
+            const name = i + 1 + ". " + commands[i].name;
             const description = commands[i].description;
             const usage = "\nUsage: " + commands[i].usage;
             // console.log(name + " " + description);
             helpEmbed.addField(name, description + usage, false);
         }
-        interaction.channel.send({ embeds: [helpEmbed] });
+        await interaction.reply({ embeds: [helpEmbed] });
     },
 };
 
