@@ -1,0 +1,59 @@
+{
+    "commands" : [
+        {
+            "name" : "ping",
+            "description" : "Replies with a pong, why are you reading this?",
+            "usage" : "/ping"
+        },
+        {
+            "name" : "Schedule post [ADMIN ONLY]",
+            "description" : "Schedule a post for the future, (no 3am pings please)",
+            "usage" : "/schedulepost <messageid> <channelid> <YYYY-MM-DD HH:MM>"
+        },
+        {
+            "name" : "Cancel post [ADMIN ONLY]",
+            "description" : "Cancel a scheduled post",
+            "usage" : "/cancelpost <Check slash command for all options>"
+        },
+        {
+            "name" : "Role",
+            "description" : "Manage server roles",
+            "usage" : "/role <Check slash command for all options>"
+        },
+        {
+            "name" : "handbook",
+            "description" : "Displays information from the UNSW Handbook.",
+            "usage" : "/handbook <coursename>"
+        },
+        {
+            "name" : "createvc",
+            "description" : "Create a temporary voice channel",
+            "usage" : "/createvc"
+        },
+        {
+            "name" : "cb",
+            "description" : "Checkout the carrotboard leaderboard and other carroty stuff",
+            "usage" : "/cb <Check slash command for all options>"
+        },
+        {
+            "name" : "cbadmin [ADMIN ONLY]",
+            "description" : "Adjust carrot board settings",
+            "usage" : "/cbadmin <Check slash command for all options>"
+        },
+        {
+            "name" : "code",
+            "description" : "Manage your redeemable code",
+            "usage" : "/code <Check slash command for all options>"
+        },
+        {
+            "name" : "Anonymous post",
+            "description" : "Make a post anonymously, the bot will send it on your behalf.",
+            "usage" : "/anonymouspost <message>"
+        },
+        {
+            "name" : "Code execution",
+            "description" : "Run some code in discord!",
+            "usage" : "/run <language> ```\n<code>\n``` (Note: put code in newlines)"
+        }
+    ]
+}
