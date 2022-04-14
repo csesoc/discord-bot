@@ -45,4 +45,8 @@ client.on("interactionCreate", async interaction => {
     }
 });
 
+client.on('shardError', error => {
+	console.error('A websocket connection encountered an error:', error);
+});
+
 client.login(process.env.DISCORD_TOKEN);
