@@ -19,7 +19,7 @@ const commandFAQGet = new SlashCommandSubcommandBuilder()
 const commandFAQGetAll = new SlashCommandSubcommandBuilder()
     .setName("getall")
     .setDescription("Get *all* information related to a particular keyword")
-    .addStringOption(option => option.setName("keyword").setDescription("Keyword for the question.").setRequired(true));
+    .addStringOption(option => option.setName("tag").setDescription("Tag to be searched for.").setRequired(true));
 
 // the base command
 const baseCommand = new SlashCommandBuilder()
@@ -87,15 +87,16 @@ async function handleFAQGet(interaction, faqStorage) {
  async function handleFAQGetAll(interaction, faqStorage) {
      // @TODO: create "tags" system to support fectching multiple FAQs
     // get the keyword
-    const keyword = String(interaction.options.get("keyword").value).toLowerCase();
+    const tag = String(interaction.options.get("tag").value).toLowerCase();
     
     // get db entry
-    const rows = await faqStorage.get_faq(keyword);
+    const rows = await faqStorage.get_tagged_faqs(tag);
     if (rows.length > 0) {
+        let answer = '';
         for (let row of rows) {
-            const answer = row["answer"];
-            await interaction.reply(`FAQ: ${keyword}\n${answer}`);
+            answer += `FAQ: ${tag}\n${row.answer}\n\n`;
         }
+        await interaction.reply(answer);
     } else {
         await interaction.reply({ content: "A FAQ for this keyword does not exist!", ephemeral: true });
     }
@@ -106,7 +107,7 @@ async function handleFAQGet(interaction, faqStorage) {
  * @param {DBFaq} faqStorage
  */
  async function handleFAQHelp(interaction, faqStorage) {
-    // @TODO: expand this function 
+    // @TODO: expand this function
     let description = "Welcome to the help command! You can search for a specific faq"
     description += "q by keyword using 'faq get keyword', or for everything on a given ";
     description += "topic by using faq getall keyword";

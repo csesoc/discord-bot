@@ -18,7 +18,8 @@ const commandFAQACreate = new SlashCommandSubcommandBuilder()
     .setName("create")
     .setDescription("[ADMIN] Create a FAQ entry.")
     .addStringOption(option => option.setName("keyword").setDescription("The identifying word.").setRequired(true))
-    .addStringOption(option => option.setName("answer").setDescription("The answer to the question.").setRequired(true));
+    .addStringOption(option => option.setName("answer").setDescription("The answer to the question.").setRequired(true))
+    .addStringOption(option => option.setName("tags").setDescription("The answer to the question.").setRequired(false));
 
 // the base command
 const baseCommand = new SlashCommandBuilder()
@@ -47,12 +48,14 @@ async function handleInteraction(interaction) {
     const subcommand = interaction.options.getSubcommand(false);
     let keyword = null;
     let answer = null;
+    let tags = null;
     let success = false;
     switch (subcommand) {
         case "create":
             keyword = String(interaction.options.get("keyword").value).toLowerCase();
             answer = String(interaction.options.get("answer").value);
-            success = await faqStorage.new_faq(keyword, answer);
+            tags = String(interaction.options.get("tags").value);
+            success = await faqStorage.new_faq(keyword, answer, tags);
             if (success) {
                 await interaction.reply({ content: `Successfully created FAQ entry for '${keyword}': ${answer}`, ephemeral: true });
             } else {
