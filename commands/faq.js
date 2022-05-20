@@ -1,7 +1,8 @@
 //@ts-check
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { CommandInteraction } = require("discord.js");
+const { CommandInteraction, MessageEmbed } = require("discord.js");
 const { DBFaq } = require("../lib/database/faq");
+const { DiscordScroll } = require("../lib/discordscroll/scroller");
 
 //////////////////////////////////////////////
 ////////// SETTING UP THE COMMANDS ///////////
@@ -92,11 +93,38 @@ async function handleFAQGet(interaction, faqStorage) {
     // get db entry
     const rows = await faqStorage.get_tagged_faqs(tag);
     if (rows.length > 0) {
-        let answer = '';
+        
+
+        
+       
+        // idk if this is valid syntax?
+        let answers = [];
+        let currentPage = -1;
         for (let row of rows) {
-            answer += `FAQ: ${tag}\n${row.answer}\n\n`;
+            if (currentPage % 2 == 0 || currentPage == -1) {
+                const newPage = new MessageEmbed({
+                    title: `FAQS for the tag: ${tag}`,
+                    color: 0xf1c40f,
+                    timestamp: new Date().getTime()
+                });
+                answers.push(newPage);
+
+                currentPage++; 
+            }
+
+            answers[currentPage].addFields(
+                [
+                    {
+                        name: row.keyword,
+                        value: row.answer,
+                        inline: true
+                    }
+                ]
+            );
+            // currentPage += 1;
         }
-        await interaction.reply(answer);
+        const scroller = new DiscordScroll(answers);
+        await scroller.send(interaction);
     } else {
         await interaction.reply({ content: "A FAQ for this keyword does not exist!", ephemeral: true });
     }

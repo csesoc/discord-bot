@@ -54,6 +54,9 @@ async function handleInteraction(interaction) {
         case "create":
             keyword = String(interaction.options.get("keyword").value).toLowerCase();
             answer = String(interaction.options.get("answer").value);
+            if (answer.length >= 1024) {
+                await interaction.reply({ content: "The answer must be < 1024 characters...", ephemeral: true});
+            }
             tags = String(interaction.options.get("tags").value);
             success = await faqStorage.new_faq(keyword, answer, tags);
             if (success) {
