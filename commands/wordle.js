@@ -34,14 +34,14 @@ module.exports = {
             return words[Math.floor(Math.random() * words.length)];
         }
         const GetImage = (guessLetter, answerLetter, i) => {
-            // letter is in word at same spot
+            // letter is undefined
             if (guessLetter === undefined) {return 0;}
             // letter is in word at same spot
-            else if (guessLetter.charAt(i) == answerLetter.charAt(i)) {return 1;}
+            else if (guessLetter.charAt(i) == answerLetter.charAt(i)) {return 2;}
             // letter is in word at different spot
-            else if (answerLetter.includes(guessLetter.charAt(i))) {return 2;}
+            else if (answerLetter.includes(guessLetter.charAt(i))) {return 3;}
             // letter is not in word
-            else {return 3;}
+            else {return 1;}
         };
         async function LoadGame(msg, guesses, answer) {
             // make a blank canvas
@@ -56,11 +56,11 @@ module.exports = {
             context.fillStyle = "#d7dadc";
 
             const absentSquare = await Canvas.loadImage("config/wordle_images/empty_box.png");
-            const emptySquare = await Canvas.loadImage("config/wordle_images/clear_box.png");
+            const emptySquare = await Canvas.loadImage("config/wordle_images/grey_box.png");
             const greenSquare = await Canvas.loadImage("config/wordle_images/green_box.png");
             const yellowSquare = await Canvas.loadImage("config/wordle_images/yellow_box.png");
             const square_arr = [absentSquare, emptySquare, greenSquare, yellowSquare];
-            let square = absentSquare;
+            let square = emptySquare;
 
             const squareSize = 62;
             let rowOffset = 0;
@@ -85,26 +85,39 @@ module.exports = {
             msg.reply({ files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
         }
 
-
         if (interaction.options.length === 0) {
             interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
             return;
         } else if (interaction.options.getSubcommand() === "play") {
             // Pick a new word if not selected
-            if (this.selectedWord === "") {
+            if (this.selectedWord === "" | this.selectedWord === undefined) {
                 this.selectedWord = getRandomWord();
             }
             this.guesses = [];
             // Start a new game
-
+            console.log("Selected word: " + this.selectedWord);
             selectedWord = wordOfTheDay;
 
 
-            console.log(interaction);
+            // console.log(interaction);
             LoadGame(interaction, "", "");
 
-            // make a blank canvas
-
+        } else if (interaction.options.getSubcommand() === "guess") {
+            // Guess a word
+            console.log("Guess: " + interaction.options.getString("word"));
+            if (interaction.options.getString("word") === undefined) {
+                interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
+                return;
+            } else {
+                const guess = interaction.options.getString("word").toLowerCase();
+                if (guess.length !== 5) {
+                    interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
+                    return;
+                } else {
+                    this.guesses.push(guess);
+                    LoadGame(interaction, this.guesses, this.selectedWord);
+                }
+            }
         }
 
     },
