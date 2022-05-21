@@ -22,13 +22,18 @@ const commandFAQGetAll = new SlashCommandSubcommandBuilder()
     .setDescription("Get *all* information related to a particular keyword")
     .addStringOption(option => option.setName("tag").setDescription("Tag to be searched for.").setRequired(true));
 
+const commandFAQGetKeywords = new SlashCommandSubcommandBuilder()
+    .setName("keywords")
+    .setDescription("Get all keywords that exist for current FAQs");
+
 // the base command
 const baseCommand = new SlashCommandBuilder()
     .setName("faq")
     .setDescription("Master FAQ command")
     .addSubcommand(commandFAQHelp)
     .addSubcommand(commandFAQGet)
-    .addSubcommand(commandFAQGetAll);
+    .addSubcommand(commandFAQGetAll)
+    .addSubcommand(commandFAQGetKeywords);
     
 
 //////////////////////////////////////////////
@@ -52,6 +57,9 @@ async function handleInteraction(interaction) {
             break;
         case "help":
             await handleFAQHelp(interaction, faqStorage);
+            break;
+        case "keywords":
+            await handleFAQKeywords(interaction, faqStorage);
             break;
         default:
             await interaction.reply("Internal Error AHHHHHHH! CONTACT ME PLEASE!");
@@ -94,9 +102,6 @@ async function handleFAQGet(interaction, faqStorage) {
     const rows = await faqStorage.get_tagged_faqs(tag);
     if (rows.length > 0) {
         
-
-        
-       
         // idk if this is valid syntax?
         let answers = [];
         let currentPage = -1;
@@ -138,9 +143,23 @@ async function handleFAQGet(interaction, faqStorage) {
     // @TODO: expand this function
     let description = "Welcome to the help command! You can search for a specific faq"
     description += "q by keyword using 'faq get keyword', or for everything on a given ";
-    description += "topic by using faq getall keyword";
+    description += "topic by using faq getall keyword. ";
 
     await interaction.reply(description);
+}
+
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {DBFaq} faqStorage
+ */
+ async function handleFAQKeywords(interaction, faqStorage) {
+    // get db entry
+    const keywords = await faqStorage.get_keywords();
+    if (keywords) {
+        await interaction.reply(`Current list of keyword is:\n${keywords}`);
+    } else {
+        await interaction.reply({ content: "No keywords currently in database!", ephemeral: true });
+    }
 }
 
 module.exports = {
