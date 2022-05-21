@@ -58,6 +58,14 @@ async function handleInteraction(interaction) {
                 await interaction.reply({ content: "The answer must be < 1024 characters...", ephemeral: true});
             }
             tags = String(interaction.options.get("tags").value);
+            // validate "tags" string 
+            tags = tags.trim();
+            const tagRegex = /^([a-zA-Z],)*[a-zA-Z]+$/;
+            if (! tagRegex.test(tags)) {
+                await interaction.reply({content: "ERROR: tags must be comma-separated alphabetic strings", ephemeral: true});
+                break;
+            }
+
             success = await faqStorage.new_faq(keyword, answer, tags);
             if (success) {
                 await interaction.reply({ content: `Successfully created FAQ entry for '${keyword}': ${answer}`, ephemeral: true });
