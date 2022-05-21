@@ -26,6 +26,10 @@ const commandFAQGetKeywords = new SlashCommandSubcommandBuilder()
     .setName("keywords")
     .setDescription("Get all keywords that exist for current FAQs");
 
+const commandFAQGetTags = new SlashCommandSubcommandBuilder()
+    .setName("tags")
+    .setDescription("Get all tags that exist for current FAQs");
+
 // the base command
 const baseCommand = new SlashCommandBuilder()
     .setName("faq")
@@ -33,7 +37,8 @@ const baseCommand = new SlashCommandBuilder()
     .addSubcommand(commandFAQHelp)
     .addSubcommand(commandFAQGet)
     .addSubcommand(commandFAQGetAll)
-    .addSubcommand(commandFAQGetKeywords);
+    .addSubcommand(commandFAQGetKeywords)
+    .addSubcommand(commandFAQGetTags);
     
 
 //////////////////////////////////////////////
@@ -60,6 +65,9 @@ async function handleInteraction(interaction) {
             break;
         case "keywords":
             await handleFAQKeywords(interaction, faqStorage);
+            break;
+        case "tags":
+            await handleFAQTags(interaction, faqStorage);
             break;
         default:
             await interaction.reply("Internal Error AHHHHHHH! CONTACT ME PLEASE!");
@@ -137,8 +145,10 @@ async function handleFAQGet(interaction, faqStorage) {
  async function handleFAQHelp(interaction, faqStorage) {
     // @TODO: expand this function
     let description = "Welcome to the help command! You can search for a specific faq"
-    description += "q by keyword using 'faq get keyword', or for everything on a given ";
-    description += "topic by using faq getall keyword. ";
+    description += "q by keyword using 'faq get [keyword]', or for everything on a given ";
+    description += "topic by using 'faq getall [tag]'. ";
+    description += "Use 'faq keywords' to get a list of all keywords, or "
+    description += "Use 'faq tags' to get a list of all tags."
 
     await interaction.reply(description);
 }
@@ -154,6 +164,20 @@ async function handleFAQGet(interaction, faqStorage) {
         await interaction.reply(`Current list of keyword is:\n${keywords}`);
     } else {
         await interaction.reply({ content: "No keywords currently in database!", ephemeral: true });
+    }
+}
+
+/** 
+ * @param {CommandInteraction} interaction
+ * @param {DBFaq} faqStorage
+ */
+ async function handleFAQTags(interaction, faqStorage) {
+    // get db entry
+    const tags = await faqStorage.get_tags();
+    if (tags) {
+        await interaction.reply(`Current list of tags is:\n${tags}`);
+    } else {
+        await interaction.reply({ content: "No tags currently in database!", ephemeral: true });
     }
 }
 
