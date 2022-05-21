@@ -101,21 +101,15 @@ async function handleFAQGet(interaction, faqStorage) {
     // get db entry
     const rows = await faqStorage.get_tagged_faqs(tag);
     if (rows.length > 0) {
-        
-        // idk if this is valid syntax?
         let answers = [];
-        let currentPage = -1;
+        let currentPage = 0;
         for (let row of rows) {
-            if (currentPage % 2 == 0 || currentPage == -1) {
-                const newPage = new MessageEmbed({
-                    title: `FAQS for the tag: ${tag}`,
-                    color: 0xf1c40f,
-                    timestamp: new Date().getTime()
-                });
-                answers.push(newPage);
-
-                currentPage++; 
-            }
+            const newPage = new MessageEmbed({
+                title: `FAQS for the tag: ${tag}`,
+                color: 0xf1c40f,
+                timestamp: new Date().getTime()
+            });
+            answers.push(newPage);
 
             answers[currentPage].addFields(
                 [
@@ -126,7 +120,8 @@ async function handleFAQGet(interaction, faqStorage) {
                     }
                 ]
             );
-            // currentPage += 1;
+
+            currentPage++; 
         }
         const scroller = new DiscordScroll(answers);
         await scroller.send(interaction);

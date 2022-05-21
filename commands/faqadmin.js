@@ -59,12 +59,15 @@ async function handleInteraction(interaction) {
             }
             tags = String(interaction.options.get("tags").value);
             // validate "tags" string 
-            tags = tags.trim();
-            const tagRegex = /^([a-zA-Z],)*[a-zA-Z]+$/;
-            if (! tagRegex.test(tags)) {
-                await interaction.reply({content: "ERROR: tags must be comma-separated alphabetic strings", ephemeral: true});
-                break;
+            if (tags) {
+                tags = tags.trim();
+                const tagRegex = /^([a-zA-Z]+,)*[a-zA-Z]+$/;
+                if (! tagRegex.test(tags)) {
+                    await interaction.reply({content: "ERROR: tags must be comma-separated alphabetic strings", ephemeral: true});
+                    break;
+                }
             }
+            
 
             success = await faqStorage.new_faq(keyword, answer, tags);
             if (success) {
