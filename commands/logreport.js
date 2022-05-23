@@ -40,8 +40,8 @@ module.exports = {
         }
 
         var today = new Date();
-        today.setHours(0,0,0,0);
-        today.setDate(today.getDate() + 1);
+        today.setUTCHours(0,0,0,0);
+        //today.setDate(today.getDate() + 1);
         var tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -52,12 +52,11 @@ module.exports = {
             start = today.toISOString();
             end = tomorrow.toISOString();
         } else if (interaction.options.getSubcommand() === 'timeperiod') {
-            console.log("timeperiod log here");
 
             let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
             start = interaction.options.getString('start-datetime');
             end = interaction.options.getString('end-datetime');
-            console.log(re.test(start), start);
+            //console.log(re.test(start), start);
             if (!re.test(start)) {
                 await interaction.reply( { content: "Please enter the start-datetime as YYYY-MM-DD HH:MM exactly", ephemeral: true});
                 return;
@@ -74,8 +73,34 @@ module.exports = {
 
 
         result.then(function(logs) {
+            
+            for(let i = 0; i < logs.length; i++){
+                logs[i]['username'] = logs[i]['username'].trim();
+                logs[i]['message'] = logs[i]['message'].trim();
+                logs[i]['original_message'] = logs[i]['original_message'].trim();
+            }
+
             //console.log(logs);
 
+            const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+            const csvWriter = createCsvWriter({
+            path: './data/log_report.csv',
+            header: [
+                {id: 'message_id', title: 'Message_ID'},
+                {id: 'user_id', title: 'User_ID'},
+                {id: 'username', title: 'Username'},
+                {id: 'message', title: 'Message'},
+                {id: 'original_message', title: 'Original_Message'},
+                {id: 'deleted', title: 'Deleted'},
+                {id: 'message_datetime', title: 'Message_Sent'},
+                {id: 'channel_id', title: 'Channel_ID'},
+            ]
+            });
+
+            csvWriter
+                .writeRecords(logs)
+                .then(()=> console.log('The Log CSV file was written successfully'));
+            /*
             let writer = fs.createWriteStream("./data/log_report.txt");
 
             for(let i = 0; i < logs.length; i++){
@@ -93,9 +118,11 @@ module.exports = {
                 
                 writer.write(log_line+"\n");
             }
+            */
         });
 
-        const logP = path.join(__dirname, '../data/log_report.txt');
+        const logP = path.join(__dirname, '../data/log_report.csv');
+
         
         var transport = nodemailer.createTransport({
             host: "smtp.mailtrap.io",
@@ -114,7 +141,7 @@ module.exports = {
             text: "This is the requested logs",
             attachments: [
                 {
-                    filename: 'log.txt',
+                    filename: 'log.csv',
                     path: logP
                 }
             ]
