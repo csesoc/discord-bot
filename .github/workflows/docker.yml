@@ -1,8 +1,8 @@
-name: Docker
+name: Docker projects-bot
 on:
   push:
     branches:
-      - "js-port"
+      - "projects-bot"
 
 jobs:
   build:
@@ -34,6 +34,6 @@ jobs:
           platforms: linux/amd64
           file: Dockerfile
           tags: |
-            ghcr.io/csesoc/discord-bot:${{ github.sha }}
-            ghcr.io/csesoc/discord-bot:latest
+            ghcr.io/csesoc/projects-discord-bot:${{ github.sha }}
+            ghcr.io/csesoc/projects-discord-bot:latest
           labels: ${{ steps.meta.outputs.labels }}
