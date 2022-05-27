@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { wordOfTheDay, words } = require("../config/words.json");
+const { wordOfTheDay, timeChanged, words } = require("../config/words.json");
+const { players } = require("../config/wordle.json");
 const fs = require("fs");
 const Canvas = require("canvas");
 
@@ -10,7 +11,7 @@ module.exports = {
         .setDescription("Play a wordle game!")
         .addSubcommand(subcommand => subcommand
             .setName("play")
-            .setDescription("Picks a new word if not selected, starts a new game.")
+            .setDescription("Picks a new word if not selected, starts a new game."),
 
         )
         .addSubcommand(subcommand => subcommand
@@ -26,22 +27,84 @@ module.exports = {
 
     async execute(interaction) {
 
+        const userID = interaction.user.id;
+        // check if userID exists in players value
 
-        let selectedWord = wordOfTheDay;
 
+        let player = undefined;
 
-        function getRandomWord() {
-            return words[Math.floor(Math.random() * words.length)];
+        for (let i = 0; i < players.length; i++) {
+            if (players[i].id === userID) {
+                player = players[i];
+            }
         }
+
+        if (player === undefined) {
+            // New user
+            // add user to players
+            console.log("New user");
+            const word = words[Math.floor(Math.random() * words.length)];
+            const NewPlayer = {
+                id: userID,
+                name: interaction.user.username,
+                wordOfTheDay: word,
+                timeChanged: Date.now(),
+                if_finished: false,
+                words: [word],
+                guesses: [],
+                score: 0,
+                total_games: 0,
+            };
+            // add userID: NewPlayer to players
+            player = NewPlayer;
+            players.push(player);
+            fs.writeFileSync("./config/wordle.json", JSON.stringify({ players }, null, 4));
+        } else {
+            // user exists
+            console.log("user exists");
+            const timeDiff = Math.abs(new Date() - new Date(player.timeChanged));
+            // If day has changed, select new word and reset game state
+            if (timeDiff > 86400000 || player.wordOfTheDay === "" || player.wordOfTheDay === undefined) {
+                console.log("Picking a new word");
+                player.wordOfTheDay = words[Math.floor(Math.random() * words.length)];
+                player.timeChanged = Date.now();
+                player.if_finished = false;
+                player.words.push(player.wordOfTheDay);
+                player.guesses = [];
+            }
+            fs.writeFileSync("./config/wordle.json", JSON.stringify({ players }, null, 4));
+        }
+
+        const selectedWord = player.wordOfTheDay;
+        // if timeChanged is more than a day ago, pick a new word
+        console.log("Selected Word: " + selectedWord);
+        const setWin = () => {
+            player.if_finished = true;
+            player.total_games++;
+            player.score++;
+            const editedPlayers = players;
+            fs.writeFileSync("./config/wordle.json", JSON.stringify({ players: editedPlayers }, null, 4));
+        };
+        const setLoss = () => {
+            player.if_finished = true;
+            player.total_games++;
+            const editedPlayers = players;
+            fs.writeFileSync("./config/wordle.json", JSON.stringify({ players: editedPlayers }, null, 4));
+        };
         const GetImage = (guessLetter, answerLetter, i) => {
             // letter is undefined
-            if (guessLetter === undefined) {return 0;}
+            if (guessLetter === undefined) {
+                return 0;
+            } else if (guessLetter.charAt(i) == answerLetter.charAt(i)) {
+                return 2;
             // letter is in word at same spot
-            else if (guessLetter.charAt(i) == answerLetter.charAt(i)) {return 2;}
+            } else if (answerLetter.includes(guessLetter.charAt(i))) {
+                return 3;
             // letter is in word at different spot
-            else if (answerLetter.includes(guessLetter.charAt(i))) {return 3;}
+            } else {
+                return 1;
+            }
             // letter is not in word
-            else {return 1;}
         };
         async function LoadGame(msg, guesses, answer) {
             // make a blank canvas
@@ -82,25 +145,39 @@ module.exports = {
                 buffer = 0;
                 rowOffset += squareSize + 5;
             }
-            msg.reply({ files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
+            // return the canvas
+            // console.log(msg);
+            // if last guess is correct, send message
+            const lastGuess = guesses[guesses.length - 1];
+            if (player.if_finished) {
+                msg.channel.send(`${player.name} has already finished the game! Come back tomorrow for a new word!`);
+            } else {
+                if (lastGuess === answer) {
+                    msg.channel.send(`${player.name} you won! Come back tomorrow for a new word!`);
+                    setWin();
+                }
+                // 6 guesses have been made, setLose
+                if (guesses.length === 6) {
+                    msg.channel.send(`${player.name} you lost!:frowning2: Try again tomorrow `);
+                    setLoss();
+                }
+            }
+            msg.reply({
+                files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
+            // msg.message.author.send({ files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
         }
 
         if (interaction.options.length === 0) {
             interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
             return;
         } else if (interaction.options.getSubcommand() === "play") {
-            // Pick a new word if not selected
-            if (this.selectedWord === "" | this.selectedWord === undefined) {
-                this.selectedWord = getRandomWord();
-            }
-            this.guesses = [];
-            // Start a new game
-            console.log("Selected word: " + this.selectedWord);
-            selectedWord = wordOfTheDay;
 
+            this.guesses = player.guesses;
+            // Start a new game
+            console.log("Selected word (play): " + selectedWord);
 
             // console.log(interaction);
-            LoadGame(interaction, "", "");
+            LoadGame(interaction, player.guesses, player.wordOfTheDay);
 
         } else if (interaction.options.getSubcommand() === "guess") {
             // Guess a word
@@ -114,8 +191,17 @@ module.exports = {
                     interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
                     return;
                 } else {
-                    this.guesses.push(guess);
-                    LoadGame(interaction, this.guesses, this.selectedWord);
+                    if (!player.if_finished) {
+                        this.guesses.push(guess);
+                        // update guesses in players
+                        player.guesses = this.guesses;
+                        const editedPlayers = players;
+                        fs.writeFileSync("./config/wordle.json", JSON.stringify({ players: editedPlayers }, null, 4));
+                    }
+                    // update guesses in file
+                    // console.log("gueess: " + this.guesses);
+                    // console.log("player.guesses: " + player.guesses);
+                    LoadGame(interaction, this.guesses, player.wordOfTheDay);
                 }
             }
         }
