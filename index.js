@@ -1,6 +1,5 @@
 const fs = require("fs");
 const { Client, Collection, Intents } = require("discord.js");
-const { handleGameButton } = require("./commands/tictactoe.js")
 require("dotenv").config();
 
 // Create a new client instance
@@ -44,16 +43,5 @@ client.on("interactionCreate", async interaction => {
         await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
 });
-
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isButton()) return;
-    handleGameButton(interaction);
-})
-
-client.on('ready', () => {
-    console.log("bot is ready")
-    const guildId = ''
-    client.guilds.cache.get(guildId)
-})
 
 client.login(process.env.DISCORD_TOKEN);
