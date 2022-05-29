@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
-const { data } = require("../config/votes.json");
+var { data } = require("../config/votes.json");
 const fs = require("fs");
 
 module.exports = {
