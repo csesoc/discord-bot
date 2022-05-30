@@ -1,4 +1,4 @@
-const { handleGameButton } = require("../lib/tictactoe/ttcHelper")
+const { handleGameButton } = require("../lib/tictactoe/ttcHelper");
 
 module.exports = {
     once: false,
