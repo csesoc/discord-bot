@@ -3,7 +3,6 @@ const { MessageEmbed,Permissions } = require("discord.js");
 var { data } = require("../config/standup.json");
 const fs = require("fs");
 const closest_match = require('closest-match');
-const standup = require("./standup");
 
 module.exports = {
     data: new SlashCommandBuilder()

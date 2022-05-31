@@ -1,16 +1,9 @@
 var { data } = require("../config/standup.json");
 const fs = require('fs');
-/*
-    * From the message take the 
-        - channel category name
-        - Nickname or Username
-    * Store the data in the format already decided
-
-
-*/  
+  
 module.exports = {
-    name: "messageCreate",
-    async execute(message) {
+    name: "messageUpdate",
+    async execute(_oldMessage, message) {
         // console.log(message);
         if (message.content.startsWith("$standup")) {
             var messages = String(message.content)
