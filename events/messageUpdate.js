@@ -11,6 +11,12 @@ module.exports = {
             // console.log(message.channel.parent.name)
             teamName = message.channel.parent.name
 
+            var mentions = message.mentions.users
+            var mentionsArr = [...mentions.values()];
+
+            // Contains the list of all users mentioned in the message
+            let result = mentionsArr.map(a => a.id);
+            
             var voteauthorid = message.author.id;
             var voteauthorname = message.member.nickname;
             if(voteauthorname == null) {
@@ -22,6 +28,7 @@ module.exports = {
                 data[teamName].forEach(function (item, _index) {
                    if (item['voteauthorid'] == voteauthorid) {
                        item['standup'] = messageContent;
+                       item['mentions'] = result
                        flag = 1
                    }
                   });
@@ -29,7 +36,9 @@ module.exports = {
                 data[teamName].push({
                     "voteauthorid": voteauthorid,
                     "voteauthorname": voteauthorname,
-                    "standup": messageContent
+                    "standup": messageContent,
+                    "mentions":result
+
                 });
             }
             }
@@ -37,7 +46,8 @@ module.exports = {
                 data[teamName] = [{
                     "voteauthorid": voteauthorid,
                     "voteauthorname": voteauthorname,
-                    "standup":messageContent
+                    "standup":messageContent,
+                    "mentions":result
                 }];
             }
             //console.log(data);
