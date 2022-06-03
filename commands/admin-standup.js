@@ -28,6 +28,15 @@ module.exports = {
         }
         if (interaction.options.getSubcommand() === 'getfullstandups') {
             //var teamName = await interaction.options.getString('team');
+            var tempData
+            try {
+                tempData = fs.readFileSync('./config/standup.json', 'utf8');
+              } catch (err) {
+                console.error(err);
+              }
+            data = JSON.parse(tempData)['data']
+            
+            
             var team = await interaction.options.getMentionable('teamrole')
             var teamRoleID = team.id
             var teamName = team.name
