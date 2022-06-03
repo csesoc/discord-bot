@@ -145,10 +145,10 @@ async function handleFAQGet(interaction, faqStorage) {
  async function handleFAQHelp(interaction, faqStorage) {
     // @TODO: expand this function
     let description = "Welcome to the help command! You can search for a specific faq"
-    description += "q by keyword using 'faq get [keyword]', or for everything on a given ";
+    description += " by keyword using 'faq get [keyword]', or for everything on a given ";
     description += "topic by using 'faq getall [tag]'. ";
     description += "Use 'faq keywords' to get a list of all keywords, or "
-    description += "Use 'faq tags' to get a list of all tags."
+    description += "use 'faq tags' to get a list of all tags."
 
     await interaction.reply(description);
 }
