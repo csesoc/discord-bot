@@ -3,8 +3,11 @@ const { Client, Collection, Intents } = require("discord.js");
 require("dotenv").config();
 
 // Create a new client instance
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({
 
+	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS ,Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES],
+	partials: ['MESSAGE', 'CHANNEL', 'REACTION','GUILD_MEMBER','USER'],
+});
 // Add commands to the client
 client.commands = new Collection();
 const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
@@ -40,6 +43,11 @@ client.on("interactionCreate", async interaction => {
         console.error(error);
         await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
+});
+
+
+client.on('shardError', error => {
+	console.error('A websocket connection encountered an error:', error);
 });
 
 client.login(process.env.DISCORD_TOKEN);
