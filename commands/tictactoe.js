@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { createGame } = require('../lib/tictactoe/ttcHelper');
+const { createGame } = require('../lib/tictactoe/tttHelper');
 
 const baseCommand = new SlashCommandBuilder()
     .setName("tictactoe")
