@@ -1,9 +1,25 @@
+// const { Client, Guild } = require('discord.js');
+// import fs module where writeFile function is defined
+const fsLibrary = require('fs')
 const axios = require("axios");
+const { DBlog } = require("../lib/database/dblog");
+
+function messagelog(message) {
+        // ignore messages sent from bot
+        if (message.author.bot) {return;}
+
+        //console.log(message);
+
+        const logDB = global.logDB;
+        logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
+}
 
 module.exports = {
     name: "messageCreate",
+    once: false,
     async execute(message) {
         // console.log(message);
+        messagelog(message)
         if (message.content.startsWith("/run")) {
             const newlineIndex = message.content.indexOf("\n");
 

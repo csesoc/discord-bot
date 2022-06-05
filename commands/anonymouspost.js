@@ -12,6 +12,7 @@ module.exports = {
         const text = interaction.options.getString('message');
         const user = interaction.user.username;
         const id = interaction.user.id;
+        //change after logging is done
         fs.appendFileSync("./data/log.txt", user+" "+text+"\n");
         //console.log(user,id,text);
         interaction.reply({ content: "Done!", ephemeral: true});
