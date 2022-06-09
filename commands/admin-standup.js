@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed,Permissions } = require("discord.js");
+const {Permissions } = require("discord.js");
 var { data } = require("../config/standup.json");
 const fs = require("fs");
 const closest_match = require('closest-match');
@@ -8,7 +8,6 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("standupstatus")
         .setDescription("Get standups [ADMIN]")
-        
         .addSubcommand(subcommand =>
             subcommand
                 .setName("resetstandups")
@@ -28,6 +27,8 @@ module.exports = {
         }
         if (interaction.options.getSubcommand() === 'getfullstandups') {
             //var teamName = await interaction.options.getString('team');
+     try       
+    {
             var tempData
             try {
                 tempData = fs.readFileSync('./config/standup.json', 'utf8');
@@ -74,7 +75,11 @@ module.exports = {
                 });
             sendmsg += '\n\n' + "These users have not done their standup:\n" + notDone.toString()
             await interaction.reply(sendmsg);
-            
+            }
+            catch(error){
+                sendmsg = "An error - " + error;
+                await interaction.reply(sendmsg);
+            }
             
 
         }
