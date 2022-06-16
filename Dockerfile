@@ -1,17 +1,15 @@
-FROM node:16.14-alpine
+FROM node:latest
 ENV NODE_ENV=production
 
 # Set working directory
-WORKDIR /app
+WORKDIR /usr/src/app
 
 # Install dependencies
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --production
 
 # Copy bot files
 COPY . .
-
-RUN chmod +x entrypoint.sh
 
 # Run bot
 ENTRYPOINT [ "./entrypoint.sh" ]
