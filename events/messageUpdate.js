@@ -5,6 +5,10 @@ module.exports = {
     name: "messageUpdate",
     async execute(_oldMessage, message) {
         // console.log(message);
+        if (message.author.bot == true) {return;}
+
+        const logDB = global.logDB;
+        logDB.message_update(_oldMessage.id, message.id, message.content);
         if (message.content.startsWith("$standup")) {
             var messages = String(message.content)
             var messageContent = messages.slice(8)
