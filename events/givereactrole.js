@@ -18,8 +18,10 @@ module.exports = {
             // Check if message id is in the data
             if (!(reaction.message.id in data)) return;
 
+            let role = data[reaction.message.id].roles[reaction.emoji.name];
+            
             // Check if emoji is in data
-            if (!data[reaction.message.id].roles[reaction.emoji.name]) return;
+            if (!role) return;
 
             // Check if emoji is ⛔ and if the user is the sender
             if (reaction.emoji.name === '⛔' && user.id) return;
@@ -28,7 +30,6 @@ module.exports = {
             // If not assign the role to the user
             let reactions = reaction.message.reactions;
             let noEntryReact = reactions.resolve('⛔')
-            let role = data[reaction.message.id].roles[reaction.emoji.name];
             if (noEntryReact) {
                 noEntryReact.users.fetch().then(userList => {
                     if (userList.has(data[reaction.message.id].senderID)) {
@@ -39,7 +40,7 @@ module.exports = {
                             .setColor('#7cd699')
                             .setTitle('Role could not be assigned')
                             .setAuthor("CSESoc Projects Bot", 'https://avatars.githubusercontent.com/u/164179?s=200&v=4')
-                            .setDescription(`You can no longer reacted to the message in "${reaction.message.guild.name}" to get a role`)
+                            .setDescription(`You can no longer react to the message in "${reaction.message.guild.name}" to get a role`)
                         user.send({
                             embeds: [notification]
                         })
