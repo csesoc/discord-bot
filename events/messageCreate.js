@@ -1,25 +1,86 @@
-// const { Client, Guild } = require('discord.js');
-// import fs module where writeFile function is defined
-const fsLibrary = require('fs')
+const fs = require("fs");
 const axios = require("axios");
-const { DBlog } = require("../lib/database/dblog");
 
 function messagelog(message) {
-        // ignore messages sent from bot
-        if (message.author.bot) {return;}
+    // ignore messages sent from bot
+    if (message.author.bot) {return;}
 
-        //console.log(message);
+    // console.log(message);
 
-        const logDB = global.logDB;
-        logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
+    const logDB = global.logDB;
+    logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
 }
+
 
 module.exports = {
     name: "messageCreate",
-    once: false,
     async execute(message) {
         // console.log(message);
-        messagelog(message)
+        let teamName = "";
+        // console.log(message);
+        messagelog(message);
+        if (message.content.startsWith("$standup")) {
+            let tempData;
+            try {
+                tempData = fs.readFileSync("./config/standup.json", "utf8");
+            } catch (err) {
+                console.error(err);
+            }
+            let data = JSON.parse(tempData)["data"];
+
+            console.log(data);
+            const messages = String(message.content);
+            const messageContent = messages.slice(8);
+            // console.log(message.channel.parent.name)
+            teamName = message.channel.parent.name;
+            const mentions = message.mentions.users;
+            const mentionsArr = [...mentions.values()];
+
+
+            // Contains the list of all users mentioned in the message
+            const result = mentionsArr.map(a => a.id);
+
+            const voteauthorid = message.author.id;
+            let voteauthorname = message.member.nickname;
+            if (voteauthorname == null) {
+                voteauthorname = message.author.username;
+            }
+            if (data == undefined) {
+                data = {};
+                data[teamName] = [{
+                    "voteauthorid": voteauthorid,
+                    "voteauthorname": voteauthorname,
+                    "standup":messageContent,
+                    "mentions": result,
+                }];
+            }
+            if (teamName in data) {
+                let flag = 0;
+                data[teamName].forEach(function(item, index) {
+                    if (item["voteauthorid"] == voteauthorid) {
+                        item["standup"] = messageContent;
+                        item["mentions"] = result;
+                        flag = 1;
+                    }
+                });
+                if (flag == 0) {
+                    data[teamName].push({
+                        "voteauthorid": voteauthorid,
+                        "voteauthorname": voteauthorname,
+                        "standup": messageContent,
+                        "mentions": result,
+                    });
+                }
+            } else {
+                data[teamName] = [{
+                    "voteauthorid": voteauthorid,
+                    "voteauthorname": voteauthorname,
+                    "standup":messageContent,
+                    "mentions": result,
+                }];
+            }
+            fs.writeFileSync("./config/standup.json", JSON.stringify({ data: data }, null, 4));
+        }
         if (message.content.startsWith("/run")) {
             const newlineIndex = message.content.indexOf("\n");
 
@@ -38,7 +99,7 @@ module.exports = {
             // Remove extra lines for args and stdin if needed
             const code = rawContent.split("\n").slice(args.length === 0 ? 1 : 2, stdin === "" ? -1 : -2).join("\n");
 
-            let data;
+            let data = {};
             try {
                 const response = await axios.get("https://emkc.org/api/v2/piston/runtimes");
                 data = response.data;
