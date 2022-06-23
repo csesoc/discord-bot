@@ -1,11 +1,11 @@
-var { data } = require("../config/standup.json");
-const fs = require('fs');
+const fs = require("fs");
+const axios = require("axios");
 
 function messagelog(message) {
     // ignore messages sent from bot
     if (message.author.bot) {return;}
 
-    //console.log(message);
+    // console.log(message);
 
     const logDB = global.logDB;
     logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
@@ -16,48 +16,67 @@ module.exports = {
     name: "messageCreate",
     async execute(message) {
         // console.log(message);
-        messagelog(message)
+        let teamName = "";
+        // console.log(message);
+        messagelog(message);
         if (message.content.startsWith("$standup")) {
-            var messages = String(message.content)
-            var messageContent = messages.slice(8)
+            let tempData;
+            try {
+                tempData = fs.readFileSync("./config/standup.json", "utf8");
+            } catch (err) {
+                console.error(err);
+            }
+            let data = JSON.parse(tempData)["data"];
+
+            console.log(data);
+            const messages = String(message.content);
+            const messageContent = messages.slice(8);
             // console.log(message.channel.parent.name)
-            teamName = message.channel.parent.name
-            var mentions = message.mentions.users
-            var mentionsArr = [...mentions.values()];
+            teamName = message.channel.parent.name;
+            const mentions = message.mentions.users;
+            const mentionsArr = [...mentions.values()];
+
 
             // Contains the list of all users mentioned in the message
-            let result = mentionsArr.map(a => a.id);
-            
-            var voteauthorid = message.author.id;
-            var voteauthorname = message.member.nickname;
-            if(voteauthorname == null) {
+            const result = mentionsArr.map(a => a.id);
+
+            const voteauthorid = message.author.id;
+            let voteauthorname = message.member.nickname;
+            if (voteauthorname == null) {
                 voteauthorname = message.author.username;
             }
-
-            if(teamName in data) {
-                var flag = 0;
-                data[teamName].forEach(function (item, _index) {
-                   if (item['voteauthorid'] == voteauthorid) {
-                       item['standup'] = messageContent;
-                       item['mentions'] = result
-                       flag = 1
-                   }
-                  });
-                if (flag == 0){  
-                data[teamName].push({
-                    "voteauthorid": voteauthorid,
-                    "voteauthorname": voteauthorname,
-                    "standup": messageContent,
-                    "mentions": result
-                });
-            }
-            }
-            else {
+            if (data == undefined) {
+                data = {};
                 data[teamName] = [{
                     "voteauthorid": voteauthorid,
                     "voteauthorname": voteauthorname,
                     "standup":messageContent,
-                    "mentions": result
+                    "mentions": result,
+                }];
+            }
+            if (teamName in data) {
+                let flag = 0;
+                data[teamName].forEach(function(item, index) {
+                    if (item["voteauthorid"] == voteauthorid) {
+                        item["standup"] = messageContent;
+                        item["mentions"] = result;
+                        flag = 1;
+                    }
+                });
+                if (flag == 0) {
+                    data[teamName].push({
+                        "voteauthorid": voteauthorid,
+                        "voteauthorname": voteauthorname,
+                        "standup": messageContent,
+                        "mentions": result,
+                    });
+                }
+            } else {
+                data[teamName] = [{
+                    "voteauthorid": voteauthorid,
+                    "voteauthorname": voteauthorname,
+                    "standup":messageContent,
+                    "mentions": result,
                 }];
             }
             fs.writeFileSync("./config/standup.json", JSON.stringify({ data: data }, null, 4));
@@ -80,7 +99,7 @@ module.exports = {
             // Remove extra lines for args and stdin if needed
             const code = rawContent.split("\n").slice(args.length === 0 ? 1 : 2, stdin === "" ? -1 : -2).join("\n");
 
-            let data;
+            let data = {};
             try {
                 const response = await axios.get("https://emkc.org/api/v2/piston/runtimes");
                 data = response.data;
