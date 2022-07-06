@@ -42,132 +42,139 @@ module.exports = {
                 .setName("removeunverified")
                 .setDescription("[ADMIN] Removes all members with the unverified role.")),
     async execute(interaction) {
-        if (interaction.options.getSubcommand() === "give") {
-            const role = await interaction.options.getRole("role");
+        try {
+            if (interaction.options.getSubcommand() === "give") {
+                const role = await interaction.options.getRole("role");
 
-            if (!allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
-                return await interaction.reply({ content: `❌ | You are not allowed to give yourself the role \`${role.name}\`.`, ephemeral: true });
-            } else if (interaction.member.roles.cache.some(r => r === role)) {
-                return await interaction.reply({ content: `❌ | You already have the role \`${role.name}\`.`, ephemeral: true });
+                if (!allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
+                    return await interaction.reply({ content: `❌ | You are not allowed to give yourself the role \`${role.name}\`.`, ephemeral: true });
+                } else if (interaction.member.roles.cache.some(r => r === role)) {
+                    return await interaction.reply({ content: `❌ | You already have the role \`${role.name}\`.`, ephemeral: true });
+                }
+
+                await interaction.member.roles.add(role);
+
+                return await interaction.reply({ content: `✅ | Gave you the role \`${role.name}\`.`, ephemeral: true });
+            } else if (interaction.options.getSubcommand() === "remove") {
+                const role = await interaction.options.getRole("role");
+
+                if (!allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
+                    return await interaction.reply({ content: `❌ | You are not allowed to remove the role \`${role.name}\`.`, ephemeral: true });
+                } else if (!interaction.member.roles.cache.some(r => r === role)) {
+                    return await interaction.reply({ content: `❌ | You do not have the role \`${role.name}\`.`, ephemeral: true });
+                }
+
+                await interaction.member.roles.remove(role);
+
+                return await interaction.reply({ content: `✅ | Removed the role \`${role.name}\`.`, ephemeral: true });
             }
 
-            await interaction.member.roles.add(role);
-
-            return await interaction.reply({ content: `✅ | Gave you the role \`${role.name}\`.`, ephemeral: true });
-        } else if (interaction.options.getSubcommand() === "remove") {
-            const role = await interaction.options.getRole("role");
-
-            if (!allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
-                return await interaction.reply({ content: `❌ | You are not allowed to remove the role \`${role.name}\`.`, ephemeral: true });
-            } else if (!interaction.member.roles.cache.some(r => r === role)) {
-                return await interaction.reply({ content: `❌ | You do not have the role \`${role.name}\`.`, ephemeral: true });
+            // Admin permission check
+            if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+                return await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
             }
 
-            await interaction.member.roles.remove(role);
+            if (interaction.options.getSubcommand() === "allow") {
+                const role = await interaction.options.getRole("role");
 
-            return await interaction.reply({ content: `✅ | Removed the role \`${role.name}\`.`, ephemeral: true });
-        }
+                if (allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
+                    return await interaction.reply({ content: `❌ | The allowed roles list already contains \`${role.name}\`.`, ephemeral: true });
+                }
 
-        // Admin permission check
-        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-            return await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
-        }
+                allowedRoles.push(role.name);
 
-        if (interaction.options.getSubcommand() === "allow") {
-            const role = await interaction.options.getRole("role");
+                // The path here is different to the require because it's called from index.js (I think)
+                fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
 
-            if (allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
-                return await interaction.reply({ content: `❌ | The allowed roles list already contains \`${role.name}\`.`, ephemeral: true });
-            }
+                return await interaction.reply(`✅ | Allowed the role \`${role.name}\`.`);
+            } else if (interaction.options.getSubcommand() === "disallow") {
+                const role = await interaction.options.getRole("role");
 
-            allowedRoles.push(role.name);
+                if (!allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
+                    return await interaction.reply({ content: `❌ | The allowed roles list does not contain \`${role.name}\`.`, ephemeral: true });
+                }
 
-            // The path here is different to the require because it's called from index.js (I think)
-            fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
+                allowedRoles.splice(allowedRoles.indexOf(role.name.toLowerCase()), 1);
 
-            return await interaction.reply(`✅ | Allowed the role \`${role.name}\`.`);
-        } else if (interaction.options.getSubcommand() === "disallow") {
-            const role = await interaction.options.getRole("role");
+                // The path here is different to the require because it's called from index.js (I think)
+                fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
 
-            if (!allowedRoles.some(r => r.toLowerCase() === role.name.toLowerCase())) {
-                return await interaction.reply({ content: `❌ | The allowed roles list does not contain \`${role.name}\`.`, ephemeral: true });
-            }
+                return await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
+            } else if (interaction.options.getSubcommand() === "whitelist") {
 
-            allowedRoles.splice(allowedRoles.indexOf(role.name.toLowerCase()), 1);
-
-            // The path here is different to the require because it's called from index.js (I think)
-            fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
-
-            return await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
-        } else if (interaction.options.getSubcommand() === "whitelist") {
-
-            // No allowed roles
-            if (allowedRoles.length == 0) {
-                const embed = new MessageEmbed()
-                    .setTitle("Allowed Roles")
-                    .setDescription("No allowed roles");
-                return await interaction.reply({ embeds: [embed] });
-            }
-
-            // TODO: Convert to scroller?
-            const rolesPerPage = 10;
-
-            const embedList = [];
-            for (let i = 0; i < allowedRoles.length; i += rolesPerPage) {
-                embedList.push(
-                    new MessageEmbed()
+                // No allowed roles
+                if (allowedRoles.length == 0) {
+                    const embed = new MessageEmbed()
                         .setTitle("Allowed Roles")
-                        .setDescription(allowedRoles.slice(i, i + rolesPerPage).join("\n")),
-                );
-            }
+                        .setDescription("No allowed roles");
+                    return await interaction.reply({ embeds: [embed] });
+                }
 
-            const buttonList = [
-                new MessageButton()
-                    .setCustomId("previousbtn")
-                    .setLabel("Previous")
-                    .setStyle("DANGER"),
-                new MessageButton()
-                    .setCustomId("nextbtn")
-                    .setLabel("Next")
-                    .setStyle("SUCCESS"),
-            ];
+                // TODO: Convert to scroller?
+                const rolesPerPage = 10;
 
-            paginationEmbed(interaction, embedList, buttonList);
-        } else if (interaction.options.getSubcommand() === "count") {
-            const role = await interaction.options.getRole("role");
+                const embedList = [];
+                for (let i = 0; i < allowedRoles.length; i += rolesPerPage) {
+                    embedList.push(
+                        new MessageEmbed()
+                            .setTitle("Allowed Roles")
+                            .setDescription(allowedRoles.slice(i, i + rolesPerPage).join("\n")),
+                    );
+                }
 
-            return await interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
-        } else if (interaction.options.getSubcommand() === "removeunverified") {
-            const role = await interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
-            
-            // Make sure that the "unverified" role exists
-            if (role === undefined) {
-                return await interaction.reply('Error: no "unverified" role exists.');
-            }
+                const buttonList = [
+                    new MessageButton()
+                        .setCustomId("previousbtn")
+                        .setLabel("Previous")
+                        .setStyle("DANGER"),
+                    new MessageButton()
+                        .setCustomId("nextbtn")
+                        .setLabel("Next")
+                        .setStyle("SUCCESS"),
+                ];
 
-            const kickMessage = 'You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome'
+                paginationEmbed(interaction, embedList, buttonList);
+            } else if (interaction.options.getSubcommand() === "count") {
+                const role = await interaction.options.getRole("role");
 
-            // Member list in the role is cached
-            let numRemoved = 0;
-            await role.members.each(member => {
-                member.createDM()
-                .then((DMChannel) => {
+                return await interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
+            } else if (interaction.options.getSubcommand() === "removeunverified") {
+                const role = await interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
+                
+                // Make sure that the "unverified" role exists
+                if (role === undefined) {
+                    return await interaction.reply('Error: no "unverified" role exists.');
+                }
 
-                    // Send direct message to user being kicked
-                    DMChannel.send(kickMessage)
-                    .then(() => {
-                        
-                        // Message sent, time to kick.
-                        member.kick(kickMessage)
+                const kickMessage = 'You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome'
+
+                // Member list in the role is cached
+                let numRemoved = 0;
+                await role.members.each(member => {
+                    member.createDM()
+                    .then((DMChannel) => {
+
+                        // Send direct message to user being kicked
+                        DMChannel.send(kickMessage)
                         .then(() => {
-                            ++numRemoved;
-                            console.log(numRemoved + ' people removed.');
-                        })
-                        .catch((e) => {console.log(e);});
+                            
+                            // Message sent, time to kick.
+                            member.kick(kickMessage)
+                            .then(() => {
+                                ++numRemoved;
+                                console.log(numRemoved + ' people removed.');
+                            })
+                            .catch((e) => {console.log(e);});
+                        });
                     });
                 });
-            });
-            return await interaction.reply(`Removed unverified members.`);
+                return await interaction.reply(`Removed unverified members.`);
+            } else {
+                return await interaction.reply("Error: invalid subcommand.");
+            }
+        }
+        catch (error) {
+            await interaction.reply("Error: " + error);
         }
     },
 };
