@@ -31,6 +31,12 @@ module.exports = {
             return;
         }
 
+        if(user == "" || pass == ""){
+            await interaction.reply({ content: "Email config data invalid.", ephemeral: true });
+            return;
+        }
+        
+
         const email_reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         const email = interaction.options.getString("email");
 
@@ -39,24 +45,27 @@ module.exports = {
             return;
         }
 
-        var today = new Date();
-        today.setUTCHours(0,0,0,0);
-        //today.setDate(today.getDate() + 1);
-        var tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
         var start = null;
         var end = null;
 
         if (interaction.options.getSubcommand() === 'today') {
-            start = today.toISOString();
-            end = tomorrow.toISOString();
+            var today = new Date();
+
+            var t_year = today.getFullYear().toString();
+            var mon = parseInt(today.getMonth()) + 1;
+            var t_month = mon.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+            var t_date = today.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+
+            var tomorrow_date = (parseInt(t_date) + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+
+            start = t_year+"-"+t_month+"-"+t_date+" 00:01"
+            end = t_year+"-"+t_month+"-"+tomorrow_date+" 00:01"
         } else if (interaction.options.getSubcommand() === 'timeperiod') {
 
             let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
             start = interaction.options.getString('start-datetime');
             end = interaction.options.getString('end-datetime');
-            //console.log(re.test(start), start);
+            
             if (!re.test(start)) {
                 await interaction.reply( { content: "Please enter the start-datetime as YYYY-MM-DD HH:MM exactly", ephemeral: true});
                 return;
@@ -80,8 +89,6 @@ module.exports = {
                 logs[i]['original_message'] = logs[i]['original_message'].trim();
             }
 
-            //console.log(logs);
-
             const createCsvWriter = require('csv-writer').createObjectCsvWriter;
             const csvWriter = createCsvWriter({
             path: './data/log_report.csv',
@@ -94,68 +101,51 @@ module.exports = {
                 {id: 'deleted', title: 'Deleted'},
                 {id: 'message_datetime', title: 'Message_Sent'},
                 {id: 'channel_id', title: 'Channel_ID'},
+                {id: 'channel_name', title: "Channel_Name"}
             ]
             });
 
             csvWriter
                 .writeRecords(logs)
                 .then(()=> console.log('The Log CSV file was written successfully'));
-            /*
-            let writer = fs.createWriteStream("./data/log_report.txt");
+            
 
-            for(let i = 0; i < logs.length; i++){
-                const message = logs[i].message.trim();
-                const original_message = logs[i].original_message.trim();
-                const username = logs[i].username.trim();
-                var deleted = (logs[i].deleted === 1) ? "Yes":"No"
-                var log_line = "message_id: " + logs[i].message_id + " user_id: " + logs[i].user_id + " username: " + username + " channel_id: " + logs[i].channel_id + " message: " + "'" + message + "'";
+            const logP = path.join(__dirname, '../data/log_report.csv');
 
-                if(logs[i].original_message != logs[i].message){
-                    log_line = log_line + " original_message: " + "'" + original_message + "'";
-                } 
 
-                log_line = log_line + " message_datetime: " + logs[i].message_datetime + " deleted: " + deleted;
-                
-                writer.write(log_line+"\n");
-            }
-            */
-        });
-
-        const logP = path.join(__dirname, '../data/log_report.csv');
-
-        
-        var transport = nodemailer.createTransport({
-            host: "smtp.mailtrap.io",
-            port: 2525,
-            auth: {
-            user: "efb0baa80666b7",
-            pass: "1cfc11663514d6"
-            }
-        });
-        
-        //change mail for csesoc specific
-        let mailOptions = {
-            from: "csesoc@gmail.com",
-            to: email,
-            subject: "messages logs",
-            text: "This is the requested logs",
-            attachments: [
-                {
-                    filename: 'log.csv',
-                    path: logP
+            var transport = nodemailer.createTransport({
+                host: "smtp.zoho.com.au",
+                secure: true,
+                port: 465,
+                auth: {
+                    user: process.env.ZOHO_EMAIL,
+                    pass: process.env.ZOHO_PASS,
                 }
-            ]
-        }
-        
-        transport.sendMail(mailOptions, function(err, success){
-            if(err){
-                console.log(err);
-                return;
-            } else {
-                console.log("Email sent succesfully");
+            });
+            
+            //change mail for csesoc specific
+            let mailOptions = {
+                from: "csesocbot@gmail.com",
+                to: email,
+                subject: "messages logs",
+                text: "This is the requested report log for "+start+" to "+end,
+                attachments: [
+                    {
+                        filename: 'log.csv',
+                        path: logP
+                    }
+                ]
             }
+            
+            transport.sendMail(mailOptions, function(err, info){
+                    if(err){
+                        console.log(err);
+                    } else {
+                        console.log(info);
+                    }
+            });
+            
+            interaction.reply({content: `Sent log report to ${email}`, ephemeral: true });
         });
-
-        interaction.reply({content: `Sent log report to ${email}`, ephemeral: true });
     }
 };
