@@ -111,83 +111,47 @@ module.exports = {
             });
             return letterCount;
         };
-        const GetImage = (guessLetter, answerLetter, i, answerCount, guessCount, greenCount, yellowCount) => {
-
-            // letter is undefined
-            if (guessLetter === undefined) {
-                return 0;
-            } else if (guessLetter.charAt(i) == answerLetter.charAt(i)) {
-                // letter is correct
-                greenCount[guessLetter.charAt(i)]++;
-                return 2;
-            // letter is in word at same spot
-            } else if (answerLetter.includes(guessLetter.charAt(i))) {
-                const total_count = greenCount[guessLetter.charAt(i)] + yellowCount[guessLetter.charAt(i)];
-                if (total_count < answerCount[guessLetter.charAt(i)]) {
-                    yellowCount[guessLetter.charAt(i)]++;
-                    return 3;
-                } else {
-                    return 1;
-                }
-            // letter is in word at different spot
-            } else {
-                return 1;
-            }
-            // letter is not in word
-        };
         const getAnswer = (answer, guess) => {
-            console.log("Answer: " + answer);
-            console.log("Guess: " + guess);
-            const answerCount = eachLetterCount(answer);
-            const colors = [];
-            const greenCount = {};
-            const yellowCount = {};
-            for (let i = 0; i < answer.length; i++) {
-                colors[i] = 0;
-                greenCount[answer.charAt(i)] = 0;
-                yellowCount[answer.charAt(i)] = 0;
-            }
+            const max_match = eachLetterCount(answer);
+            const match = {};
+            const colors = Array(5).fill(0);
             if (guess === undefined) {
-                // return array of 6 0s
                 return colors;
             }
-            // Check for exact matches in position
-            for (let i = 0; i < answer.length; i++) {
-                if (guess.charAt(i) == answer.charAt(i)) {
-                    colors[i] = 2;
-                    console.log("\t green count of " + answer.charAt(i) + ": " + greenCount[answer.charAt(i)]);
-                    greenCount[answer.charAt(i)]++;
-                    console.log("\t green count: " + greenCount[answer.charAt(i)]);
-                }
-            }
-            // Check for matches in word
-            for (let i = 0; i < answer.length; i++) {
-                console.log("\t answer letter: " + answer.charAt(i));
 
-
-                const maxCount = answerCount[answer.charAt(i)] - greenCount[answer.charAt(i)];
-                console.log("\t maxCount: " + maxCount);
-                console.log(guess.includes(answer.charAt(i)));
-                if (guess.includes(answer.charAt(i))) {
-                    console.log(greenCount);
-                    console.log(yellowCount);
-                    console.log(answerCount);
-                    console.log("Max Count for " + answer.charAt(i) + ": " + maxCount);
-                    console.log("answer[charAt(i)]: " + answer.charAt(i));
-                    if (maxCount > 0) {
-                        console.log("Adding yellow");
-                        console.log("answerCount[answer.charAt(i)], i: " + answerCount[answer.charAt(i)] + ", " + i);
-                        console.log("greenCount[answer.charAt(i)], i: " + greenCount[answer.charAt(i)] + ", " + i);
-                        yellowCount[answer.charAt(i)]++;
-                        colors[i] = 3;
+            // Yellow = correct letter at different spot
+            for (let i = 0; i < answer.length; i++) {
+                if (answer.includes(guess.charAt(i))) {
+                    const char = guess.charAt(i);
+                    if (match[char]) {
+                        match[char]++;
+                    } else {
+                        match[char] = 1;
                     }
+                    colors[i] = 3;
                 }
             }
-            
-            // make all other letters 1
+            // Green = correct letter
             for (let i = 0; i < answer.length; i++) {
-                if (colors[i] < 1) {
+                if (guess.charAt(i) === answer.charAt(i)) {
+                    colors[i] = 2;
+                }
+            }
+            // console.log(max_match);
+            // console.log(match);
+            // console.log(colors);
+            for (let i = answer.length - 1; i >= 0; i--) {
+                // console.log("i: " + i);
+                if (colors[i] === 0) {
                     colors[i] = 1;
+                }
+                if (colors[i] === 3) {
+                    const diff = match[guess.charAt(i)] - max_match[guess.charAt(i)];
+                    // console.log("diff for " + guess.charAt(i) + ": " + diff);
+                    if (diff > 0) {
+                        colors[i] = 1;
+                        match[guess.charAt(i)]--;
+                    }
                 }
             }
             return colors;
@@ -245,8 +209,8 @@ module.exports = {
                     msg.channel.send(`${player.name} you won! Come back tomorrow for a new word!`);
                     setWin();
                 }
-                // 6 guesses have been made, setLose
-                if (guesses.length === 6) {
+                if (!player.if_finished && guesses.length === 6) {
+                    // 6 guesses have been made, setLose
                     msg.channel.send(`${player.name} you lost!:frowning2: Try again tomorrow `);
                     setLoss();
                 }
@@ -272,7 +236,7 @@ module.exports = {
             // console.log("Guess: " + interaction.options.getString("word"));
             if (interaction.options.getString("word") === undefined) {
                 interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
-                return;
+                throw new Error("Invalid Usage");
             } else {
                 if (this.guesses === undefined) {
                     this.guesses = player.guesses;
@@ -280,8 +244,8 @@ module.exports = {
 
                 const guess = interaction.options.getString("word").toLowerCase();
                 if (guess.length !== 5) {
-                    interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
-                    return;
+                    interaction.channel.send("Invalid Usage! Use a 5 lettered word \nUsage: `/wordle guess <word>`");
+                    throw new Error("Invalid Usage");
                 } else {
                     if (!player.if_finished) {
                         console.log("Guess: " + guess);
