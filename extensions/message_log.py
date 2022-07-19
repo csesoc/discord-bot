@@ -22,11 +22,11 @@ class Message_Log(commands.Cog):
     '''
     @commands.Cog.listener()
     async def on_message(self, message):
-        logging.basicConfig(filename=self.message_log, \
-            filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            level=logging.INFO, \
-            force=True)
+        logging.basicConfig(filename=self.message_log,
+                            filemode = 'a',
+                            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z',
+                            level=logging.INFO,
+                            force=True)
         server = message.guild.name
         user_id = message.author.id
         message = message.content
@@ -36,11 +36,11 @@ class Message_Log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, message):
-        logging.basicConfig(filename=self.message_edit, \
-            filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            level=logging.INFO, \
-            force=True)
+        logging.basicConfig(filename=self.message_edit,
+                            filemode = 'a',
+                            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z',
+                            level=logging.INFO,
+                            force=True)
         server = message.guild.name
         user_id = message.author.id
         message_before = before.content
@@ -51,11 +51,11 @@ class Message_Log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        logging.basicConfig(filename=self.message_delete, \
-            filemode = 'a', \
-            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z', \
-            level=logging.INFO, \
-            force=True)
+        logging.basicConfig(filename=self.message_delete,
+                            filemode = 'a',
+                            format='%(asctime)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z',
+                            level=logging.INFO,
+                            force=True)
         server = message.guild.name
         user_id = message.author.id
         message = message.content
