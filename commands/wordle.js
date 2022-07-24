@@ -5,6 +5,17 @@ const { players } = require("../config/wordle.json");
 const fs = require("fs");
 const Canvas = require("canvas");
 
+// Letter class
+// Because OOP is always a good idea
+class Letter {
+    constructor(letter, pos, color = 1) {
+        this.letter = letter;
+        this.pos = pos;
+        this.color = color;
+    }
+}
+
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("wordle")
@@ -23,14 +34,10 @@ module.exports = {
                 .setRequired(true),
             ),
         ),
-
-
     async execute(interaction) {
 
         const userID = interaction.user.id;
         // check if userID exists in players value
-
-
         let player = undefined;
 
         for (let i = 0; i < players.length; i++) {
@@ -91,21 +98,66 @@ module.exports = {
             const editedPlayers = players;
             fs.writeFileSync("./config/wordle.json", JSON.stringify({ players: editedPlayers }, null, 4));
         };
-        const GetImage = (guessLetter, answerLetter, i) => {
-            // letter is undefined
-            if (guessLetter === undefined) {
-                return 0;
-            } else if (guessLetter.charAt(i) == answerLetter.charAt(i)) {
-                return 2;
-            // letter is in word at same spot
-            } else if (answerLetter.includes(guessLetter.charAt(i))) {
-                return 3;
-            // letter is in word at different spot
-            } else {
-                return 1;
-            }
-            // letter is not in word
+        // function to returns every unique letter in a string with count of each letter
+        const eachLetterCount = (answer) => {
+            const letters = answer.split("");
+            const letterCount = {};
+            letters.forEach(letter => {
+                if (letterCount[letter]) {
+                    letterCount[letter]++;
+                } else {
+                    letterCount[letter] = 1;
+                }
+            });
+            return letterCount;
         };
+        const getAnswer = (answer, guess) => {
+            const max_match = eachLetterCount(answer);
+            const match = {};
+            const colors = Array(5).fill(0);
+            if (guess === undefined) {
+                return colors;
+            }
+
+            // Yellow = correct letter at different spot
+            for (let i = 0; i < answer.length; i++) {
+                if (answer.includes(guess.charAt(i))) {
+                    const char = guess.charAt(i);
+                    if (match[char]) {
+                        match[char]++;
+                    } else {
+                        match[char] = 1;
+                    }
+                    colors[i] = 3;
+                }
+            }
+            // Green = correct letter
+            for (let i = 0; i < answer.length; i++) {
+                if (guess.charAt(i) === answer.charAt(i)) {
+                    colors[i] = 2;
+                }
+            }
+            // console.log(max_match);
+            // console.log(match);
+            // console.log(colors);
+            for (let i = answer.length - 1; i >= 0; i--) {
+                // console.log("i: " + i);
+                if (colors[i] === 0) {
+                    colors[i] = 1;
+                }
+                if (colors[i] === 3) {
+                    const diff = match[guess.charAt(i)] - max_match[guess.charAt(i)];
+                    // console.log("diff for " + guess.charAt(i) + ": " + diff);
+                    if (diff > 0) {
+                        colors[i] = 1;
+                        match[guess.charAt(i)]--;
+                    }
+                }
+            }
+            return colors;
+        };
+
+
         async function LoadGame(msg, guesses, answer) {
             // make a blank canvas
             const canvas = Canvas.createCanvas(330, 397);
@@ -129,17 +181,18 @@ module.exports = {
             let rowOffset = 0;
             let buffer = 0;
 
+
             for (let j = 0; j < 6; j++) {
+                const imageNums = getAnswer(answer, guesses[j]);
                 for (let i = 0; i < 5; i++) {
                     // eslint-disable-next-line no-undef
-                    const imageNumber = GetImage(guesses[j], answer, i);
+                    const imageNumber = imageNums[i];
                     square = square_arr[imageNumber];
 
                     context.drawImage(square, i * squareSize + buffer, rowOffset, squareSize, squareSize);
                     if (guesses[j] != undefined) {
                         context.fillText(guesses[j].charAt(i), (squareSize / 2) + buffer + squareSize * i, rowOffset + 42);
                     }
-
                     buffer += 5;
                 }
                 buffer = 0;
@@ -156,8 +209,8 @@ module.exports = {
                     msg.channel.send(`${player.name} you won! Come back tomorrow for a new word!`);
                     setWin();
                 }
-                // 6 guesses have been made, setLose
-                if (guesses.length === 6) {
+                if (!player.if_finished && guesses.length === 6) {
+                    // 6 guesses have been made, setLose
                     msg.channel.send(`${player.name} you lost!:frowning2: Try again tomorrow `);
                     setLoss();
                 }
@@ -175,23 +228,28 @@ module.exports = {
             this.guesses = player.guesses;
             // Start a new game
             console.log("Selected word (play): " + selectedWord);
-
             // console.log(interaction);
             LoadGame(interaction, player.guesses, player.wordOfTheDay);
 
         } else if (interaction.options.getSubcommand() === "guess") {
             // Guess a word
-            console.log("Guess: " + interaction.options.getString("word"));
+            // console.log("Guess: " + interaction.options.getString("word"));
             if (interaction.options.getString("word") === undefined) {
                 interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
-                return;
+                throw new Error("Invalid Usage");
             } else {
+                if (this.guesses === undefined) {
+                    this.guesses = player.guesses;
+                }
+
                 const guess = interaction.options.getString("word").toLowerCase();
                 if (guess.length !== 5) {
-                    interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
-                    return;
+                    interaction.channel.send("Invalid Usage! Use a 5 lettered word \nUsage: `/wordle guess <word>`");
+                    throw new Error("Invalid Usage");
                 } else {
                     if (!player.if_finished) {
+                        console.log("Guess: " + guess);
+                        console.log("guesses: " + this.guesses);
                         this.guesses.push(guess);
                         // update guesses in players
                         player.guesses = this.guesses;

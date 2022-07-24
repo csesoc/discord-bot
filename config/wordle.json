@@ -3,22 +3,26 @@
         {
             "id": "369081258916970506",
             "name": "Yuvi",
-            "wordOfTheDay": "bolos",
-            "timeChanged": 1653629716419,
-            "if_finished": true,
+            "wordOfTheDay": "gpops",
+            "timeChanged": 1657503970269,
+            "if_finished": false,
             "words": [
                 "sizar",
                 "beray",
                 "toper",
                 "adult",
-                "bolos"
+                "bolos",
+                "glops"
             ],
             "guesses": [
-                "shatt",
-                "bolos"
+                "ooooo",
+                "otttt",
+                "gpoop",
+                "opale",
+                "paper"
             ],
             "score": 2,
-            "total_games": 3
+            "total_games": 4
         },
         {
             "id": "369081258916970406",
