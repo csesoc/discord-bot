@@ -11,10 +11,11 @@ module.exports = {
     async execute(interaction) {
         const text = interaction.options.getString('message');
         const user = interaction.user.username;
-        const id = interaction.user.id;
-        //change after logging is done
-        fs.appendFileSync("./data/log.txt", user+" "+text+"\n");
-        //console.log(user,id,text);
+        const u_id = interaction.user.id;
+    
+        const logDB = global.logDB;
+        logDB.message_create(interaction.id, u_id, user, text, interaction.channelId);
+
         interaction.reply({ content: "Done!", ephemeral: true});
         interaction.guild.channels.cache.get(interaction.channelId).send(text + '\n\n(The above message was anonymously posted by a user)')
     },
