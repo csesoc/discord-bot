@@ -11,7 +11,7 @@ module.exports = {
             // Limit on concurrent temporary channels
             const CHANNEL_LIMIT = 10;
             // Name of the category under which the temporary channels are
-            const CATEGORY_NAME = "Temporary VCs";
+            const CATEGORY_NAME = "TEMPORARY VCS";
 
             const data = JSON.parse(fs.readFileSync("./data/createvc.json", 'utf8'));
             // console.log(data);
@@ -29,12 +29,15 @@ module.exports = {
 
                 // See if there is a category channel with name - TEMPORARY VCs
                 // If not, it creates a new category with name CATEGORY_NAME
-
+                try {
                 allchannels.forEach(function (item, index) {
-                    if(item.type == "GUILD_CATEGORY" && item.name == CATEGORY_NAME) {
+                    if(item != null && item.type == "GUILD_CATEGORY" && item.name == CATEGORY_NAME) {
                         parentChannel = item;
                     }
                 });
+            } catch(error) {
+                await interaction.reply("Something is wrong!")
+            }
 
                 if(parentChannel == null) {
                     parentChannel = await channelmanager.create(CATEGORY_NAME, {type:4});
