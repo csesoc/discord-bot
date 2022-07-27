@@ -6,9 +6,9 @@ const { DBlog } = require("../lib/database/dblog");
 
 function messagelog(message) {
         // ignore messages sent from bot
-        if (message.author.bot) {return;}
-
-        //console.log(message);
+        if (message.author.bot) {
+            return;
+        }
 
         const logDB = global.logDB;
         logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
