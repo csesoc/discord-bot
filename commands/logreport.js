@@ -25,7 +25,7 @@ module.exports = {
         ),
     
     async execute(interaction) {
-
+        try{
         if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
             await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
             return;
@@ -36,7 +36,7 @@ module.exports = {
         //     return;
         // }
         
-
+        
         const email_reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         const email = interaction.options.getString("email");
 
@@ -147,5 +147,8 @@ module.exports = {
             
             interaction.reply({content: `Sent log report to ${email}`, ephemeral: true });
         });
+    } catch(error) {
+        await interaction.reply("Error: "+error);
+    }
     }
 };
