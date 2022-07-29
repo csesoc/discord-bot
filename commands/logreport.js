@@ -148,7 +148,7 @@ module.exports = {
             interaction.reply({content: `Sent log report to ${email}`, ephemeral: true });
         });
     } catch(error) {
-        await interaction.reply("Error: "+error);
+        await interaction.reply({ content: "Error: "+error, ephemeral: true});
     }
     }
 };
