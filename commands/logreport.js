@@ -25,64 +25,58 @@ module.exports = {
         ),
     
     async execute(interaction) {
-        try{
-        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-            await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
-            return;
-        }
-
-        // if(user == "" || pass == ""){
-        //     await interaction.reply({ content: "Email config data invalid.", ephemeral: true });
-        //     return;
-        // }
-        
-        
-        const email_reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        const email = interaction.options.getString("email");
-
-        if(!email_reg.test(email)){
-            await interaction.reply({ content: "Please enter a valid email.", ephemeral: true });
-            return;
-        }
-
-        var start = null;
-        var end = null;
-
-        if (interaction.options.getSubcommand() === 'today') {
-            var today = new Date();
-
-            var t_year = today.getFullYear().toString();
-            var mon = parseInt(today.getMonth()) + 1;
-            var t_month = mon.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-            var t_date = today.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-
-            var tomorrow_date = (parseInt(t_date) + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-
-            start = t_year+"-"+t_month+"-"+t_date+" 00:01"
-            end = t_year+"-"+t_month+"-"+tomorrow_date+" 00:01"
-        } else if (interaction.options.getSubcommand() === 'timeperiod') {
-
-            let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
-            start = interaction.options.getString('start-datetime');
-            end = interaction.options.getString('end-datetime');
-            
-            if (!re.test(start)) {
-                await interaction.reply( { content: "Please enter the start-datetime as YYYY-MM-DD HH:MM exactly", ephemeral: true});
+        try {
+            if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+                await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
                 return;
-            };
-
-            if (!re.test(end)) {
-                await interaction.reply( { content: "Please enter the end-datetime as YYYY-MM-DD HH:MM exactly", ephemeral: true});
-                return;
-            };
-        }
-
-        const logDB = global.logDB;
-        var result = logDB.collect_messages(start, end);
-
-
-        result.then(function(logs) {
+            }
             
+
+
+            const email_reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            const email = interaction.options.getString("email");
+
+
+            if(!email_reg.test(email)){
+                await interaction.reply({ content: "Please enter a valid email.", ephemeral: true });
+                return;
+            }
+
+            var start = null;
+            var end = null;
+
+            if (interaction.options.getSubcommand() === 'today') {
+                var today = new Date();
+
+                var t_year = today.getFullYear().toString();
+                var mon = parseInt(today.getMonth()) + 1;
+                var t_month = mon.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+                var t_date = today.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+
+                var tomorrow_date = (parseInt(t_date) + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+
+                start = t_year+"-"+t_month+"-"+t_date+" 00:01"
+                end = t_year+"-"+t_month+"-"+tomorrow_date+" 00:01"
+            } else if (interaction.options.getSubcommand() === 'timeperiod') {
+
+                let re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
+                start = interaction.options.getString('start-datetime');
+                end = interaction.options.getString('end-datetime');
+                
+                if (!re.test(start)) {
+                    await interaction.reply( { content: "Please enter the start-datetime as YYYY-MM-DD HH:MM exactly", ephemeral: true});
+                    return;
+                };
+
+                if (!re.test(end)) {
+                    await interaction.reply( { content: "Please enter the end-datetime as YYYY-MM-DD HH:MM exactly", ephemeral: true});
+                    return;
+                };
+            }
+
+            const logDB = global.logDB;
+            var logs = await logDB.collect_messages(start, end);
+                
             for(let i = 0; i < logs.length; i++){
                 logs[i]['username'] = logs[i]['username'].trim();
                 logs[i]['message'] = logs[i]['message'].trim();
@@ -136,19 +130,15 @@ module.exports = {
                     }
                 ]
             }
-            
-            transport.sendMail(mailOptions, function(err, info){
-                    if(err){
-                        console.log(err);
-                    } else {
-                        console.log(info);
-                    }
-            });
-            
-            interaction.reply({content: `Sent log report to ${email}`, ephemeral: true });
-        });
-    } catch(error) {
-        await interaction.reply({ content: "Error: "+error, ephemeral: true});
-    }
+
+            try {
+                await transport.sendMail(mailOptions);
+                interaction.reply({content: `Sent log report to ${email}`, ephemeral: true });
+            } catch(e) {
+                interaction.reply({content: `Error sending email `+e, ephemeral: true });
+            }
+        } catch (error) {
+            interaction.reply({content: "Error: "+error, ephemeral: true });
+        }
     }
 };
