@@ -126,6 +126,13 @@ module.exports = {
                     channels[i] = c_name[0].channel_name;
                 }
             }
+
+            if (channels.length == 0) {
+                const embed = new MessageEmbed()
+                    .setTitle("Allowed Channels")
+                    .setDescription("No allowed channels");
+                return await interaction.reply({ embeds: [embed] });
+            }
             
             const channelsPerPage = 10;
 
