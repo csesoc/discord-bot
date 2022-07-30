@@ -1,4 +1,13 @@
 {
     "users": [],
-    "channels": []
+    "channels": [
+        {
+            "channel_id": "1001784471764340746",
+            "delete": false
+        },
+        {
+            "channel_id": "1001784443939332117",
+            "delete": false
+        }
+    ]
 }
