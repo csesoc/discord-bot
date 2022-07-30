@@ -21,16 +21,25 @@ module.exports = {
                 .setDescription("post anonymously in another channel")
                 .addStringOption(option => option.setName('message').setDescription("Enter the text you wish to post anonymously").setRequired(true)) 
                 .addChannelOption(option => option.setName('channel').setDescription("Enter the channel you wish to post anonymously in").setRequired(true)),  
-        ).addSubcommand(subcommand =>
+        )
+        .addSubcommand(subcommand =>
             subcommand
                 .setName("allow")
                 .setDescription("[ADMIN] Allows a channel to be added.")
                 .addChannelOption(option => option.setName("channel").setDescription("Channel to allow").setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
+                .setName("allow current")
+                .setDescription("[ADMIN] Allows channel which command is executed to be added."))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName("disallow")
                 .setDescription("[ADMIN] Disallows a channel to be added.")
                 .addChannelOption(option => option.setName("channel").setDescription("Channel to disallow").setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName("disallow current")
+                .setDescription("[ADMIN] IDisallows channel which command is executed to be added."))
         .addSubcommand(subcommand =>
             subcommand
                 .setName("whitelist")
@@ -95,6 +104,19 @@ module.exports = {
             fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
 
             return await interaction.reply(`✅ | Allowed the channel \`${channel.name}\`.`);
+        } else if (interaction.options.getSubcommand() === "allow current") {
+            c_name = await logDB.channelname_get(interaction.channelId);
+
+            if (allowedChannels.some(c => c === interaction.channelId)) {
+                return await interaction.reply({ content: `❌ | The allowed channels list already contains \`${c_name[0].channel_name}\`.`, ephemeral: true });
+            }
+
+            allowedChannels.push(interaction.channelId);
+
+            // The path here is different to the require because it's called from index.js (I think)
+            fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
+
+            return await interaction.reply(`✅ | Allowed the channel \`${c_name[0].channel_name}\`.`);
         } else if (interaction.options.getSubcommand() === "disallow") {
             const channel = await interaction.options.getChannel("channel");
 
@@ -108,6 +130,19 @@ module.exports = {
             fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
 
             return await interaction.reply(`✅ | Disallowed the channel \`${channel.name}\`.`);
+        } else if (interaction.options.getSubcommand() === "disallow current") {
+            c_name = await logDB.channelname_get(interaction.channelId);
+
+            if (!allowedChannels.some(c => c === interaction.channelId)) {
+                return await interaction.reply({ content: `❌ | The allowed channel list does not contain \`${c_name[0].channel_name}\`.`, ephemeral: true });
+            }
+
+            allowedChannels.splice(allowedChannels.indexOf(interaction.channelId), 1);
+
+            // The path here is different to the require because it's called from index.js (I think)
+            fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
+
+            return await interaction.reply(`✅ | Disallowed the channel \`${c_name[0].channel_name}\`.`);
         } else if (interaction.options.getSubcommand() === "whitelist") {
 
             // No allowed roles
