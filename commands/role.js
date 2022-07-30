@@ -100,6 +100,15 @@ module.exports = {
 
             return await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "whitelist") {
+
+            // No allowed roles
+            if (allowedRoles.length == 0) {
+                const embed = new MessageEmbed()
+                    .setTitle("Allowed Roles")
+                    .setDescription("No allowed roles");
+                return await interaction.reply({ embeds: [embed] });
+            }
+
             // TODO: Convert to scroller?
             const rolesPerPage = 10;
 

@@ -24,7 +24,7 @@ module.exports = {
             else {
                 const to_send = JSON.parse(jsonString);
                 to_send.forEach( function (item, index) {
-                    if (item[3] == message_id && item[1] == channel_obj.id) {
+                    if (item[0] == message_id && item[1] == channel_obj.id) {
                         to_delete = index;
                     }
                 }

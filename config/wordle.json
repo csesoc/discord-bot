@@ -1,0 +1,45 @@
+{
+    "players": [
+        {
+            "id": "369081258916970506",
+            "name": "Yuvi",
+            "wordOfTheDay": "gpops",
+            "timeChanged": 1657503970269,
+            "if_finished": false,
+            "words": [
+                "sizar",
+                "beray",
+                "toper",
+                "adult",
+                "bolos",
+                "glops"
+            ],
+            "guesses": [
+                "ooooo",
+                "otttt",
+                "gpoop",
+                "opale",
+                "paper"
+            ],
+            "score": 2,
+            "total_games": 4
+        },
+        {
+            "id": "369081258916970406",
+            "name": "Yuvi",
+            "wordOfTheDay": "toper",
+            "timeChanged": 1653628753280,
+            "if_finished": false,
+            "words": [
+                "sizar",
+                "beray",
+                "toper"
+            ],
+            "guesses": [
+                "crapp"
+            ],
+            "score": 0,
+            "total_games": 0
+        }
+    ]
+}

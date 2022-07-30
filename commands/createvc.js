@@ -7,7 +7,7 @@ module.exports = {
         .setDescription("Create a temporary voice channel")
         ,
     async execute(interaction) {
-
+        try{
             // Limit on concurrent temporary channels
             const CHANNEL_LIMIT = 10;
             // Name of the category under which the temporary channels are
@@ -53,6 +53,9 @@ module.exports = {
             else {
                 await interaction.reply("Sorry, daily voice channel limit reached!");
             }
+        } catch(error) {
+            await interaction.reply("Error: "+error);
+        }
         
 
     },
