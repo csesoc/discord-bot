@@ -102,7 +102,7 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
 
-            return await interaction.reply(`✅ | Allowed the channel \`${channel.name}\`.`);
+            return await interaction.reply({ content: `✅ | Allowed the channel \`${channel.name}\`.`, ephemeral:true});
         } else if (interaction.options.getSubcommand() === "allowcurrent") {
             c_name = await logDB.channelname_get(interaction.channelId);
 
@@ -115,7 +115,7 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
 
-            return await interaction.reply(`✅ | Allowed the channel \`${c_name[0].channel_name}\`.`);
+            return await interaction.reply({ content: `✅ | Allowed the channel \`${c_name[0].channel_name}\`.`, ephemeral:true});
         } else if (interaction.options.getSubcommand() === "disallow") {
             const channel = await interaction.options.getChannel("channel");
 
@@ -128,7 +128,7 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
 
-            return await interaction.reply(`✅ | Disallowed the channel \`${channel.name}\`.`);
+            return await interaction.reply({ content: `✅ | Disallowed the channel \`${channel.name}\`.`, ephemeral:true});
         } else if (interaction.options.getSubcommand() === "disallowcurrent") {
             c_name = await logDB.channelname_get(interaction.channelId);
 
@@ -141,7 +141,7 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/anon_channel.json", JSON.stringify({ allowedChannels: allowedChannels }, null, 4));
 
-            return await interaction.reply(`✅ | Disallowed the channel \`${c_name[0].channel_name}\`.`);
+            return await interaction.reply({ content: `✅ | Disallowed the channel \`${c_name[0].channel_name}\`.`, ephemeral:true});
         } else if (interaction.options.getSubcommand() === "whitelist") {
 
             // No allowed roles
