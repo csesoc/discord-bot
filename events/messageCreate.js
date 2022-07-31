@@ -1,5 +1,7 @@
 const fs = require("fs");
 const axios = require("axios");
+const { Util } = require("discord.js");
+
 
 function messagelog(message) {
     // ignore messages sent from bot
@@ -135,11 +137,11 @@ module.exports = {
             if (!output) {
                 return message.reply("No output.");
             }
-
+            const code_output = Util.removeMentions(output)
             message.reply(
                 "Output:\n" +
                 "```\n" +
-                `${output}` +
+                `${code_output}` +
                 "```\n",
             );
         }
