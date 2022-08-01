@@ -107,7 +107,7 @@ module.exports = {
             c_name = await logDB.channelname_get(interaction.channelId);
 
             if (allowedChannels.some(c => c === interaction.channelId)) {
-                return await interaction.reply({ content: `❌ | The allowed channels list already contains \`${c_name[0].channel_name}\`.`, ephemeral: true });
+                return await interaction.reply({ content: `❌ | The allowed channels list already contains \`${c_name[0].channel_name}\`. Channel ID - \`${interaction.channelId}\``, ephemeral: true });
             }
 
             allowedChannels.push(interaction.channelId);
