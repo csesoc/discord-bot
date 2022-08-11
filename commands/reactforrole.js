@@ -33,7 +33,7 @@ module.exports = {
                 ephemeral: true 
             });
         }
-
+        try {
         const emojis = interaction.options.getString('emojis');
         const roleNames = interaction.options.getString('rolenames');
         let message = interaction.options.getString('message');
@@ -173,5 +173,13 @@ module.exports = {
                 }
             }   
         });
+    } catch (error) {
+        return await interaction.reply({ 
+            content: error, 
+            ephemeral: true 
+        });
+    }
+    
     },
+    
 };
