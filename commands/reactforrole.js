@@ -71,8 +71,10 @@ module.exports = {
 
         fs.readFile(path.join(__dirname, '../data/tmpreactroles.json'), async (err, jsonString) => {
             if (err) {
-                console.log("Error reading file from disk:", err);
-                return;
+                return await interaction.reply({ 
+                    content: error, 
+                    ephemeral: true 
+                });
             } else {
                 let data = JSON.parse(jsonString);
 
@@ -115,8 +117,10 @@ module.exports = {
                             roleID = newRole.id;
                             notificationContent += `\t${emoji} Created the new role '${roleName}'\n`
                         } catch (err) {
-                            console.log(err)
-                            return;
+                            return await interaction.reply({ 
+                                content: error, 
+                                ephemeral: true 
+                            });
                         }
                         
                     }
@@ -164,12 +168,17 @@ module.exports = {
                     jsonData = JSON.stringify(data);
                     fs.writeFile(path.join(__dirname, '../data/tmpreactroles.json'), jsonData, function(err) {
                         if (err) {
-                            console.log(err);
+                            return await interaction.reply({ 
+                                content: error, 
+                                ephemeral: true 
+                            });
                         }
                     })
                 } catch (err) {
-                    console.log(err)
-                    return;
+                    return await interaction.reply({ 
+                        content: error, 
+                        ephemeral: true 
+                    });
                 }
             }   
         });
