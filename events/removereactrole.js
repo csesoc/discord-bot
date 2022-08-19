@@ -1,11 +1,10 @@
 const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
-const path = require("path");
 
 module.exports = {
     name: "messageReactionRemove",
     once: false,
     async execute(reaction, user) {
+
         if (user.bot) return;
 
         if (reaction.partial) {
@@ -16,46 +15,44 @@ module.exports = {
                 return;
             }
         }
+        
+        let messageId = reaction.message.id;
 
-        fs.readFile(path.join(__dirname, '../data/tmpreactroles.json'), async (err, jsonString) => {
-            if (err) {
-                console.log("Error reading file from disk:", err);
-                return;
-            } else {
-                let data = JSON.parse(jsonString);
+        const reactRoles = global.reactRoles;
+        
+        let data = await reactRoles.get_roles(messageId, reaction.emoji.name)
 
-                // Check if message id is in the data
-                if (!(reaction.message.id in data)) return;
+        // Return if message id and emoji doesn't match anything in the database
+        if (data.length == 0) return;
 
-                let role = data[reaction.message.id].roles[reaction.emoji.name];
+        let roleId = data[0].role_id
 
-                // Check if emoji is in data
-                if (!role) return;
+        let senderId = await reactRoles.get_sender(messageId)
 
-                let noEntryReact = reaction.message.reactions.resolve('⛔')
-                if (noEntryReact) {
-                    try {
-                        noEntryReact.users.fetch().then(async userList => {
-                            let hasRole = await reaction.message.guild.members.cache.get(user.id)._roles.includes(role);
-                            if (!userList.has(data[reaction.message.id].senderId) || hasRole) {
-                                removeRole(reaction, user, role)
-                            }
-                        });
-                    } catch (err) {
-                        console.log(err)
+        // Check if message has ⛔ reacted by the sender and if the user already has the role
+        // If so remove the role from the user
+        let noEntryReact = reaction.message.reactions.resolve('⛔')
+        if (noEntryReact) {
+            try {
+                noEntryReact.users.fetch().then(async userList => {
+                    let hasRole = await reaction.message.guild.members.cache.get(user.id)._roles.includes(roleId);
+                    if (!userList.has(senderId) || hasRole) {
+                        removeRole(reaction, user, roleId)
                     }
-                } else {
-                    removeRole(reaction, user, role)
-                }
+                });
+            } catch (err) {
+                console.log(err)
             }
-        });
+        } else {
+            removeRole(reaction, user, roleId)
+        }
     },
 };
 
-async function removeRole(reaction, user, role) {
+async function removeRole(reaction, user, roleId) {
     try {
-        reaction.message.guild.members.cache.get(user.id).roles.remove(role);
-        let roleName = await reaction.message.guild.roles.cache.find(r => r.id === role).name
+        reaction.message.guild.members.cache.get(user.id).roles.remove(roleId);
+        let roleName = await reaction.message.guild.roles.cache.find(r => r.id === roleId).name
         let botName = await reaction.message.author.username;
 
         // Notify user role was successfully removed

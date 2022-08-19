@@ -1,6 +1,4 @@
 const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
-const path = require("path");
 
 module.exports = {
     name: "messageReactionAdd",
@@ -18,65 +16,56 @@ module.exports = {
             }
         }
 
-        fs.readFile(path.join(__dirname, '../data/tmpreactroles.json'), (err, jsonString) => {
-            if (err) {
-                console.log("Error reading file from disk:", err);
-                return;
-            } else {
-                let data = JSON.parse(jsonString);
-    
-                let messageId = reaction.message.id;
-                
-                // Check if message id is in the data
-                if (!(messageId in data)) return;
-                
-                let role = data[messageId].roles[reaction.emoji.name];
-                
-                // Check if emoji is in data
-                if (!role) return;
-                
-                let senderId = data[messageId].senderId;
-    
-                // Check if emoji is ⛔ and if the user is the sender
-                if (reaction.emoji.name === '⛔' && user.id === senderId) return;
-    
-                // Check if message has ⛔ reacted by the sender
-                // If not assign the role to the user
-                
-                let reactions = reaction.message.reactions;
-                let noEntryReact = reactions.resolve('⛔');
-                if (noEntryReact) {
-                    noEntryReact.users.fetch().then(async userList => {
-                        if (userList.has(data[messageId].senderId)) {
-                            reactions.resolve(reaction).users.remove(user);
-                            
-                            let botName = await reaction.message.author.username;
-    
-                            // Notify user that role was not assigned
-                            let notification = new MessageEmbed()
-                                .setColor('#7cd699')
-                                .setTitle('Role could not be assigned')
-                                .setAuthor(botName, 'https://avatars.githubusercontent.com/u/164179?s=200&v=4')
-                                .setDescription(`You can no longer react to the message in "${reaction.message.guild.name}" to get a role`)
-                            user.send({
-                                embeds: [notification]
-                            })
-                        } else {
-                            giveRole(reaction, user, role);
-                        }
+        let messageId = reaction.message.id;
+
+        const reactRoles = global.reactRoles;
+        
+        let data = await reactRoles.get_roles(messageId, reaction.emoji.name)
+
+        // Return if message id and emoji doesn't match anything in the database
+        if (data.length == 0) return;
+
+        let roleId = data[0].role_id
+        
+        let senderId = await reactRoles.get_sender(messageId)
+
+        // Check if emoji is ⛔ and if the user is the sender
+        if (reaction.emoji.name === '⛔' && user.id === senderId) return;
+
+        // Check if message has ⛔ reacted by the sender
+        // If not assign the role to the user
+        let reactions = reaction.message.reactions;
+        let noEntryReact = reactions.resolve('⛔');
+        if (noEntryReact) {
+            noEntryReact.users.fetch().then(async userList => {
+                if (userList.has(senderId)) {
+                    reactions.resolve(reaction).users.remove(user);
+                    
+                    let botName = await reaction.message.author.username;
+
+                    // Notify user that role was not assigned
+                    let notification = new MessageEmbed()
+                        .setColor('#7cd699')
+                        .setTitle('Role could not be assigned')
+                        .setAuthor(botName, 'https://avatars.githubusercontent.com/u/164179?s=200&v=4')
+                        .setDescription(`You can no longer react to the message in "${reaction.message.guild.name}" to get a role`)
+                    user.send({
+                        embeds: [notification]
                     })
                 } else {
-                    giveRole(reaction, user, role);
+                    giveRole(reaction, user, roleId);
                 }
-            }
-        });
+            })
+        } else {
+            giveRole(reaction, user, roleId);
+        }
     },
 };
 
-async function giveRole(reaction, user, role) {
+async function giveRole(reaction, user, roleId) {
     try {
-        reaction.message.guild.members.cache.get(user.id).roles.add(role);
-        let roleName = await reaction.message.guild.roles.cache.find(r => r.id === role).name;
+        reaction.message.guild.members.cache.get(user.id).roles.add(roleId);
+        let roleName = await reaction.message.guild.roles.cache.find(r => r.id === roleId).name;
         let botName = await reaction.message.author.username;
     
         // Notify user role was successfully added
