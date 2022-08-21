@@ -38,7 +38,7 @@ module.exports = {
 
     const emojis = interaction.options.getString("emojis");
     const roleNames = interaction.options.getString("rolenames");
-    let message = interaction.options.getString("message");
+    var message = interaction.options.getString("message");
 
     const emojiList = emojis.split(",").map((item) => item.trim());
     const roleList = roleNames.split(",").map((item) => item.trim());
@@ -79,23 +79,23 @@ module.exports = {
 
     const reactRoles = global.reactRoles;
 
-    let roles = {};
+    var roles = {};
 
     notificationContent = "This command: \n";
 
-    for (let i = 0; i < roleList.length; i++) {
-      let roleName = roleList[i];
-      let emoji = emojiList[i];
+    for (var i = 0; i < roleList.length; i++) {
+      var roleName = roleList[i];
+      var emoji = emojiList[i];
 
       if (custom_emoji_regex.test(emoji)) {
         emoji = emoji.split(":")[1];
       }
 
       // Check if role exist
-      let role = interaction.member.guild.roles.cache.find(
+      var role = interaction.member.guild.roles.cache.find(
         (role) => role.name === roleName
       );
-      let roleID;
+      var roleID;
 
       if (role) {
         const roleIsAdmin = role.permissions.has("ADMINISTRATOR");
@@ -110,7 +110,7 @@ module.exports = {
       } else {
         // Role does not exist so create one
         try {
-          let newRole = await interaction.member.guild.roles.create({
+          var newRole = await interaction.member.guild.roles.create({
             name: roleName,
             reason: `new role required for react role feature "${roleName}"`,
           });
@@ -135,7 +135,7 @@ module.exports = {
     }
 
     message += "React to give yourself a role";
-    for (let i = 0; i < emojiList.length; i++) {
+    for (var i = 0; i < emojiList.length; i++) {
       message += `\n${emojiList[i]}: ${roleList[i]}`;
     }
 
@@ -147,8 +147,8 @@ module.exports = {
       });
 
       // Notify user that they used the command
-      let botName = await sentMessage.author.username;
-      let notification = new MessageEmbed()
+      var botName = await sentMessage.author.username;
+      var notification = new MessageEmbed()
         .setColor("#7cd699")
         .setTitle("React For Role Command Used!")
         .setAuthor(
@@ -171,7 +171,7 @@ module.exports = {
 
       // Add to database
       await reactRoles.add_react_role_msg(sentMessage.id, interaction.user.id);
-      for (let emoji in roles) {
+      for (var emoji in roles) {
         await reactRoles.add_react_role_role(
           roles[emoji],
           emoji,
