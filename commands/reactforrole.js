@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { Permissions, MessageEmbed } = require("discord.js");
-const fs = require("fs");
-const path = require("path");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -69,109 +67,102 @@ module.exports = {
             });
         }
 
-        fs.readFile(path.join(__dirname, '../data/tmpreactroles.json'), async (err, jsonString) => {
-            if (err) {
-                console.log("Error reading file from disk:", err);
-                return;
+        const reactRoles = global.reactRoles;
+
+        let roles = {}
+
+        notificationContent = "This command: \n"
+
+        for (let i = 0; i < roleList.length; i++) {
+            let roleName = roleList[i];
+            let emoji = emojiList[i];
+
+            if (custom_emoji_regex.test(emoji)) {
+                emoji = emoji.split(":")[1]
+            }
+            
+            // Check if role exist
+            let role = interaction.member.guild.roles.cache.find(role => role.name === roleName);
+            let roleID;
+
+            if (role) {
+                const roleIsAdmin = role.permissions.has('ADMINISTRATOR')
+                if (roleIsAdmin) {
+                    return await interaction.reply({
+                        content: `The existing role '${roleName}' has admin permissions so this command cannot be used to give users this role`,
+                        ephemeral: true
+                    });
+                }
+                roleID = role.id;
+                notificationContent += `\t'${emoji}' Used the existing role '${roleName}'\n`
             } else {
-                let data = JSON.parse(jsonString);
-
-                messageInfo = {
-                    senderId: interaction.user.id,
-                    roles: {}
-                };
-
-                notificationContent = "This command: \n"
-
-                for (let i = 0; i < roleList.length; i++) {
-                    let roleName = roleList[i];
-                    let emoji = emojiList[i];
-
-                    if (custom_emoji_regex.test(emoji)) {
-                        emoji = emoji.split(":")[1]
-                    }
-                    
-                    // Check if role exist
-                    let role = interaction.member.guild.roles.cache.find(role => role.name === roleName);
-                    let roleID;
-
-                    if (role) {
-                        const roleIsAdmin = role.permissions.has('ADMINISTRATOR')
-                        if (roleIsAdmin) {
-                            return await interaction.reply({
-                                content: `The existing role '${roleName}' has admin permissions so this command cannot be used to give users this role`,
-                                ephemeral: true
-                            });
-                        }
-                        roleID = role.id;
-                        notificationContent += `\t${emoji} Used the existing role '${roleName}'\n`
-                    } else {
-                        // Role does not exist so create one
-                        try {
-                            let newRole = await interaction.member.guild.roles.create({
-                                name: roleName,
-                                reason: `we needed this cool new role "${roleName}"`,
-                            });
-                            roleID = newRole.id;
-                            notificationContent += `\t${emoji} Created the new role '${roleName}'\n`
-                        } catch (err) {
-                            console.log(err)
-                            return;
-                        }
-                        
-                    }
-                    messageInfo.roles[emoji] = roleID;
-                } 
-
-                if (!message) {
-                    message = "";
-                } else {
-                    message += '\n\n';
-                }
-                
-                message += "React to give yourself a role";
-                for (let i = 0; i < emojiList.length; i++) {
-                    message += `\n${emojiList[i]}: ${roleList[i]}`
-                }
-                
-                // Execute reactforrole command
+                // Role does not exist so create one
                 try {
-                    // Send message
-                    const sentMessage = await interaction.reply({
-                        content: message,
-                        fetchReply: true
+                    let newRole = await interaction.member.guild.roles.create({
+                        name: roleName,
+                        reason: `new role required for react role feature "${roleName}"`,
                     });
-
-                    // Notify user that they used the command
-                    let botName = await sentMessage.author.username;
-                    let notification = new MessageEmbed()
-                        .setColor('#7cd699')
-                        .setTitle('React For Role Command Used!')
-                        .setAuthor(botName, 'https://avatars.githubusercontent.com/u/164179?s=200&v=4')
-                        .setDescription(`You used the 'reactforrole' command "${interaction.member.guild.name} \n\n` + notificationContent + "\nReact ⛔ on the reaction message stop users from getting the roles")
-                    interaction.user.send({
-                        embeds: [notification]
-                    })
-
-                    // Add react
-                    emojiList.forEach(emoji => {
-                        sentMessage.react(emoji)
-                    });
-                    
-                    // Add to data
-                    data[sentMessage.id] = messageInfo;
-                    
-                    jsonData = JSON.stringify(data);
-                    fs.writeFile(path.join(__dirname, '../data/tmpreactroles.json'), jsonData, function(err) {
-                        if (err) {
-                            console.log(err);
-                        }
-                    })
+                    roleID = newRole.id;
+                    notificationContent += `\t'${emoji}' Created the new role '${roleName}'\n`
                 } catch (err) {
                     console.log(err)
-                    return;
+                    return await interaction.reply({
+                        content: `An error occured with creating '${roleName}'`,
+                        ephemeral: true
+                    });
                 }
-            }   
-        });
+                
+            }
+
+            roles[emoji] = roleID;
+        } 
+
+        if (!message) {
+            message = "";
+        } else {
+            message += '\n\n';
+        }
+        
+        message += "React to give yourself a role";
+        for (let i = 0; i < emojiList.length; i++) {
+            message += `\n${emojiList[i]}: ${roleList[i]}`
+        }
+
+        try {
+            // Send message
+            const sentMessage = await interaction.reply({
+                content: message,
+                fetchReply: true
+            });
+
+            // Notify user that they used the command
+            let botName = await sentMessage.author.username;
+            let notification = new MessageEmbed()
+                .setColor('#7cd699')
+                .setTitle('React For Role Command Used!')
+                .setAuthor(botName, 'https://avatars.githubusercontent.com/u/164179?s=200&v=4')
+                .setDescription(`You used the 'reactforrole' command "${interaction.member.guild.name} \n\n` + notificationContent + "\nReact ⛔ on the reaction message stop users from getting the roles")
+            interaction.user.send({
+                embeds: [notification]
+            })
+
+            // Add react
+            emojiList.forEach(emoji => {
+                sentMessage.react(emoji)
+            });
+
+            // Add to database
+            await reactRoles.add_react_role_msg(sentMessage.id,  interaction.user.id)
+            for (let emoji in roles) {
+                await reactRoles.add_react_role_role(roles[emoji], emoji, sentMessage.id)
+            }
+            
+        } catch (err) {
+            console.log(err)
+            return await interaction.reply({
+                content: `An error occured with creating the role reaction messsage or writing to the database`,
+                ephemeral: true
+            });
+        }
     },
 };
