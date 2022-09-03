@@ -130,20 +130,21 @@ module.exports = {
 
         try {
             // Send message
-            const sentMessage = await interaction.reply({
+            const sentMessage = await interaction.guild.channels.cache.get(interaction.channelId).send({
                 content: message,
                 fetchReply: true
-            });
+            })
 
             // Notify user that they used the command
-            var botName = await sentMessage.author.username;
+            var botName = sentMessage.author.username;
             var notification = new MessageEmbed()
                 .setColor('#7cd699')
                 .setTitle('React For Role Command Used!')
                 .setAuthor(botName, 'https://avatars.githubusercontent.com/u/164179?s=200&v=4')
-                .setDescription(`You used the 'reactforrole' command "${interaction.member.guild.name} \n\n` + notificationContent + "\nReact ⛔ on the reaction message to stop users from getting the roles")
-            interaction.user.send({
-                embeds: [notification]
+                .setDescription(`You used the 'reactforrole' command in "${interaction.member.guild.name} \n\n` + notificationContent + "\nReact ⛔ on the reaction message to stop users from getting the roles")
+            interaction.reply({
+                embeds: [notification],
+                ephemeral: true
             })
 
             // Add react
