@@ -56,11 +56,11 @@ module.exports = {
         const role = await interaction.options.getRole("role");
 
         if (
-          !reg_comp_course.test(role.name.toLowerCase()) ||
-          !reg_math_course.test(role.name.toLowerCase()) ||
-          !reg_binf_course.test(role.name.toLowerCase()) ||
-          !reg_engg_course.test(role.name.toLowerCase()) ||
-          !reg_seng_course.test(role.name.toLowerCase()) ||
+          !reg_comp_course.test(role.name.toLowerCase()) &&
+          !reg_math_course.test(role.name.toLowerCase()) &&
+          !reg_binf_course.test(role.name.toLowerCase()) &&
+          !reg_engg_course.test(role.name.toLowerCase()) &&
+          !reg_seng_course.test(role.name.toLowerCase()) &&
           !reg_desn_course.test(role.name.toLowerCase())
         ) {
           return await interaction.reply({
@@ -84,11 +84,11 @@ module.exports = {
         const role = await interaction.options.getRole("role");
 
         if (
-          !reg_comp_course.test(role.name.toLowerCase()) ||
-          !reg_math_course.test(role.name.toLowerCase()) ||
-          !reg_binf_course.test(role.name.toLowerCase()) ||
-          !reg_engg_course.test(role.name.toLowerCase()) ||
-          !reg_seng_course.test(role.name.toLowerCase()) ||
+          !reg_comp_course.test(role.name.toLowerCase()) &&
+          !reg_math_course.test(role.name.toLowerCase()) &&
+          !reg_binf_course.test(role.name.toLowerCase()) &&
+          !reg_engg_course.test(role.name.toLowerCase()) &&
+          !reg_seng_course.test(role.name.toLowerCase()) &&
           !reg_desn_course.test(role.name.toLowerCase())
         ) {
           return await interaction.reply({
