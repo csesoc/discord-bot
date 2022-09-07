@@ -35,17 +35,17 @@ module.exports = {
                 .addStringOption(option => 
                     option
                         .setName('messageid')
-                        .setDescription("Enter ID of the message you want to be scheduled")
+                        .setDescription("Enter ID of the message you want to cancel")
                         .setRequired(true))
                 .addChannelOption(option => 
                     option
                         .setName('channel')
-                        .setDescription("Select the channel to send the message")
+                        .setDescription("Select the channel where the message is scheduled to send.")
                         .setRequired(true))
                 .addStringOption(option => 
                     option
                         .setName('datetime')
-                        .setDescription("Enter the time as YYYY-MM-DD HH:MM")
+                        .setDescription("Enter the time of the initial scheduled message as YYYY-MM-DD HH:MM")
                         .setRequired(true))),
 
     async execute(interaction) {
@@ -160,6 +160,8 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
     if (user_reminder) {
         reply_msg += `\nReminders will be sent to users who react '⏰' at ${user_reminder}.`;
     }
+
+    reply_msg += `\nUse \`\\schedulepost cancel\` to cancel this.`
 
     await interaction.reply({ 
         content: reply_msg,
