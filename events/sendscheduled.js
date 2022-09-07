@@ -1,93 +1,56 @@
-const path = require("path");
-const fs = require('fs');
 const { MessageAttachment } = require("discord.js");
 
-// Checks schedulemessage.json every minute to see if there is a message to be sent
+// Checks database every minute to see if there is a message to be sent
 
 module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-
-        // Sets the interval to every minute
-        let timer = setInterval(function() {
-            fs.readFile(path.join(__dirname, '../data/schedulemessage.json'), (err, jsonString) => {
-                if (err) {
-                    console.log("Error reading file from disk:", err)
-                    return
-                }
-
-                // Get list of messages that have been scheduled
-                const to_send = JSON.parse(jsonString);
-
-                // Loop through messages in reverse order to check if a message
-                // needs to be sent now. After the message is sent, it is removed
-                // from the file
-                for (var i = to_send.length - 1; i >= 0; i--) {
-                    send_time = new Date(to_send[i][2]);
-                    var today = new Date();
-                    now_time = new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours(), today.getMinutes(), 0);
-                    
-                    // Message is to be sent now
-                    if (now_time - send_time == 0) {
-                        message_id = to_send[i][0]
-                        channel_id = to_send[i][1];
-                        reminder = to_send[i][3]
-                        send_channel = client.channels.cache.get(channel_id);
-                        
-                        // Retrieve the original message
-                        client.channels.fetch(channel_id).then(function (channel) {
-                            channel.messages.fetch(message_id).then(function (message) {
-                                
-                                // Retrieve attachments if applicable
-                                attachment_list = []
-                                message.attachments.forEach(attachment => { 
-                                    attachment_list.push(new MessageAttachment(attachment.proxyURL))
-                                })
-                                message_content = message.content
-                                if (reminder) {
-                                    message_content = message.content + "\n \n react ⏰ to be notified about this event!"
-                                }
-
-                                // Send the scheduled message
-                                send_channel.send({content: message_content ? message_content: " ", files: attachment_list}).then(function (sent_message) {
-                                    
-                                    // If the message has reminder feature, add an alarm clock react
-                                    // and add the reminder in to sendscheduled_reminders.js
-                                    if (reminder) {
-                                        sent_message.react('⏰')
-                                        fs.readFile(path.join(__dirname, '../data/schedulepost_reminders.json'), (err, jsonString) => {
-                                            if (err) {
-                                                console.log("Error reading file from disk:", err)
-                                                return
-                                            }
-                                            var reminder_data = [sent_message.id, channel_id, reminder]
-                                            const to_send_reminder = JSON.parse(jsonString);
-                                            to_send_reminder.push(reminder_data);
-                                            jsonData = JSON.stringify(to_send_reminder);
-                                            fs.writeFile(path.join(__dirname, '../data/schedulepost_reminders.json'), jsonData, function(err) {
-                                                if (err) {
-                                                    console.log(err);
-                                                }
-                                            });
-                                        });
-                                    }
-                                })
-                            });
-                        }); 
-                        // Removes the sent message
-                        to_send.splice(i, 1)
-                    };
-                }
-                // Rewrite the scheduled messages that have not been sent back into schedulemessage.json
-                jsonData = JSON.stringify(to_send);
-                    fs.writeFile(path.join(__dirname, '../data/schedulemessage.json'), jsonData, function(err) {
-                        if (err) {
-                            console.log(err);
-                        }
-                    })
-            });
+        setInterval(async () => {
+            var today = new Date();
             
+            var year = String(today.getFullYear()).padStart(4, '0');
+            var month = String(today.getMonth() + 1).padStart(2, '0');
+            var day = String(today.getDate()).padStart(2, '0');
+            var hour = String(today.getHours()).padStart(2, '0');
+            var minute = String(today.getMinutes()).padStart(2, '0');
+            var now_time = `${year}-${month}-${day} ${hour}:${minute}`;
+
+            var scheduled = await schedulePost.get_scheduled(now_time);
+            
+            for (post of scheduled) {
+                var reminder = post.reminder;
+                var send_channel = client.channels.cache.get(post.send_channel_id);
+                var init_channel = client.channels.cache.get(post.init_channel_id);
+                var send_msg = await init_channel.messages.fetch(post.msg_id);
+                
+                // Retrieve attachments if applicable
+                var attachment_list = [];
+                send_msg.attachments.forEach(attachment => { 
+                    attachment_list.push(new MessageAttachment(attachment.proxyURL));
+                })
+
+                // Retrieve message content
+                var message_content = send_msg.content ? send_msg.content : " ";
+
+                if (reminder) {
+                    message_content = send_msg.content + "\n \n react ⏰ to be notified about this event!";
+                }
+
+                // Send the scheduled message
+                send_channel.send({
+                    content: message_content,
+                    files: attachment_list
+                }).then(async (sent_message) => {
+                    if (reminder) {
+                        sent_message.react('⏰');
+                        await schedulePost.add_reminder(sent_message.id, post.scheduled_post_id)
+                    } else {
+                        await schedulePost.remove_scheduled(post.scheduled_post_id);
+                    }
+                })
+            }
+
         }, 1000 * 60)
     },
 };
