@@ -1,12 +1,25 @@
-name: Docker projects-bot
+name: Build projects-bot
 
 on:
   push:
 
 jobs:
+  format-lint-check:
+    name: "Format & lint check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
   build:
     name: "Build"
     runs-on: ubuntu-latest
+    needs: ["format-lint-check"]
     permissions:
       contents: read
       packages: write
