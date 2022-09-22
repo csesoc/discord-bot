@@ -9,7 +9,7 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-        const timer = setInterval(function() {
+        const timer = setInterval(function () {
             temp_data = [];
             // Reading data from the file
             fs.readFile("./data/createvc.json", "utf-8", (err, jsonString) => {
@@ -36,7 +36,7 @@ module.exports = {
 
                     // console.log(data);
 
-                    data.channels.forEach(function(item, index) {
+                    data.channels.forEach(function (item, index) {
                         // item here is the channel id
                         if (item.delete == false) {
                             client.channels

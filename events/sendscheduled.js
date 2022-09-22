@@ -9,7 +9,7 @@ module.exports = {
     once: true,
     execute(client) {
         // Sets the interval to every minute
-        const timer = setInterval(function() {
+        const timer = setInterval(function () {
             fs.readFile(path.join(__dirname, "../data/schedulemessage.json"), (err, jsonString) => {
                 if (err) {
                     console.log("Error reading file from disk:", err);
@@ -42,8 +42,8 @@ module.exports = {
                         send_channel = client.channels.cache.get(channel_id);
 
                         // Retrieve the original message
-                        client.channels.fetch(channel_id).then(function(channel) {
-                            channel.messages.fetch(message_id).then(function(message) {
+                        client.channels.fetch(channel_id).then(function (channel) {
+                            channel.messages.fetch(message_id).then(function (message) {
                                 // Retrieve attachments if applicable
                                 attachment_list = [];
                                 message.attachments.forEach((attachment) => {
@@ -64,7 +64,7 @@ module.exports = {
                                         content: message_content ? message_content : " ",
                                         files: attachment_list,
                                     })
-                                    .then(function(sent_message) {
+                                    .then(function (sent_message) {
                                         // If the message has reminder feature, add an alarm clock react
                                         // and add the reminder in to sendscheduled_reminders.js
                                         if (reminder) {
@@ -96,7 +96,7 @@ module.exports = {
                                                             "../data/schedulepost_reminders.json",
                                                         ),
                                                         jsonData,
-                                                        function(err) {
+                                                        function (err) {
                                                             if (err) {
                                                                 console.log(err);
                                                             }
@@ -117,7 +117,7 @@ module.exports = {
                 fs.writeFile(
                     path.join(__dirname, "../data/schedulemessage.json"),
                     jsonData,
-                    function(err) {
+                    function (err) {
                         if (err) {
                             console.log(err);
                         }

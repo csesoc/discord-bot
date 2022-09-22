@@ -32,7 +32,7 @@ module.exports = {
                 return;
             } else {
                 const to_send = JSON.parse(jsonString);
-                to_send.forEach(function(item, index) {
+                to_send.forEach(function (item, index) {
                     if (item[0] == message_id && item[1] == channel_obj.id) {
                         to_delete = index;
                     }
@@ -43,7 +43,7 @@ module.exports = {
                     fs.writeFile(
                         path.join(__dirname, "../data/schedulemessage.json"),
                         jsonData,
-                        function(err) {
+                        function (err) {
                             if (err) {
                                 console.log(err);
                             }
