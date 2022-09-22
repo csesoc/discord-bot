@@ -29,7 +29,7 @@ module.exports = {
                 // See if there is a category channel with name - TEMPORARY VCs
                 // If not, it creates a new category with name CATEGORY_NAME
                 try {
-                    allchannels.forEach(function(item, index) {
+                    allchannels.forEach(function (item, index) {
                         if (
                             item != null &&
                             item.type == "GUILD_CATEGORY" &&

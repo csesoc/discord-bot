@@ -31,7 +31,7 @@ module.exports = {
 
             if (teamName in data) {
                 let flag = 0;
-                data[teamName].forEach(function(item, _index) {
+                data[teamName].forEach(function (item, _index) {
                     if (item["voteauthorid"] == voteauthorid) {
                         item["standup"] = messageContent;
                         item["mentions"] = result;
