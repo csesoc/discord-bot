@@ -8,24 +8,33 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("standupstatus")
         .setDescription("Get standups [ADMIN]")
-        .addSubcommand(subcommand =>
+        .addSubcommand((subcommand) =>
             subcommand
                 .setName("resetstandups")
-                .setDescription("Admin command to reset all standups"))
-        .addSubcommand(subcommand =>
+                .setDescription("Admin command to reset all standups"),
+        )
+        .addSubcommand((subcommand) =>
             subcommand
                 .setName("getfullstandups")
                 .setDescription("Returns all standups")
-                .addMentionableOption(option => option.setName("teamrole").setDescription("Mention the team role (@team-role)").setRequired(true)),
+                .addMentionableOption((option) =>
+                    option
+                        .setName("teamrole")
+                        .setDescription("Mention the team role (@team-role)")
+                        .setRequired(true),
+                ),
         ),
 
     async execute(interaction) {
         // Starting a vote
         if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-            return await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
+            return await interaction.reply({
+                content: "You do not have permission to execute this command.",
+                ephemeral: true,
+            });
         }
         if (interaction.options.getSubcommand() === "getfullstandups") {
-            // var teamName = await interaction.options.getString('team');
+            // let teamName = await interaction.options.getString('team');
             let sendmsg = "";
             try {
                 let tempData;
@@ -36,19 +45,17 @@ module.exports = {
                 }
                 data = JSON.parse(tempData)["data"];
 
-
                 const team = await interaction.options.getMentionable("teamrole");
                 const teamRoleID = team.id;
                 const teamName = team.name;
                 const teams = Object.keys(data);
                 const key = closest_match.closestMatch(teamName, teams);
 
-
                 const standupDone = [];
                 if (data[key] != undefined) {
-                    data[key].forEach(element => {
+                    data[key].forEach((element) => {
                         standupDone.push(element.voteauthorid);
-                        element.mentions.forEach(user_id => {
+                        element.mentions.forEach((user_id) => {
                             standupDone.push(user_id);
                         });
                         sendmsg += element.voteauthorname + "\n" + element.standup;
@@ -61,7 +68,6 @@ module.exports = {
                 const role = await interaction.guild.roles.fetch(teamRoleID);
                 const roleMembers = [...role.members.values()];
                 roleMembers.forEach(function(item, index) {
-
                     const id = String(item.user.id);
                     console.log(item);
                     if (!standupDone.includes(id)) {
@@ -81,20 +87,15 @@ module.exports = {
                     }
                 });
 
-
                 await interaction.reply(sendmsg);
             } catch (error) {
                 sendmsg = "An error - " + error;
                 await interaction.reply(sendmsg);
             }
-
-
         } else if (interaction.options.getSubcommand() === "resetstandups") {
             data = {};
             fs.writeFileSync("./config/standup.json", JSON.stringify({ data: {} }, null, 4));
             await interaction.reply("Standups reset!");
         }
-
-
     },
 };

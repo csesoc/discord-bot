@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-check
 
 const { MessageReaction, User } = require("discord.js");
 const { CarrotboardStorage } = require("../lib/carrotboard");
@@ -19,7 +19,7 @@ module.exports = {
         /** @type {CarrotboardStorage} */
         const cbStorage = global.cbStorage;
         const message = reaction.message;
-        
+
         // make sure not bot and not the current client
         if (!message.author.bot && !reaction.me) {
             // get the details

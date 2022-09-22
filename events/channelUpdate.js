@@ -4,9 +4,9 @@ module.exports = {
     async execute(channel) {
         const logDB = global.logDB;
         old_name = await logDB.channelname_get(channel.id);
-        
-        if(old_name != channel.name){
+
+        if (old_name != channel.name) {
             await logDB.channelname_update(channel.name, channel.id);
         }
-    }
+    },
 };
