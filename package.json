@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "format": "prettier -w './**/*.js'",
+        "format:check": "prettier --check './**/*.js'",
         "lint": "eslint . --ext .js",
         "lint:fix": "eslint --fix . --ext .js",
         "test": "echo \"Error: no test specified\" && exit 1"
