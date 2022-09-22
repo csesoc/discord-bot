@@ -34,7 +34,6 @@
         "no-var": "error",
         "object-curly-spacing": ["error", "always"],
         "prefer-const": "error",
-        "quotes": ["error", "double"],
         "semi": ["error", "always"],
         "space-before-blocks": "error",
         "space-in-parens": "error",
