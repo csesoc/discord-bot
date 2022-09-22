@@ -62,59 +62,59 @@ async function handleInteraction(interaction) {
     let tags = null;
     let success = false;
     switch (subcommand) {
-    case "create":
-        keyword = String(interaction.options.get("keyword").value).toLowerCase();
-        answer = String(interaction.options.get("answer").value);
-        if (answer.length >= 1024) {
-            await interaction.reply({
-                content: "The answer must be < 1024 characters...",
-                ephemeral: true,
-            });
-        }
-        tags = String(interaction.options.get("tags").value);
-        // validate "tags" string
-        if (tags) {
-            tags = tags.trim();
-            const tagRegex = /^([a-zA-Z]+,)*[a-zA-Z]+$/;
-            if (!tagRegex.test(tags)) {
+        case "create":
+            keyword = String(interaction.options.get("keyword").value).toLowerCase();
+            answer = String(interaction.options.get("answer").value);
+            if (answer.length >= 1024) {
                 await interaction.reply({
-                    content: "ERROR: tags must be comma-separated alphabetic strings",
+                    content: "The answer must be < 1024 characters...",
                     ephemeral: true,
                 });
-                break;
             }
-        }
+            tags = String(interaction.options.get("tags").value);
+            // validate "tags" string
+            if (tags) {
+                tags = tags.trim();
+                const tagRegex = /^([a-zA-Z]+,)*[a-zA-Z]+$/;
+                if (!tagRegex.test(tags)) {
+                    await interaction.reply({
+                        content: "ERROR: tags must be comma-separated alphabetic strings",
+                        ephemeral: true,
+                    });
+                    break;
+                }
+            }
 
-        success = await faqStorage.new_faq(keyword, answer, tags);
-        if (success) {
-            await interaction.reply({
-                content: `Successfully created FAQ entry for '${keyword}': ${answer}`,
-                ephemeral: true,
-            });
-        } else {
-            await interaction.reply({
-                content: "Something went wrong, make sure you are using a unique keyword!",
-                ephemeral: true,
-            });
-        }
-        break;
-    case "delete":
-        keyword = String(interaction.options.get("keyword").value).toLowerCase();
-        success = await faqStorage.del_faq(keyword);
-        if (success) {
-            await interaction.reply({
-                content: `Successfully Deleted FAQ entry for '${keyword}'.`,
-                ephemeral: true,
-            });
-        } else {
-            await interaction.reply({
-                content: "Something went wrong, make sure you are giving a unique keyword!",
-                ephemeral: true,
-            });
-        }
-        break;
-    default:
-        await interaction.reply("Internal Error OH NO! CONTACT ME PLEASE!");
+            success = await faqStorage.new_faq(keyword, answer, tags);
+            if (success) {
+                await interaction.reply({
+                    content: `Successfully created FAQ entry for '${keyword}': ${answer}`,
+                    ephemeral: true,
+                });
+            } else {
+                await interaction.reply({
+                    content: "Something went wrong, make sure you are using a unique keyword!",
+                    ephemeral: true,
+                });
+            }
+            break;
+        case "delete":
+            keyword = String(interaction.options.get("keyword").value).toLowerCase();
+            success = await faqStorage.del_faq(keyword);
+            if (success) {
+                await interaction.reply({
+                    content: `Successfully Deleted FAQ entry for '${keyword}'.`,
+                    ephemeral: true,
+                });
+            } else {
+                await interaction.reply({
+                    content: "Something went wrong, make sure you are giving a unique keyword!",
+                    ephemeral: true,
+                });
+            }
+            break;
+        default:
+            await interaction.reply("Internal Error OH NO! CONTACT ME PLEASE!");
     }
 }
 

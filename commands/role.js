@@ -125,7 +125,7 @@ module.exports = {
 
                 // Make sure that the "unverified" role exists
                 if (role === undefined) {
-                    return await interaction.reply("Error: no \"unverified\" role exists.");
+                    return await interaction.reply('Error: no "unverified" role exists.');
                 }
 
                 const kickMessage =
