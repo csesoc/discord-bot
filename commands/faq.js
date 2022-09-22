@@ -57,23 +57,23 @@ async function handleInteraction(interaction) {
     // figure out which command was called
     const subcommand = interaction.options.getSubcommand(false);
     switch (subcommand) {
-    case "get":
-        await handleFAQGet(interaction, faqStorage);
-        break;
-    case "getall":
-        await handleFAQGetAll(interaction, faqStorage);
-        break;
-    case "help":
-        await handleFAQHelp(interaction, faqStorage);
-        break;
-    case "keywords":
-        await handleFAQKeywords(interaction, faqStorage);
-        break;
-    case "tags":
-        await handleFAQTags(interaction, faqStorage);
-        break;
-    default:
-        await interaction.reply("Internal Error AHHHHHHH! CONTACT ME PLEASE!");
+        case "get":
+            await handleFAQGet(interaction, faqStorage);
+            break;
+        case "getall":
+            await handleFAQGetAll(interaction, faqStorage);
+            break;
+        case "help":
+            await handleFAQHelp(interaction, faqStorage);
+            break;
+        case "keywords":
+            await handleFAQKeywords(interaction, faqStorage);
+            break;
+        case "tags":
+            await handleFAQTags(interaction, faqStorage);
+            break;
+        default:
+            await interaction.reply("Internal Error AHHHHHHH! CONTACT ME PLEASE!");
     }
 }
 
