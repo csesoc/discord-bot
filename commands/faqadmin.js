@@ -1,25 +1,33 @@
-//@ts-check
+// @ts-check
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
 const { CommandInteraction, Permissions } = require("discord.js");
 const { DBFaq } = require("../lib/database/faq");
 
-//////////////////////////////////////////////
-////////// SETTING UP THE COMMANDS ///////////
-//////////////////////////////////////////////
+// ////////////////////////////////////////////
+// //////// SETTING UP THE COMMANDS ///////////
+// ////////////////////////////////////////////
 
 // faq admin delete
 const commandFAQADelete = new SlashCommandSubcommandBuilder()
     .setName("delete")
     .setDescription("[ADMIN] Delete a FAQ entry.")
-    .addStringOption(option => option.setName("keyword").setDescription("The identifying word.").setRequired(true));
+    .addStringOption((option) =>
+        option.setName("keyword").setDescription("The identifying word.").setRequired(true),
+    );
 
 // faq admin create
 const commandFAQACreate = new SlashCommandSubcommandBuilder()
     .setName("create")
     .setDescription("[ADMIN] Create a FAQ entry.")
-    .addStringOption(option => option.setName("keyword").setDescription("The identifying word.").setRequired(true))
-    .addStringOption(option => option.setName("answer").setDescription("The answer to the question.").setRequired(true))
-    .addStringOption(option => option.setName("tags").setDescription("The answer to the question.").setRequired(false));
+    .addStringOption((option) =>
+        option.setName("keyword").setDescription("The identifying word.").setRequired(true),
+    )
+    .addStringOption((option) =>
+        option.setName("answer").setDescription("The answer to the question.").setRequired(true),
+    )
+    .addStringOption((option) =>
+        option.setName("tags").setDescription("The answer to the question.").setRequired(false),
+    );
 
 // the base command
 const baseCommand = new SlashCommandBuilder()
@@ -28,9 +36,9 @@ const baseCommand = new SlashCommandBuilder()
     .addSubcommand(commandFAQACreate)
     .addSubcommand(commandFAQADelete);
 
-//////////////////////////////////////////////
-/////////// HANDLING THE COMMANDS ////////////
-//////////////////////////////////////////////
+// ////////////////////////////////////////////
+// ///////// HANDLING THE COMMANDS ////////////
+// ////////////////////////////////////////////
 
 // handle the command
 /** @param {CommandInteraction} interaction */
@@ -40,7 +48,10 @@ async function handleInteraction(interaction) {
 
     // Admin permission check (this may not work uhm)
     if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-        await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
+        await interaction.reply({
+            content: "You do not have permission to execute this command.",
+            ephemeral: true,
+        });
         return;
     }
 
@@ -55,34 +66,51 @@ async function handleInteraction(interaction) {
             keyword = String(interaction.options.get("keyword").value).toLowerCase();
             answer = String(interaction.options.get("answer").value);
             if (answer.length >= 1024) {
-                await interaction.reply({ content: "The answer must be < 1024 characters...", ephemeral: true});
+                await interaction.reply({
+                    content: "The answer must be < 1024 characters...",
+                    ephemeral: true,
+                });
             }
             tags = String(interaction.options.get("tags").value);
-            // validate "tags" string 
+            // validate "tags" string
             if (tags) {
                 tags = tags.trim();
                 const tagRegex = /^([a-zA-Z]+,)*[a-zA-Z]+$/;
-                if (! tagRegex.test(tags)) {
-                    await interaction.reply({content: "ERROR: tags must be comma-separated alphabetic strings", ephemeral: true});
+                if (!tagRegex.test(tags)) {
+                    await interaction.reply({
+                        content: "ERROR: tags must be comma-separated alphabetic strings",
+                        ephemeral: true,
+                    });
                     break;
                 }
             }
-            
 
             success = await faqStorage.new_faq(keyword, answer, tags);
             if (success) {
-                await interaction.reply({ content: `Successfully created FAQ entry for '${keyword}': ${answer}`, ephemeral: true });
+                await interaction.reply({
+                    content: `Successfully created FAQ entry for '${keyword}': ${answer}`,
+                    ephemeral: true,
+                });
             } else {
-                await interaction.reply({ content: "Something went wrong, make sure you are using a unique keyword!", ephemeral: true});
+                await interaction.reply({
+                    content: "Something went wrong, make sure you are using a unique keyword!",
+                    ephemeral: true,
+                });
             }
             break;
         case "delete":
             keyword = String(interaction.options.get("keyword").value).toLowerCase();
             success = await faqStorage.del_faq(keyword);
             if (success) {
-                await interaction.reply({ content: `Successfully Deleted FAQ entry for '${keyword}'.`, ephemeral: true });
+                await interaction.reply({
+                    content: `Successfully Deleted FAQ entry for '${keyword}'.`,
+                    ephemeral: true,
+                });
             } else {
-                await interaction.reply({ content: "Something went wrong, make sure you are giving a unique keyword!", ephemeral: true});
+                await interaction.reply({
+                    content: "Something went wrong, make sure you are giving a unique keyword!",
+                    ephemeral: true,
+                });
             }
             break;
         default:
@@ -94,4 +122,3 @@ module.exports = {
     data: baseCommand,
     execute: handleInteraction,
 };
-

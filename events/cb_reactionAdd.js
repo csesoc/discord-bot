@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-check
 
 const { MessageReaction, User } = require("discord.js");
 const { CarrotboardStorage, CarrotboardEntryType } = require("../lib/carrotboard");
@@ -15,11 +15,11 @@ module.exports = {
         if (reaction.partial) {
             reaction = await reaction.fetch();
         }
-        
+
         /** @type {CarrotboardStorage} */
         const cbStorage = global.cbStorage;
         const message = reaction.message;
-        
+
         // make sure not a bot and not this client
         if (!message.author.bot && !reaction.me) {
             const emoji = reaction.emoji.toString();
@@ -44,7 +44,7 @@ module.exports = {
                     // send pin alert
                     await cbStorage.sendCBAlert(reaction, entry["carrot_id"], emoji);
                 }
-            } else if (Number(entry["count"]) == Number(cbStorage.config.minimum))  {
+            } else if (Number(entry["count"]) == Number(cbStorage.config.minimum)) {
                 // send normal alert
                 await cbStorage.sendCBAlert(reaction, entry["carrot_id"], emoji);
             }
