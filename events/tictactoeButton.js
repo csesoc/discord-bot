@@ -6,5 +6,5 @@ module.exports = {
     execute(interaction) {
         if (!interaction.isButton()) return;
         handleGameButton(interaction);
-    }
-}
+    },
+};

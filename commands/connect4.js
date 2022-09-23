@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { createConnect4 } = require('../lib/connect4/connect4Runner');
+const { createConnect4 } = require("../lib/connect4/connect4Runner");
 
 const baseCommand = new SlashCommandBuilder()
     .setName("connect4")
@@ -8,4 +8,4 @@ const baseCommand = new SlashCommandBuilder()
 module.exports = {
     data: baseCommand,
     execute: createConnect4,
-}
+};

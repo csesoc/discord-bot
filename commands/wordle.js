@@ -15,27 +15,24 @@ class Letter {
     }
 }
 
-
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("wordle")
         .setDescription("Play a wordle game!")
-        .addSubcommand(subcommand => subcommand
-            .setName("play")
-            .setDescription("Picks a new word if not selected, starts a new game."),
-
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("play")
+                .setDescription("Picks a new word if not selected, starts a new game."),
         )
-        .addSubcommand(subcommand => subcommand
-            .setName("guess")
-            .setDescription("Guess a word.")
-            .addStringOption(option => option
-                .setName("word")
-                .setDescription("The word to guess.")
-                .setRequired(true),
-            ),
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("guess")
+                .setDescription("Guess a word.")
+                .addStringOption((option) =>
+                    option.setName("word").setDescription("The word to guess.").setRequired(true),
+                ),
         ),
     async execute(interaction) {
-
         const userID = interaction.user.id;
         // check if userID exists in players value
         let player = undefined;
@@ -71,7 +68,11 @@ module.exports = {
             console.log("user exists");
             const timeDiff = Math.abs(new Date() - new Date(player.timeChanged));
             // If day has changed, select new word and reset game state
-            if (timeDiff > 86400000 || player.wordOfTheDay === "" || player.wordOfTheDay === undefined) {
+            if (
+                timeDiff > 86400000 ||
+                player.wordOfTheDay === "" ||
+                player.wordOfTheDay === undefined
+            ) {
                 console.log("Picking a new word");
                 player.wordOfTheDay = words[Math.floor(Math.random() * words.length)];
                 player.timeChanged = Date.now();
@@ -90,19 +91,25 @@ module.exports = {
             player.total_games++;
             player.score++;
             const editedPlayers = players;
-            fs.writeFileSync("./config/wordle.json", JSON.stringify({ players: editedPlayers }, null, 4));
+            fs.writeFileSync(
+                "./config/wordle.json",
+                JSON.stringify({ players: editedPlayers }, null, 4),
+            );
         };
         const setLoss = () => {
             player.if_finished = true;
             player.total_games++;
             const editedPlayers = players;
-            fs.writeFileSync("./config/wordle.json", JSON.stringify({ players: editedPlayers }, null, 4));
+            fs.writeFileSync(
+                "./config/wordle.json",
+                JSON.stringify({ players: editedPlayers }, null, 4),
+            );
         };
         // function to returns every unique letter in a string with count of each letter
         const eachLetterCount = (answer) => {
             const letters = answer.split("");
             const letterCount = {};
-            letters.forEach(letter => {
+            letters.forEach((letter) => {
                 if (letterCount[letter]) {
                     letterCount[letter]++;
                 } else {
@@ -157,7 +164,6 @@ module.exports = {
             return colors;
         };
 
-
         async function LoadGame(msg, guesses, answer) {
             // make a blank canvas
             const canvas = Canvas.createCanvas(330, 397);
@@ -181,7 +187,6 @@ module.exports = {
             let rowOffset = 0;
             let buffer = 0;
 
-
             for (let j = 0; j < 6; j++) {
                 const imageNums = getAnswer(answer, guesses[j]);
                 for (let i = 0; i < 5; i++) {
@@ -189,9 +194,19 @@ module.exports = {
                     const imageNumber = imageNums[i];
                     square = square_arr[imageNumber];
 
-                    context.drawImage(square, i * squareSize + buffer, rowOffset, squareSize, squareSize);
+                    context.drawImage(
+                        square,
+                        i * squareSize + buffer,
+                        rowOffset,
+                        squareSize,
+                        squareSize,
+                    );
                     if (guesses[j] != undefined) {
-                        context.fillText(guesses[j].charAt(i), (squareSize / 2) + buffer + squareSize * i, rowOffset + 42);
+                        context.fillText(
+                            guesses[j].charAt(i),
+                            squareSize / 2 + buffer + squareSize * i,
+                            rowOffset + 42,
+                        );
                     }
                     buffer += 5;
                 }
@@ -203,7 +218,9 @@ module.exports = {
             // if last guess is correct, send message
             const lastGuess = guesses[guesses.length - 1];
             if (player.if_finished) {
-                msg.channel.send(`${player.name} has already finished the game! Come back tomorrow for a new word!`);
+                msg.channel.send(
+                    `${player.name} has already finished the game! Come back tomorrow for a new word!`,
+                );
             } else {
                 if (lastGuess === answer) {
                     msg.channel.send(`${player.name} you won! Come back tomorrow for a new word!`);
@@ -216,7 +233,8 @@ module.exports = {
                 }
             }
             msg.reply({
-                files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
+                files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }],
+            });
             // msg.message.author.send({ files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
         }
 
@@ -224,13 +242,11 @@ module.exports = {
             interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
             return;
         } else if (interaction.options.getSubcommand() === "play") {
-
             this.guesses = player.guesses;
             // Start a new game
             console.log("Selected word (play): " + selectedWord);
             // console.log(interaction);
             LoadGame(interaction, player.guesses, player.wordOfTheDay);
-
         } else if (interaction.options.getSubcommand() === "guess") {
             // Guess a word
             // console.log("Guess: " + interaction.options.getString("word"));
@@ -244,7 +260,9 @@ module.exports = {
 
                 const guess = interaction.options.getString("word").toLowerCase();
                 if (guess.length !== 5) {
-                    interaction.channel.send("Invalid Usage! Use a 5 lettered word \nUsage: `/wordle guess <word>`");
+                    interaction.channel.send(
+                        "Invalid Usage! Use a 5 lettered word \nUsage: `/wordle guess <word>`",
+                    );
                     throw new Error("Invalid Usage");
                 } else {
                     if (!player.if_finished) {
@@ -254,7 +272,10 @@ module.exports = {
                         // update guesses in players
                         player.guesses = this.guesses;
                         const editedPlayers = players;
-                        fs.writeFileSync("./config/wordle.json", JSON.stringify({ players: editedPlayers }, null, 4));
+                        fs.writeFileSync(
+                            "./config/wordle.json",
+                            JSON.stringify({ players: editedPlayers }, null, 4),
+                        );
                     }
                     // update guesses in file
                     // console.log("gueess: " + this.guesses);
@@ -263,7 +284,5 @@ module.exports = {
                 }
             }
         }
-
     },
 };
-    
