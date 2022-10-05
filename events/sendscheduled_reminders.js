@@ -1,9 +1,7 @@
-const path = require("path");
-const fs = require('fs');
 const { MessageEmbed } = require("discord.js");
 
-// Checks schedulepost_reminders.json every minute to check if a reminder needs
-// to be sent to the users who reacted with an alarm clock emoji in the oringinal
+// Checks database every minute to check if a reminder needs
+// to be sent to the users who reacted with an alarm clock emoji in the original
 // scheduled post. Reminders are direct messages to the user contaning the content
 // of the original message.
 
@@ -11,73 +9,46 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-        let timer = setInterval(function() {
-            fs.readFile(path.join(__dirname, '../data/schedulepost_reminders.json'), (err, jsonString) => {
-                if (err) {
-                    console.log("Error reading file from disk:", err)
-                    return
+
+        setInterval(async () => {
+            var today = new Date();
+            
+            var year = String(today.getFullYear()).padStart(4, '0');
+            var month = String(today.getMonth() + 1).padStart(2, '0');
+            var day = String(today.getDate()).padStart(2, '0');
+            var hour = String(today.getHours()).padStart(2, '0');
+            var minute = String(today.getMinutes()).padStart(2, '0');
+            var now_time = `${year}-${month}-${day} ${hour}:${minute}`;
+
+            var reminders = await schedulePost.get_reminders(now_time);
+
+            for (const reminder of reminders) {
+                try {
+                    var sent_channel = await client.channels.fetch(reminder.send_channel_id);
+                    var sent_msg = await sent_channel.messages.fetch(reminder.sent_msg_id);
+                    
+                    const reaction = sent_msg.reactions.cache.get('⏰')
+                    const users_reacted = await reaction.users.fetch();
+                    
+                    users_reacted.forEach((user) => {
+                        if (!user.bot) {
+                            const reminder_msg = new MessageEmbed()
+                                .setColor('#C492B1')
+                                .setTitle('Reminder')
+                                .setDescription(sent_msg.content.length === 0 ? ' ' : sent_msg.content)
+                            
+                            client.users.cache.get(user.id).send({
+                                embeds: [reminder_msg]
+                            })
+                        }
+                    })
+                    await schedulePost.remove_scheduled(reminder.scheduled_post_id);
+                } catch (err) {
+                    console.log("An error occured in sendscheduled_reminders.js " + err)
                 }
 
-                // Get list of reminder messages
-                const to_send = JSON.parse(jsonString);
-                
-                // Loop through messages in reverse order to check if a reminder
-                // needs to be sent now. After the message is sent, it is removed
-                // from the file
-                for (var i = to_send.length - 1; i >= 0; i--) {
-                    send_time = new Date(to_send[i][2]);
-                    var today = new Date();
-                    now_time = new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours(), today.getMinutes(), 0);
-                    
-                    // Reminder to be sent now
-                    if (now_time - send_time == 0) {
-                        message_id = to_send[i][0]
-                        channel_id = to_send[i][1];
-                        
-                        // Get the original message
-                        send_channel = client.channels.cache.get(channel_id);
-                        client.channels.fetch(channel_id).then(function (channel) {
-                            channel.messages.fetch(message_id).then(function (message) {
+            }
 
-                                // Get a list of all the users that reacted to the message
-                                responses = []
-                                const reaction = message.reactions.cache.get('⏰')
-                                reaction.users.fetch().then(function (reaction_users) {
-                                    reaction_users.forEach(function(user) {
-
-                                        // Send a direct message to every user except the bot
-                                        if (!user.bot) {
-                                            client.channels.fetch(channel_id).then(function (channel) {
-                                                channel.messages.fetch(message_id).then(function (message) {
-                                                    const reminder_msg = new MessageEmbed()
-                                                    .setColor('#C492B1')
-                                                    .setTitle('Reminder')
-                                                    .setDescription(message.content.length === 0 ? ' ' : message.content)
-                                                    client.users.cache.get(user.id).send({
-                                                        ephemeral: false, 
-                                                        embeds: [reminder_msg]
-                                                    })
-                                                })
-                                            })
-                                        }
-                                    })
-                                })
-                            });
-                        }); 
-                        // Remove sent reminder
-                        to_send.splice(i, 1)
-                    };
-                };
-
-                // Rewrite the reminders that have not been sent back into schedulepost_reminders.json
-                jsonData = JSON.stringify(to_send);
-                fs.writeFile(path.join(__dirname, '../data/schedulepost_reminders.json'), jsonData, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                })
-            });
-            
         }, 1000 * 60)
     },
 };
