@@ -29,37 +29,43 @@ module.exports = {
             let data = JSON.parse(tempData)["data"];
 
             console.log(data);
+            // Get standup content
             const messages = String(message.content);
             const messageContent = messages.slice(8);
             // console.log(message.channel.parent.name)
+
             teamName = message.channel.parent.name;
+
+            // Get the list of all users mentioned in the message
             const mentions = message.mentions.users;
             const mentionsArr = [...mentions.values()];
-
-
-            // Contains the list of all users mentioned in the message
-            const result = mentionsArr.map(a => a.id);
+            const mentionedIds = mentionsArr.map(a => a.id);
 
             const voteauthorid = message.author.id;
+
+            // Get author's nickname else username
             let voteauthorname = message.member.nickname;
             if (voteauthorname == null) {
                 voteauthorname = message.author.username;
             }
+
             if (data == undefined) {
                 data = {};
                 data[teamName] = [{
                     "voteauthorid": voteauthorid,
                     "voteauthorname": voteauthorname,
                     "standup":messageContent,
-                    "mentions": result,
+                    "mentions": mentionedIds,
                 }];
             }
+            // This team already exists
             if (teamName in data) {
+                // flag is tripped if we are replacing a previous standup
                 let flag = 0;
                 data[teamName].forEach(function(item, index) {
                     if (item["voteauthorid"] == voteauthorid) {
                         item["standup"] = messageContent;
-                        item["mentions"] = result;
+                        item["mentions"] = mentionedIds;
                         flag = 1;
                     }
                 });
@@ -68,15 +74,17 @@ module.exports = {
                         "voteauthorid": voteauthorid,
                         "voteauthorname": voteauthorname,
                         "standup": messageContent,
-                        "mentions": result,
+                        "mentions": mentionedIds,
                     });
                 }
-            } else {
+            } 
+            // first standup ever in this team
+            else {
                 data[teamName] = [{
                     "voteauthorid": voteauthorid,
                     "voteauthorname": voteauthorname,
                     "standup":messageContent,
-                    "mentions": result,
+                    "mentions": mentionedIds,
                 }];
             }
             fs.writeFileSync("./config/standup.json", JSON.stringify({ data: data }, null, 4));
