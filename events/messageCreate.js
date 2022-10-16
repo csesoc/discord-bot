@@ -1,14 +1,15 @@
 const fs = require("fs");
 const axios = require("axios");
+const { DBlog } = require("../lib/database/dblog");
 
 function messagelog(message) {
-    // ignore messages sent from bot
-    if (message.author.bot) {return;}
+    // // ignore messages sent from bot
+    // if (message.author.bot) {return;}
 
-    // console.log(message);
+    // // console.log(message);
 
-    const logDB = global.logDB;
-    logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
+    // const logDB = global.logDB;
+    // logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
 }
 
 
@@ -20,6 +21,7 @@ module.exports = {
         // console.log(message);
         messagelog(message);
         if (message.content.startsWith("$standup")) {
+            console.log("recording standup");
             let tempData;
             try {
                 tempData = fs.readFileSync("./config/standup.json", "utf8");
