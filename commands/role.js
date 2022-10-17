@@ -53,7 +53,7 @@ module.exports = {
 
             await interaction.member.roles.add(role);
 
-            await interaction.reply({ content: `✅ | Gave you the role \`${role.name}\`.`, ephemeral: true });
+            return await interaction.reply({ content: `✅ | Gave you the role \`${role.name}\`.`, ephemeral: true });
         } else if (interaction.options.getSubcommand() === "remove") {
             const role = await interaction.options.getRole("role");
 
@@ -65,7 +65,7 @@ module.exports = {
 
             await interaction.member.roles.remove(role);
 
-            await interaction.reply({ content: `✅ | Removed the role \`${role.name}\`.`, ephemeral: true });
+            return await interaction.reply({ content: `✅ | Removed the role \`${role.name}\`.`, ephemeral: true });
         }
 
         // Admin permission check
@@ -85,7 +85,7 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
 
-            await interaction.reply(`✅ | Allowed the role \`${role.name}\`.`);
+            return await interaction.reply(`✅ | Allowed the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "disallow") {
             const role = await interaction.options.getRole("role");
 
@@ -98,8 +98,17 @@ module.exports = {
             // The path here is different to the require because it's called from index.js (I think)
             fs.writeFileSync("./config/role.json", JSON.stringify({ allowedRoles: allowedRoles }, null, 4));
 
-            await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
+            return await interaction.reply(`✅ | Disallowed the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "whitelist") {
+
+            // No allowed roles
+            if (allowedRoles.length == 0) {
+                const embed = new MessageEmbed()
+                    .setTitle("Allowed Roles")
+                    .setDescription("No allowed roles");
+                return await interaction.reply({ embeds: [embed] });
+            }
+
             // TODO: Convert to scroller?
             const rolesPerPage = 10;
 
@@ -127,20 +136,38 @@ module.exports = {
         } else if (interaction.options.getSubcommand() === "count") {
             const role = await interaction.options.getRole("role");
 
-            interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
+            return await interaction.reply(`There are ${role.members.size} members with the role \`${role.name}\`.`);
         } else if (interaction.options.getSubcommand() === "removeunverified") {
-            const role = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
+            const role = await interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
+            
+            // Make sure that the "unverified" role exists
+            if (role === undefined) {
+                return await interaction.reply('Error: no "unverified" role exists.');
+            }
+
+            const kickMessage = 'You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome'
 
             // Member list in the role is cached
             let numRemoved = 0;
-            role.members.each(member => {
-                member.send("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
-                    .catch(e => {console.log(e);});
-                member.kick("You have been removed from the CSESoc Server - as you have not verified via the instructions in #welcome")
-                    .then(() => {++numRemoved;}).catch(e => {console.log(e);});
-            });
+            await role.members.each(member => {
+                member.createDM()
+                .then((DMChannel) => {
 
-            await interaction.reply(`Removed ${numRemoved} unverified members.`);
+                    // Send direct message to user being kicked
+                    DMChannel.send(kickMessage)
+                    .then(() => {
+                        
+                        // Message sent, time to kick.
+                        member.kick(kickMessage)
+                        .then(() => {
+                            ++numRemoved;
+                            console.log(numRemoved + ' people removed.');
+                        })
+                        .catch((e) => {console.log(e);});
+                    });
+                });
+            });
+            return await interaction.reply(`Removed unverified members.`);
         }
     },
 };
