@@ -39,7 +39,7 @@ module.exports = {
                 });
                 if (to_delete != null) {
                     to_send.splice(to_delete, 1);
-                    jsonData = JSON.stringify(to_send);
+                    const jsonData = JSON.stringify(to_send);
                     fs.writeFile(
                         path.join(__dirname, "../data/schedulemessage.json"),
                         jsonData,
