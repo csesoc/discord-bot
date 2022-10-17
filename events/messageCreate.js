@@ -16,9 +16,7 @@ function messagelog(message) {
 module.exports = {
     name: "messageCreate",
     async execute(message) {
-        // console.log(message);
         let teamName = "";
-        // console.log(message);
         messagelog(message);
         if (message.content.startsWith("$standup")) {
             console.log("recording standup");
