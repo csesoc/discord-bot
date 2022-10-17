@@ -11,11 +11,12 @@ module.exports = {
 
         const logDB = global.logDB;
         logDB.message_update(_oldMessage.id, message.id, message.content);
+
         if (message.content.startsWith("$standup")) {
             const messages = String(message.content);
             const messageContent = messages.slice(8);
             // console.log(message.channel.parent.name)
-            teamName = message.channel.parent.name;
+            const teamName = message.channel.parent.name;
 
             const mentions = message.mentions.users;
             const mentionsArr = [...mentions.values()];
