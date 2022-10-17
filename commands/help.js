@@ -2,8 +2,10 @@ const help = require("../config/help.json");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 
+// Fetches commands from the help data
 const commands = help.commands;
 
+// Creates general object and id constants for function use
 const prevId = 'helpPrevButtonId';
 const nextId = 'helpNextButtonId';
 
@@ -56,7 +58,7 @@ module.exports = {
                 .setRequired(false)
             ),
     async execute(interaction) {
-        // Calculates command index adjustment if inputted
+        // Calculates required command page index if inputted
         const page = interaction.options.getNumber("page");
         let currentIndex = 0;
 
@@ -74,8 +76,7 @@ module.exports = {
             }
         }
         
-        
-        // Generates help menu with given or default index and posts
+        // Generates help menu with given or default index and posts embed
         const helpEmbed = generateEmbed(currentIndex);
         const authorId = interaction.user.id;
 
@@ -89,7 +90,8 @@ module.exports = {
             ]})]
         });
 
-        // Creates a collector for button interaction events
+        // Creates a collector for button interaction events, setting a 60s maximum 
+        // timeout and a 10s inactivity timeout
         const filter = (resInteraction) => {
             return (resInteraction.customId === prevId || resInteraction.customId === nextId) &&
                 resInteraction.user.id === authorId
@@ -111,6 +113,7 @@ module.exports = {
             });
         });
 
+        // Clears buttons from embed page after timeout on collector
         collector.on('end', collection => {
             interaction.editReply({ components: [] });
         });
