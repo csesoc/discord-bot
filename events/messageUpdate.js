@@ -16,11 +16,7 @@ module.exports = {
             const messages = String(message.content);
             const messageContent = messages.slice(8);
             // console.log(message.channel.parent.name)
-<<<<<<< HEAD
-            const teamName = message.channel.parent.name;
-=======
             let teamName = message.channel.parent.name;
->>>>>>> 57899b9355913d77989946e77336e09c257c806b
 
             const mentions = message.mentions.users;
             const mentionsArr = [...mentions.values()];
