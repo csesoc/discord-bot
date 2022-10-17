@@ -67,7 +67,7 @@ module.exports = {
                 const notDone = [];
                 const role = await interaction.guild.roles.fetch(teamRoleID);
                 const roleMembers = [...role.members.values()];
-                roleMembers.forEach(function (item, index) {
+                roleMembers.forEach((item) => {
                     const id = String(item.user.id);
                     console.log(item);
                     if (!standupDone.includes(id)) {

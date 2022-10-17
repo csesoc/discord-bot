@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, Permissions } = require("discord.js");
-const { DBlog } = require("../lib/database/dblog");
-const fs = require("fs");
+const { Permissions } = require("discord.js");
 const path = require("path");
 const nodemailer = require("nodemailer");
 
@@ -54,6 +52,7 @@ module.exports = {
                 return;
             }
 
+            // eslint-disable-next-line
             const email_reg =
                 /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             const email = interaction.options.getString("email");
