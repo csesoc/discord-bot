@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-//const path = require("path");
 const { allowedChannels } = require("../config/anon_channel.json");
 const paginationEmbed = require("discordjs-button-pagination");
 const fs = require("fs");
