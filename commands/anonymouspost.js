@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const path = require("path");
+//const path = require("path");
 const { allowedChannels } = require("../config/anon_channel.json");
 const paginationEmbed = require("discordjs-button-pagination");
 const fs = require("fs");
@@ -81,7 +81,7 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === "current") {
             if (!allowedChannels.some((c) => c === interaction.channelId)) {
-                c_name = await logDB.channelname_get(interaction.channelId);
+                const c_name = await logDB.channelname_get(interaction.channelId);
                 return await interaction.reply({
                     content: `❌ | You are not allowed to post anonymously in the channel \`${c_name[0].channel_name}\`.`,
                     ephemeral: true,
@@ -156,7 +156,7 @@ module.exports = {
                 ephemeral: true,
             });
         } else if (interaction.options.getSubcommand() === "allowcurrent") {
-            c_name = await logDB.channelname_get(interaction.channelId);
+            const c_name = await logDB.channelname_get(interaction.channelId);
 
             if (allowedChannels.some((c) => c === interaction.channelId)) {
                 return await interaction.reply({
@@ -200,7 +200,7 @@ module.exports = {
                 ephemeral: true,
             });
         } else if (interaction.options.getSubcommand() === "disallowcurrent") {
-            c_name = await logDB.channelname_get(interaction.channelId);
+            const c_name = await logDB.channelname_get(interaction.channelId);
 
             if (!allowedChannels.some((c) => c === interaction.channelId)) {
                 return await interaction.reply({
@@ -233,7 +233,7 @@ module.exports = {
             // TODO: Convert to scroller?
             const channels = [];
             for (let i = 0; i < allowedChannels.length; i += 1) {
-                c_name = await logDB.channelname_get(allowedChannels[i]);
+                const c_name = await logDB.channelname_get(allowedChannels[i]);
                 if (c_name[0].guild_id === interaction.guildId) {
                     channels[i] = c_name[0].channel_name;
                 }

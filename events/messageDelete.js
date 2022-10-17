@@ -1,6 +1,3 @@
-// import fs module where writeFile function is defined
-const fsLibrary = require("fs");
-const { DBlog } = require("../lib/database/dblog");
 
 module.exports = {
     name: "messageDelete",

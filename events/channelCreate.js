@@ -1,5 +1,3 @@
-// import fs module where writeFile function is defined
-const fsLibrary = require("fs");
 
 module.exports = {
     name: "channelCreate",
