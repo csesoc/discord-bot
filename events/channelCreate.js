@@ -1,4 +1,3 @@
-
 module.exports = {
     name: "channelCreate",
     once: false,
