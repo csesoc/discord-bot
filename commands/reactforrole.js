@@ -53,7 +53,7 @@ module.exports = {
         const unicode_emoji_regex =
             /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/;
         const custom_emoji_regex = /^<:.*:\d{18}>$/;
-        for (element of emojiList) {
+        for (const element of emojiList) {
             if (!unicode_emoji_regex.test(element) && !custom_emoji_regex.test(element)) {
                 return await interaction.reply({
                     content: "Please enter emojis only separated by commas e.g. emoji,emoji",
@@ -75,7 +75,7 @@ module.exports = {
 
         const roles = {};
 
-        notificationContent = "This command: \n";
+        let notificationContent = "This command: \n";
 
         for (let i = 0; i < roleList.length; i++) {
             const roleName = roleList[i];
@@ -86,9 +86,7 @@ module.exports = {
             }
 
             // Check if role exist
-            const role = interaction.member.guild.roles.cache.find(
-                (role) => role.name === roleName,
-            );
+            const role = interaction.member.guild.roles.cache.find((r) => r.name === roleName);
             let roleID;
 
             if (role) {
