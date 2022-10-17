@@ -1,28 +1,121 @@
 const help = require("../config/help.json");
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 
-const { MessageEmbed } = require("discord.js");
+const commands = help.commands;
+
+const prevId = 'helpPrevButtonId';
+const nextId = 'helpNextButtonId';
+
+const prevButton = new MessageButton({
+  style: 'SECONDARY',
+  label: 'Previous',
+  emoji: '⬅️',
+  customId: prevId
+});
+const nextButton = new MessageButton({
+  style: 'SECONDARY',
+  label: 'Next',
+  emoji: '➡️',
+  customId: nextId
+});
+
+const PAGE_SIZE = 10
+
+/**
+ * Creates an embed with commands starting from an index.
+ * @param {number} start The index to start from.
+ * @returns {MessageEmbed}
+ */
+const generateEmbed = start => {
+    const current = commands.slice(start, start + PAGE_SIZE);
+    const pageNum = Math.floor(start / PAGE_SIZE) + 1;
+
+    return new MessageEmbed({
+        title: `Help Command - Page ${pageNum}`,
+        color: 0x3A76F8,
+        author: {
+            name: "CSESoc Bot",
+            icon_url: "https://i.imgur.com/EE3Q40V.png"
+        },
+        fields: current.map((command, index) => ({
+            name: `${start + index + 1}. ${command.name}`,
+            value: `${command.description}\nUsage: ${command.usage}`
+        }))
+    });
+};
 
 module.exports = {
     // Add new /help command
     data: new SlashCommandBuilder()
         .setName("help")
-        .setDescription("Displays info for all commands. Also type / in the chat to check out other commands."),
+        .setDescription("Displays info for all commands. Also type / in the chat to check out other commands.")
+        .addNumberOption(option =>
+            option.setName("page")
+                .setDescription("Requested Help Page")
+                .setRequired(false)
+            ),
     async execute(interaction) {
-        // Load help which stores all command info from ..config/help.json"
-        const commands = help.commands;
-        const helpEmbed = new MessageEmbed()
-            .setTitle("Help Command")
-            .setColor(0x3A76F8)
-            .setAuthor("CSESoc Bot", "https://i.imgur.com/EE3Q40V.png");
-        for (let i = 0; i < commands.length; i++) {
-            const name = i + 1 + ". " + commands[i].name;
-            const description = commands[i].description;
-            const usage = "\nUsage: " + commands[i].usage;
-            // console.log(name + " " + description);
-            helpEmbed.addField(name, description + usage, false);
+        // Calculates command index adjustment if inputted
+        const page = interaction.options.getNumber("page");
+        let currentIndex = 0;
+
+        if (page) {
+            if (page < 1 || page > Math.ceil(commands.length / PAGE_SIZE)) {
+                const ephemeralError = { content: "Your requested page does not exist, please try again.", ephemeral: true };
+    
+                await interaction.reply(ephemeralError);
+                return;
+            } else {
+                const adjustedIndex = (page - 1) * PAGE_SIZE;
+                if (adjustedIndex < commands.length) {
+                    currentIndex = adjustedIndex;
+                }
+            }
         }
-        await interaction.reply({ embeds: [helpEmbed] });
+        
+        
+        // Generates help menu with given or default index and posts
+        const helpEmbed = generateEmbed(currentIndex);
+        const authorId = interaction.user.id;
+
+        const response = await interaction.reply({ 
+            embeds: [helpEmbed], 
+            components: [new MessageActionRow({components: [
+                // previous button if it isn't the start
+                ...(currentIndex ? [prevButton] : []),
+                // next button if it isn't the end
+                ...((currentIndex + PAGE_SIZE) < commands.length ? [nextButton] : [])
+            ]})]
+        });
+
+        // Creates a collector for button interaction events
+        const filter = (resInteraction) => {
+            return (resInteraction.customId === prevId || resInteraction.customId === nextId) &&
+                resInteraction.user.id === authorId
+        };
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000, idle: 10000 });
+
+        collector.on('collect', async i => {
+            // Adjusts the currentIndex based on the id of the button pressed
+            i.customId === prevId ? (currentIndex -= PAGE_SIZE) : (currentIndex += PAGE_SIZE);
+            
+            await i.update({
+                embeds: [generateEmbed(currentIndex)],
+                components: [new MessageActionRow({components: [
+                    // previous button if it isn't the start
+                    ...(currentIndex ? [prevButton] : []),
+                    // next button if it isn't the end
+                    ...((currentIndex + PAGE_SIZE) < commands.length ? [nextButton] : [])
+                ]})]
+            });
+        });
+
+        collector.on('end', collection => {
+            interaction.editReply({ components: [] });
+        });
     },
+
+    
 };
 
