@@ -16,78 +16,19 @@ function messagelog(message) {
 module.exports = {
     name: "messageCreate",
     async execute(message) {
-        let teamName = "";
+        const standupDB = global.standupDBGlobal;
         messagelog(message);
         if (message.content.startsWith("$standup")) {
-            console.log("recording standup");
-            let tempData;
-            try {
-                tempData = fs.readFileSync("./config/standup.json", "utf8");
-            } catch (err) {
-                console.error(err);
-            }
-            let data = JSON.parse(tempData)["data"];
-
-            console.log(data);
             // Get standup content
             const messages = String(message.content);
-            const messageContent = messages.slice(8);
+            const messageContent = messages.slice(8).trim();
             // console.log(message.channel.parent.name)
 
-            teamName = message.channel.parent.name;
+            const teamId = message.channel.parentId;
 
-            // Get the list of all users mentioned in the message
-            const mentions = message.mentions.users;
-            const mentionsArr = [...mentions.values()];
-            const mentionedIds = mentionsArr.map(a => a.id);
-
-            const voteauthorid = message.author.id;
-
-            // Get author's nickname else username
-            let voteauthorname = message.member.nickname;
-            if (voteauthorname == null) {
-                voteauthorname = message.author.username;
-            }
-
-            if (data == undefined) {
-                data = {};
-                data[teamName] = [{
-                    "voteauthorid": voteauthorid,
-                    "voteauthorname": voteauthorname,
-                    "standup":messageContent,
-                    "mentions": mentionedIds,
-                }];
-            }
-            // This team already exists
-            if (teamName in data) {
-                // flag is tripped if we are replacing a previous standup
-                let flag = 0;
-                data[teamName].forEach(function(item, index) {
-                    if (item["voteauthorid"] == voteauthorid) {
-                        item["standup"] = messageContent;
-                        item["mentions"] = mentionedIds;
-                        flag = 1;
-                    }
-                });
-                if (flag == 0) {
-                    data[teamName].push({
-                        "voteauthorid": voteauthorid,
-                        "voteauthorname": voteauthorname,
-                        "standup": messageContent,
-                        "mentions": mentionedIds,
-                    });
-                }
-            } 
-            // first standup ever in this team
-            else {
-                data[teamName] = [{
-                    "voteauthorid": voteauthorid,
-                    "voteauthorname": voteauthorname,
-                    "standup":messageContent,
-                    "mentions": mentionedIds,
-                }];
-            }
-            fs.writeFileSync("./config/standup.json", JSON.stringify({ data: data }, null, 4));
+            const standupAuthorId = message.author.id;
+            
+            await standupDB.addStandup(teamId, standupAuthorId, message.id, messageContent);
         }
         if (message.content.startsWith("/run")) {
             const newlineIndex = message.content.indexOf("\n");

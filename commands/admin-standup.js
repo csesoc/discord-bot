@@ -20,66 +20,55 @@ module.exports = {
         ),
 
     async execute(interaction) {
-        // Starting a vote
         if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
             return await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
         }
         if (interaction.options.getSubcommand() === "getfullstandups") {
             // var teamName = await interaction.options.getString('team');
             let sendmsg = "";
-            try {
-                let tempData;
-                try {
-                    tempData = fs.readFileSync("./config/standup.json", "utf8");
-                } catch (err) {
-                    console.error(err);
-                }
-                data = JSON.parse(tempData)["data"];
+            const standupDB = global.standupDBGlobal;
 
+            try {
 
                 const team = await interaction.options.getMentionable("teamrole");
                 const teamRoleID = team.id;
-                const teamName = team.name;
-                const teams = Object.keys(data);
-                const key = closest_match.closestMatch(teamName, teams);
+                const role = await interaction.guild.roles.fetch(teamRoleID);
+                const roleMembers = [...role.members?.values()];
+                // const teamName = team.name;
+                // const teams = Object.keys(data);
+                // const key = closest_match.closestMatch(teamName, teams);
+                
+                const thisTeamId = interaction.channel.parentId;
+                const thisTeamStandups = await standupDB.getStandups(thisTeamId, 5);
 
+                console.log(thisTeamStandups);
+
+                var roleNames = {};
+                roleMembers.forEach(el => {
+                    roleNames[el.user.id] = el.user.username;
+                });
 
                 const standupDone = [];
-                if (data[key] != undefined) {
-                    data[key].forEach(element => {
-                        standupDone.push(element.voteauthorid);
-                        element.mentions.forEach(user_id => {
-                            standupDone.push(user_id);
-                        });
-                        sendmsg += element.voteauthorname + "\n" + element.standup;
-                        sendmsg += "\n\n";
-                    });
-                } else {
-                    sendmsg = "No standups recorded for this team";
-                }
-                const notDone = [];
-                const role = await interaction.guild.roles.fetch(teamRoleID);
-                const roleMembers = [...role.members.values()];
-                roleMembers.forEach(function(item, index) {
+                // add all standups
+                thisTeamStandups.forEach(standUp => {
+                    standupDone.push(standUp.user_id);
+                    sendmsg += `${roleNames[standUp.user_id]}` + "\n" + standUp.standup_content;
+                    sendmsg += "\n";
+                });
 
-                    const id = String(item.user.id);
-                    console.log(item);
+                var notDone = [];
+                
+                roleMembers.forEach(el => {
+                    const id = el.user.id;
                     if (!standupDone.includes(id)) {
-                        let author = item.nickname;
-                        if (author == undefined) {
-                            author = item.user.username;
-                        }
-                        notDone.push(author);
+                        notDone.push(id);
                     }
                 });
-                sendmsg += "\n\n" + "These users have not done their standup:\n";
-                notDone.forEach((item, index) => {
-                    if (index == 0) {
-                        sendmsg += item;
-                    } else {
-                        sendmsg += ", " + item;
-                    }
-                });
+
+                var notDoneUsersString = "";
+                notDoneUsersString = notDone.map(el => `${roleNames[el]}`).join(', ')
+
+                sendmsg += "\n" + "These users have not done their standup:\n" + notDoneUsersString;
 
 
                 await interaction.reply(sendmsg);
@@ -87,14 +76,8 @@ module.exports = {
                 sendmsg = "An error - " + error;
                 await interaction.reply(sendmsg);
             }
-
-
         } else if (interaction.options.getSubcommand() === "resetstandups") {
-            data = {};
-            fs.writeFileSync("./config/standup.json", JSON.stringify({ data: {} }, null, 4));
-            await interaction.reply("Standups reset!");
+            standupDB.deleteAllStandups();
         }
-
-
     },
 };
