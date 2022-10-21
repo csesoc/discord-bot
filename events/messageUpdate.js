@@ -7,7 +7,7 @@ module.exports = {
         const standupDB = global.standupDBGlobal;
 
         const logDB = global.logDB;
-        logDB.message_update(_oldMessage.id, message.id, message.content);
+        // logDB.message_update(_oldMessage.id, message.id, message.content);
 
         if (message.content.startsWith("$standup")) {
             const messages = String(message.content);

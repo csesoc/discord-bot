@@ -13,7 +13,8 @@ module.exports = {
             subcommand
                 .setName("getfullstandups")
                 .setDescription("Returns all standups")
-                .addMentionableOption(option => option.setName("teamrole").setDescription("Mention the team role (@team-role)").setRequired(true)),
+                .addMentionableOption(option => option.setName("teamrole").setDescription("Mention the team role (@team-role)").setRequired(true))
+                .addIntegerOption(option => option.setName("days").setDescription("Number of days in past to retrieve standups from").setRequired(false)),
         ),
 
     async execute(interaction) {
@@ -27,12 +28,13 @@ module.exports = {
 
             try {
                 const team = await interaction.options.getMentionable("teamrole");
+                const numDaysToRetrieve = await interaction.options.getInteger("days") ?? 5;
                 const teamRoleID = team.id;
                 const role = await interaction.guild.roles.fetch(teamRoleID);
                 const roleMembers = [...role.members?.values()];
                 
                 const thisTeamId = interaction.channel.parentId;
-                const thisTeamStandups = await standupDB.getStandups(thisTeamId, 5);
+                const thisTeamStandups = await standupDB.getStandups(thisTeamId, numDaysToRetrieve);
 
                 var roleNames = {};
                 roleMembers.forEach(el => {

@@ -7,7 +7,7 @@ function messagelog(message) {
     // console.log(message);
 
     const logDB = global.logDB;
-    logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
+    // logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
 }
 
 
