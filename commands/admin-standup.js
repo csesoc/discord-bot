@@ -1,8 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { Permissions } = require("discord.js");
-let { data } = require("../config/standup.json");
-const fs = require("fs");
-const closest_match = require("closest-match");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,16 +17,15 @@ module.exports = {
         ),
 
     async execute(interaction) {
+        const standupDB = global.standupDBGlobal;
         if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
             return await interaction.reply({ content: "You do not have permission to execute this command.", ephemeral: true });
         }
         if (interaction.options.getSubcommand() === "getfullstandups") {
             // var teamName = await interaction.options.getString('team');
             let sendmsg = "";
-            const standupDB = global.standupDBGlobal;
 
             try {
-
                 const team = await interaction.options.getMentionable("teamrole");
                 const teamRoleID = team.id;
                 const role = await interaction.guild.roles.fetch(teamRoleID);
@@ -75,7 +71,18 @@ module.exports = {
                 await interaction.reply(sendmsg);
             }
         } else if (interaction.options.getSubcommand() === "resetstandups") {
-            standupDB.deleteAllStandups();
+            try {
+                await standupDB.deleteAllStandups();
+                await interaction.reply({
+                    content: "Standups reset",
+                    ephemeral: true
+                });
+            } catch (e) {
+                await interaction.reply({
+                    content: `Error when resetting standups:${e}`,
+                    ephemeral: true
+                });
+            }
         }
     },
 };
