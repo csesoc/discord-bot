@@ -30,9 +30,6 @@ module.exports = {
                 const teamRoleID = team.id;
                 const role = await interaction.guild.roles.fetch(teamRoleID);
                 const roleMembers = [...role.members?.values()];
-                // const teamName = team.name;
-                // const teams = Object.keys(data);
-                // const key = closest_match.closestMatch(teamName, teams);
                 
                 const thisTeamId = interaction.channel.parentId;
                 const thisTeamStandups = await standupDB.getStandups(thisTeamId, 5);

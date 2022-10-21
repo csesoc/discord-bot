@@ -30,6 +30,7 @@ module.exports = {
             
             await standupDB.addStandup(teamId, standupAuthorId, message.id, messageContent);
         }
+
         if (message.content.startsWith("/run")) {
             const newlineIndex = message.content.indexOf("\n");
 
