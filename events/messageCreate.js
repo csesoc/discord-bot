@@ -1,15 +1,13 @@
-const fs = require("fs");
 const axios = require("axios");
-const { DBlog } = require("../lib/database/dblog");
 
 function messagelog(message) {
-    // // ignore messages sent from bot
-    // if (message.author.bot) {return;}
+    // ignore messages sent from bot
+    if (message.author.bot) {return;}
 
-    // // console.log(message);
+    // console.log(message);
 
-    // const logDB = global.logDB;
-    // logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
+    const logDB = global.logDB;
+    logDB.message_create(message.id, message.author.id, message.author.username, message.content, message.channelId);
 }
 
 
@@ -17,7 +15,9 @@ module.exports = {
     name: "messageCreate",
     async execute(message) {
         const standupDB = global.standupDBGlobal;
+
         messagelog(message);
+        
         if (message.content.startsWith("$standup")) {
             // Get standup content
             const messages = String(message.content);

@@ -41,8 +41,6 @@ module.exports = {
                 const thisTeamId = interaction.channel.parentId;
                 const thisTeamStandups = await standupDB.getStandups(thisTeamId, 5);
 
-                console.log(thisTeamStandups);
-
                 var roleNames = {};
                 roleMembers.forEach(el => {
                     roleNames[el.user.id] = el.user.username;
