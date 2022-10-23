@@ -1,16 +1,17 @@
-const { channel } = require("diagnostics_channel");
 const fs = require("fs");
 
 // A timer to delete the channels every 60mins
 // The function has 2 parts to it. The first part is that which deletes all the channels from the saved file that are deleted in the channel.
 // In the second part, we delete all the temporary channels that have no user in it.
 
+/* eslint-disable */
+
 module.exports = {
     name: "ready",
     once: true,
     execute(client) {
         const timer = setInterval(function () {
-            temp_data = [];
+            // const temp_data = [];
             // Reading data from the file
             fs.readFile("./data/createvc.json", "utf-8", (err, jsonString) => {
                 if (err) {
@@ -21,7 +22,7 @@ module.exports = {
                     const data = JSON.parse(jsonString);
 
                     // Deleting all the channels, that should have been deleted
-                    b = data.channels.filter((e) => e.delete == true);
+                    const b = data.channels.filter((e) => e.delete == true);
                     b.forEach((f) =>
                         data.channels.splice(
                             data.channels.findIndex((e) => e.delete === f.delete),
@@ -36,7 +37,7 @@ module.exports = {
 
                     // console.log(data);
 
-                    data.channels.forEach(function (item, index) {
+                    data.channels.forEach((item) => {
                         // item here is the channel id
                         if (item.delete == false) {
                             client.channels

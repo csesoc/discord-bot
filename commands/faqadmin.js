@@ -1,7 +1,6 @@
 // @ts-check
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { CommandInteraction, Permissions } = require("discord.js");
-const { DBFaq } = require("../lib/database/faq");
+const { Permissions } = require("discord.js");
 
 // ////////////////////////////////////////////
 // //////// SETTING UP THE COMMANDS ///////////

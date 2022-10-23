@@ -85,7 +85,7 @@ module.exports = {
 
                 if (cacheChannel) {
                     cacheChannel.messages.fetch(messageID).then((reactionMessage) => {
-                        var responses = [];
+                        const responses = [];
                         reactionMessage.reactions.cache.forEach(function (value, key) {
                             if (key == "👍" || key == "👎") {
                                 responses.push({
@@ -141,14 +141,14 @@ module.exports = {
 
                 if (cacheChannel) {
                     cacheChannel.messages.fetch(messageID).then((reactionMessage) => {
-                        var responses = [];
+                        const responses = [];
                         reactionMessage.reactions.cache.forEach(function (value, key) {
-                            var temp = {};
+                            const temp = {};
                             temp["name"] = String(key);
                             temp["value"] = "";
-                            value.users.cache.forEach((value) => {
-                                if (value.bot == false) {
-                                    temp["value"] = temp["value"] + "\n" + String(value.username);
+                            value.users.cache.forEach((value_) => {
+                                if (value_.bot == false) {
+                                    temp["value"] = temp["value"] + "\n" + String(value_.username);
                                 }
                             });
                             if (temp["value"] == "") {

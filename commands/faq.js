@@ -1,7 +1,6 @@
 // @ts-check
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { CommandInteraction, MessageEmbed } = require("discord.js");
-const { DBFaq } = require("../lib/database/faq");
+const { MessageEmbed } = require("discord.js");
 const { DiscordScroll } = require("../lib/discordscroll/scroller");
 
 // ////////////////////////////////////////////
@@ -64,7 +63,7 @@ async function handleInteraction(interaction) {
             await handleFAQGetAll(interaction, faqStorage);
             break;
         case "help":
-            await handleFAQHelp(interaction, faqStorage);
+            await handleFAQHelp(interaction);
             break;
         case "keywords":
             await handleFAQKeywords(interaction, faqStorage);
@@ -148,7 +147,7 @@ async function handleFAQGetAll(interaction, faqStorage) {
  * @param {CommandInteraction} interaction
  * @param {DBFaq} faqStorage
  */
-async function handleFAQHelp(interaction, faqStorage) {
+async function handleFAQHelp(interaction) {
     // @TODO: expand this function
     let description = "Welcome to the help command! You can search for a specific faq";
     description += " by keyword using 'faq get [keyword]', or for everything on a given ";
