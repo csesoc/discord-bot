@@ -1,16 +1,12 @@
 // @ts-check
 
-const { MessageReaction, User } = require("discord.js");
-const { CarrotboardStorage, CarrotboardEntryType } = require("../lib/carrotboard");
-
 module.exports = {
     name: "messageReactionAdd",
     once: false,
     /**
      * @param {MessageReaction} reaction
-     * @param {User} user
      */
-    async execute(reaction, user) {
+    async execute(reaction) {
         // check if partial
         if (reaction.partial) {
             reaction = await reaction.fetch();

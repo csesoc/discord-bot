@@ -1,8 +1,5 @@
 // @ts-check
 
-const { Message } = require("discord.js");
-const { CarrotboardStorage } = require("../lib/carrotboard");
-
 module.exports = {
     name: "messageReactionRemoveAll",
     once: false,
