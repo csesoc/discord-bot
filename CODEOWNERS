@@ -1,0 +1,9 @@
+commands/ @csesoc/discord-bot-leads
+config/ @csesoc/discord-bot-leads
+data/ @csesoc/discord-bot-leads
+events/ @csesoc/discord-bot-leads
+lib/ @csesoc/discord-bot-leads
+
+.github/ @csesoc/technical
+renovate.json @csesoc/technical
+Dockerfile @csesoc/technical

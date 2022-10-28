@@ -1,4 +1,22 @@
+const fs = require("fs");
 const axios = require("axios");
+const { Util } = require("discord.js");
+
+function messagelog(message) {
+    // ignore messages sent from bot
+    if (message.author.bot) {
+        return;
+    }
+
+    const logDB = global.logDB;
+    logDB.message_create(
+        message.id,
+        message.author.id,
+        message.author.username,
+        message.content,
+        message.channelId,
+    );
+}
 
 function messagelog(message) {
     // ignore messages sent from bot
@@ -47,7 +65,10 @@ module.exports = {
 
             // Remove the first and last line from rawContent
             // Remove extra lines for args and stdin if needed
-            const code = rawContent.split("\n").slice(args.length === 0 ? 1 : 2, stdin === "" ? -1 : -2).join("\n");
+            const code = rawContent
+                .split("\n")
+                .slice(args.length === 0 ? 1 : 2, stdin === "" ? -1 : -2)
+                .join("\n");
 
             let data = {};
             try {
@@ -57,7 +78,7 @@ module.exports = {
                 return message.reply("Could not retrieve runtimes.");
             }
 
-            const runtime = data.find(r => r.language === language);
+            const runtime = data.find((r) => r.language === language);
 
             if (!runtime) {
                 return message.reply("Language not found.");
@@ -67,13 +88,11 @@ module.exports = {
 
             try {
                 const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
-                    "language": language,
-                    "version": version,
-                    "files": [
-                        { "content": code },
-                    ],
-                    "args": args,
-                    "stdin": stdin,
+                    language: language,
+                    version: version,
+                    files: [{ content: code }],
+                    args: args,
+                    stdin: stdin,
                 });
                 data = response.data;
             } catch (e) {
@@ -81,18 +100,17 @@ module.exports = {
             }
 
             // Trim the output if it is too long
-            const output = data.run.output.length > 1000 ? data.run.output.substring(0, 1000) + `\n...${data.run.output.length - 1000} more characters` : data.run.output;
+            const output =
+                data.run.output.length > 1000
+                    ? data.run.output.substring(0, 1000) +
+                      `\n...${data.run.output.length - 1000} more characters`
+                    : data.run.output;
 
             if (!output) {
                 return message.reply("No output.");
             }
-
-            message.reply(
-                "Output:\n" +
-                "```\n" +
-                `${output}` +
-                "```\n",
-            );
+            const code_output = Util.removeMentions(output);
+            message.reply("Output:\n" + "```\n" + `${code_output}` + "```\n");
         }
     },
 };
