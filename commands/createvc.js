@@ -14,7 +14,7 @@ module.exports = {
 
             const data = JSON.parse(fs.readFileSync("./data/createvc.json", "utf8"));
             // console.log(data);
-            const authorid = interaction.user.id;
+            // const authorid = interaction.user.id;
 
             const size = data.channels.length;
             // console.log(size);
@@ -29,7 +29,7 @@ module.exports = {
                 // See if there is a category channel with name - TEMPORARY VCs
                 // If not, it creates a new category with name CATEGORY_NAME
                 try {
-                    allchannels.forEach(function (item, index) {
+                    allchannels.forEach((item) => {
                         if (
                             item != null &&
                             item.type == "GUILD_CATEGORY" &&

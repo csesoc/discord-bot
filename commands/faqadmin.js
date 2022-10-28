@@ -1,7 +1,6 @@
 // @ts-check
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { CommandInteraction, Permissions } = require("discord.js");
-const { DBFaq } = require("../lib/database/faq");
+const { Permissions } = require("discord.js");
 
 // ////////////////////////////////////////////
 // //////// SETTING UP THE COMMANDS ///////////
@@ -71,17 +70,21 @@ async function handleInteraction(interaction) {
                     ephemeral: true,
                 });
             }
-            tags = String(interaction.options.get("tags").value);
-            // validate "tags" string
-            if (tags) {
-                tags = tags.trim();
-                const tagRegex = /^([a-zA-Z]+,)*[a-zA-Z]+$/;
-                if (!tagRegex.test(tags)) {
-                    await interaction.reply({
-                        content: "ERROR: tags must be comma-separated alphabetic strings",
-                        ephemeral: true,
-                    });
-                    break;
+
+            console.log("gets here");
+            if (interaction.options.get("tags") != null) {
+                tags = String(interaction.options.get("tags").value);
+                // validate "tags" string
+                if (tags) {
+                    tags = tags.trim();
+                    const tagRegex = /^([a-zA-Z]+,)*[a-zA-Z]+$/;
+                    if (!tagRegex.test(tags)) {
+                        await interaction.reply({
+                            content: "ERROR: tags must be comma-separated alphabetic strings",
+                            ephemeral: true,
+                        });
+                        break;
+                    }
                 }
             }
 

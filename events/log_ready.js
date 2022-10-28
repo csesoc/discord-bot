@@ -14,8 +14,8 @@ module.exports = {
                 const g = client.guilds.cache.get(guilds[i]);
                 const channels = g.channels.cache;
 
-                channels_arr = [...channels.values()];
-                channels_filtered = channels_arr.filter((c) => c.type === "GUILD_TEXT");
+                const channels_arr = [...channels.values()];
+                const channels_filtered = channels_arr.filter((c) => c.type === "GUILD_TEXT");
 
                 for (const m in channels_filtered) {
                     // console.log(channels_filtered[m].id, channels_filtered[m].name);
