@@ -5,7 +5,7 @@ const MAX = 11;
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("24plus")
-        .setDescription("Generates 4 random numbers from 0 to 12 and a random target from 0 to 100."),
+        .setDescription("Generates 4 random numbers from 0 to 12 and a random target from 1 to 100."),
     async execute(interaction) {
         const resultNums = [];
 
