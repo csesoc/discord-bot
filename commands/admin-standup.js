@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+const { MessageEmbed, MessageButton, Permissions } = require("discord.js");
+const paginationEmbed = require("discordjs-button-pagination");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -54,14 +55,31 @@ module.exports = {
 
                 const roleNames = {};
                 roleMembers.forEach((el) => {
-                    roleNames[el.user.id] = el.user.username;
+                    let author = el.nickname;
+                    if (author == undefined) {
+                        author = el.user.username;
+                    }
+                    roleNames[el.user.id] = author;
                 });
 
                 const standupDone = [];
+                const standupEmbeded = [];
                 // add all standups
                 thisTeamStandups.forEach((standUp) => {
                     standupDone.push(standUp.user_id);
-                    sendmsg += `${roleNames[standUp.user_id]}` + "\n" + standUp.standup_content;
+                    standupEmbeded.push(
+                        "**" +
+                            `${roleNames[standUp.user_id]}` +
+                            "**" +
+                            "\n" +
+                            standUp.standup_content,
+                    );
+                    sendmsg +=
+                        "**" +
+                        `${roleNames[standUp.user_id]}` +
+                        "**" +
+                        "\n" +
+                        standUp.standup_content;
                     sendmsg += "\n";
                 });
 
@@ -77,9 +95,44 @@ module.exports = {
                 let notDoneUsersString = "";
                 notDoneUsersString = notDone.map((el) => `${roleNames[el]}`).join(", ");
 
-                sendmsg += "\n" + "These users have not done their standup:\n" + notDoneUsersString;
+                const embedList = [];
 
-                await interaction.reply(sendmsg);
+                standupEmbeded.forEach((el) => {
+                    embedList.push(
+                        new MessageEmbed()
+                            .setTitle("Standups")
+                            .setDescription(
+                                el +
+                                    "\n\n" +
+                                    "_These users have not done their standup:_\n" +
+                                    notDoneUsersString,
+                            ),
+                    );
+                });
+
+                if (thisTeamStandups.length == 0) {
+                    const embed = new MessageEmbed()
+                        .setTitle("Standups")
+                        .setDescription(
+                            "No standups recorded\n" +
+                                "_These users have not done their standup:_\n" +
+                                notDoneUsersString,
+                        );
+                    return await interaction.reply({ embeds: [embed] });
+                }
+
+                const buttonList = [
+                    new MessageButton()
+                        .setCustomId("previousbtn")
+                        .setLabel("Previous")
+                        .setStyle("DANGER"),
+                    new MessageButton().setCustomId("nextbtn").setLabel("Next").setStyle("SUCCESS"),
+                ];
+
+                paginationEmbed(interaction, embedList, buttonList);
+
+                // sendmsg += "\n" + "These users have not done their standup:\n" + notDoneUsersString;
+                // await interaction.reply(sendmsg);
             } catch (error) {
                 sendmsg = "An error - " + error;
                 await interaction.reply(sendmsg);
