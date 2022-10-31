@@ -45,6 +45,8 @@
         "@babel/core": "7.19.1",
         "@babel/eslint-parser": "7.19.1",
         "eslint": "8.23.1",
+        "eslint-config-prettier": "8.5.0",
+        "eslint-plugin-prettier": "4.2.1",
         "prettier": "2.7.1"
     }
 }
