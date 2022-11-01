@@ -1,0 +1,199 @@
+{
+    "commands": [
+        {
+            "name": "24 Game",
+            "description": "Generates 4 random numbers for the 24 game.",
+            "usage": "/24"
+        },
+        {
+            "name": "24 Plus Game",
+            "description": "Generates 4 random numbers for the 24 game this time from 1 to 12 and a random target from 1 to 100.",
+            "usage": "/24plus"
+        },
+        {
+            "name": "Anonymous Post Current",
+            "description": "Make posts anonymously in the current channel.",
+            "usage": "/anonymouspost current <message>"
+        },
+        {
+            "name": "Anonymous Post Channel",
+            "description": "Make posts anonymously in another channel.",
+            "usage": "/anonymouspost channel <message> <channel>"
+        },
+        {
+            "name": "Anonymous Post Allow [ADMIN]",
+            "description": "Allows anonymous posts to be sent in a channel.",
+            "usage": "/anonymouspost allow <channel>"
+        },
+        {
+            "name": "Anonymous Post Allow Current [ADMIN]",
+            "description": "Allows anonymous posts to be sent in the current channel.",
+            "usage": "/anonymouspost allowcurrent"
+        },
+        {
+            "name": "Anonymous Post Disallow [ADMIN]",
+            "description": "Disallows anonymous posts to be sent in a channel.",
+            "usage": "/anonymouspost disallow <channel>"
+        },
+        {
+            "name": "Anonymous Post Disallow Current [ADMIN]",
+            "description": "Disallows anonymous posts to be sent in the current channel.",
+            "usage": "/anonymouspost disallowcurrent"
+        },
+        {
+            "name": "Anonymous Post Whitelist [ADMIN]",
+            "description": "Displays all allowed channels for anonymous posts.",
+            "usage": "/anonymouspost whitelist"
+        },
+        {
+            "name": "Cancel Post [ADMIN]",
+            "description": "Cancel a scheduled post",
+            "usage": "/cancelpost <messageid> <channelid>"
+        },
+        {
+            "name": "Connect 4",
+            "description": "Starts a game of Connect 4",
+            "usage": "/connect4"
+        },
+        {
+            "name": "Create VC",
+            "description": "Create a temporary voice channel",
+            "usage": "/createvc"
+        },
+        {
+            "name": "FAQ Help",
+            "description": "Gets information about the faq command",
+            "usage": "/faq help"
+        },
+        {
+            "name": "FAQ Get",
+            "description": "Gets information related to a certain keyword",
+            "usage": "/faq get <keyword>"
+        },
+        {
+            "name": "FAQ Get All",
+            "description": "Gets all information related to a certain tag",
+            "usage": "/faq getall <tag>"
+        },
+        {
+            "name": "FAQ Tags",
+            "description": "Gets a list of all tags which currently exist",
+            "usage": "/faq tags"
+        },
+        {
+            "name": "FAQ Admin Create [ADMIN]",
+            "description": "Creates a FAQ entry",
+            "usage": "/faqadmin create <keyword> <answer> <Optional: tags>"
+        },
+        {
+            "name": "FAQ Admin Delete [ADMIN]",
+            "description": "Deletes a FAQ entry",
+            "usage": "/faqadmin delete <keyword>"
+        },
+        {
+            "name": "Handbook Course Info",
+            "description": "Displays information about a course from the UNSW Handbook",
+            "usage": "/handbook courseinfo <coursecode>"
+        },
+        {
+            "name": "Log Report Today [ADMIN]",
+            "description": "Gets all message logs from today",
+            "usage": "/logreport today <email>"
+        },
+        {
+            "name": "Log Report Time Period [ADMIN]",
+            "description": "Gets all message logs from specified days",
+            "usage": "/logreport timeperiod <email> <start-datetime> <end-datetime>"
+        },
+        {
+            "name": "Meeting Queue",
+            "description": "Generates a queue from VC participants",
+            "usage": "/meeting queue <Optional: include> <Optional: exclude>"
+        },
+        {
+            "name": "Meeting Random",
+            "description": "Selects a random VC participant",
+            "usage": "/meeting random <Optional: include> <Optional: exclude>"
+        },
+        {
+            "name": "Meeting Groups",
+            "description": "Forms groups from VC participants",
+            "usage": "/meeting groups <num_groups> <Optional: include> <Optional: exclude>"
+        },
+        {
+            "name": "Ping",
+            "description": "Replies with a pong, why are you reading this?",
+            "usage": "/ping"
+        },
+        {
+            "name": "React For Role",
+            "description": "Creates a new role and assigns it to any user who reacts with a given emoji",
+            "usage": "/reactforrole <emojis> <rolenames> <Optional: message>"
+        },
+        {
+            "name": "Role Give",
+            "description": "Gives a role to a user",
+            "usage": "/role give <role>"
+        },
+        {
+            "name": "Role Remove",
+            "description": "Removes a role from a user",
+            "usage": "/role remove <role>"
+        },
+        {
+            "name": "Role Count [ADMIN]",
+            "description": "Displays the number of users with a given role",
+            "usage": "/role count <role>"
+        },
+        {
+            "name": "Role Remove Unverified [ADMIN]",
+            "description": "Removes all users with the unverified role",
+            "usage": "/role removeunverified"
+        },
+        {
+            "name": "Schedule Post [ADMIN]",
+            "description": "Schedule a post to be sent in a channel at a given time",
+            "usage": "/schedulepost <messageid> <channelid> <YYYY-MM-DD HH:MM> <Optional: reminder>"
+        },
+        {
+            "name": "Standups Reset [ADMIN ONLY]",
+            "description": "Resets all standups",
+            "usage": "/standupstatus resetstandups"
+        },
+        {
+            "name": "Standup Status Get Full Standups [ADMIN]",
+            "description": "Returns all standups for a team and members who have not completed a standup yet.",
+            "usage": "/standupstatus getfullstandups <teamrole> <Optional: days>"
+        },
+        {
+            "name": "Tic Tac Toe",
+            "description": "Starts a game of Tic Tac Toe",
+            "usage": "/tictactoe"
+        },
+        {
+            "name": "Start Vote",
+            "description": "Starts a vote",
+            "usage": "/voting vote <votestring>"
+        },
+        {
+            "name": "Vote Results",
+            "description": "Gets results for the last vote in the current channel",
+            "usage": "/voting voteresult"
+        },
+        {
+            "name": "Vote Results Full",
+            "description": "Gets full results for the last vote in the current channel",
+            "usage": "/voting voteresultfull"
+        },
+        {
+            "name": "Wordle Play",
+            "description": "Picks a new word if one hasn't been selected and starts a new game",
+            "usage": "/wordle play"
+        },
+        {
+            "name": "Wordle Guess",
+            "description": "Submits a guess for the wordle game",
+            "usage": "/wordle guess <word>"
+        }
+    ]
+}
