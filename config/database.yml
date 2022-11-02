@@ -2,9 +2,7 @@
 #                        Database Settings                         #
 ####################################################################
 
-user: user
+user: discord_user
 dbname: bot
-password: pass
-host: 0.0.0.0
-port: 40041
-
+host: 127.0.0.1
+port: 5432
