@@ -1,17 +1,27 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageEmbed } = require('discord.js');
 const axios = require('axios').default;
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('joke')
     .setDescription('Replies with a new joke!'),
   async execute(interaction) {
-    const joke = axios
+    axios
       .get('https://official-joke-api.appspot.com/random_joke')
       .then((res) => {
-        interaction.reply(res);
+        console.log(res.data);
+        const embed = new MessageEmbed()
+          .setTitle(res.data.setup)
+          .setDescription(res.data.punchline);
+
+        interaction.reply({ embeds: [embed], ephemeral: true });
       })
       .catch((err) => {
-        interaction.reply(`sorry something went wrong!😔`);
+        console.log(err);
+        interaction.reply({
+          content: `sorry something went wrong!😔`,
+          ephemeral: true,
+        });
       });
   },
 };
