@@ -1,15 +1,11 @@
-// const COURSE_CHATS_CHANNEL_ID = 860388285511630868;
+const COURSE_CHATS_CHANNEL_ID = "860388285511630868";
 
 module.exports = {
     name: "messageCreate",
     async execute(message) {
         try {
             /*eslint-disable */
-            if (
-                message.content.includes(
-                    "/role",
-                ) /* &&  message.channelId ==  COURSE_CHATS_CHANNEL_ID*/
-            ) {
+            if (message.content.includes("/role",) &&  message.channelId == COURSE_CHATS_CHANNEL_ID) {
                 const msg =
                     "❌ Role command entered incorrectly. Please see the above messages on how to correctly give or remove a role.";
 

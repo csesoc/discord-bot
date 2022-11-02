@@ -23,6 +23,8 @@ for (const file of commandFiles) {
     client.commands.set(command.data.name, command);
 }
 
+require("events").EventEmitter.defaultMaxListeners = 0;
+
 // Add events to the client
 const eventFiles = fs.readdirSync("./events").filter((file) => file.endsWith(".js"));
 

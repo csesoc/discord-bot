@@ -47,11 +47,11 @@ module.exports = {
                 const teamRoleID = team.id;
                 const role = await interaction.guild.roles.fetch(teamRoleID);
                 /*eslint-disable */
-                const roleMembers = [...role.members?.values()];
+                var roleMembers = [...role.members?.values()];
                 /* eslint-enable */
-
+                // roleMembers = roleMembers.filter(rm => rm._roles[0] == teamRoleID)
                 const thisTeamId = interaction.channel.parentId;
-                const thisTeamStandups = await standupDB.getStandups(thisTeamId, numDaysToRetrieve);
+                let thisTeamStandups = await standupDB.getStandups(thisTeamId, numDaysToRetrieve);
 
                 const roleNames = {};
                 roleMembers.forEach((el) => {
@@ -61,6 +61,10 @@ module.exports = {
                     }
                     roleNames[el.user.id] = author;
                 });
+
+                thisTeamStandups = thisTeamStandups.filter((st) =>
+                    Object.keys(roleNames).includes(st.user_id),
+                );
 
                 const standupDone = [];
                 const standupEmbeded = [];
@@ -100,7 +104,7 @@ module.exports = {
                 standupEmbeded.forEach((el) => {
                     embedList.push(
                         new MessageEmbed()
-                            .setTitle("Standups")
+                            .setTitle("Standups (" + role.name + ")")
                             .setDescription(
                                 el +
                                     "\n\n" +
@@ -112,7 +116,7 @@ module.exports = {
 
                 if (thisTeamStandups.length == 0) {
                     const embed = new MessageEmbed()
-                        .setTitle("Standups")
+                        .setTitle("Standups (" + role.name + ")")
                         .setDescription(
                             "No standups recorded\n" +
                                 "_These users have not done their standup:_\n" +
@@ -135,7 +139,7 @@ module.exports = {
                 // await interaction.reply(sendmsg);
             } catch (error) {
                 sendmsg = "An error - " + error;
-                await interaction.reply(sendmsg);
+                await interaction.reply({ content: sendmsg, ephemeral: true });
             }
         } else if (interaction.options.getSubcommand() === "resetstandups") {
             try {
