@@ -97,8 +97,8 @@ module.exports = {
             ],
         });
 
-        // Creates a collector for button interaction events, setting a 60s maximum
-        // timeout and a 10s inactivity timeout
+        // Creates a collector for button interaction events, setting a 120s maximum
+        // timeout and a 30s inactivity timeout
         const filter = (resInteraction) => {
             return (
                 (resInteraction.customId === prevId || resInteraction.customId === nextId) &&
@@ -107,8 +107,8 @@ module.exports = {
         };
         const collector = interaction.channel.createMessageComponentCollector({
             filter,
-            time: 60000,
-            idle: 10000,
+            time: 120000,
+            idle: 30000,
         });
 
         collector.on("collect", async (i) => {
