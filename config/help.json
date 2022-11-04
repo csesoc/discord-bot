@@ -51,6 +51,11 @@
             "usage": "/cancelpost <messageid> <channelid>"
         },
         {
+            "name": "Coin Flip",
+            "description": "Tosses a coin and rondom gives head or tails.",
+            "usage": "/coinflip"
+        },
+        {
             "name": "Connect 4",
             "description": "Starts a game of Connect 4",
             "usage": "/connect4"
