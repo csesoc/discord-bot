@@ -54,10 +54,11 @@ module.exports = {
 
                 const roleNames = {};
                 roleMembers.forEach((el) => {
-                    let author = el.nickname;
+                    const author = el.user.username;
+                    /* let author = el.nickname;
                     if (author == undefined) {
                         author = el.user.username;
-                    }
+                    }*/
                     roleNames[el.user.id] = author;
                 });
 
@@ -96,7 +97,7 @@ module.exports = {
                 });
 
                 let notDoneUsersString = "";
-                notDoneUsersString = notDone.map((el) => `${roleNames[el]}`).join(", ");
+                notDoneUsersString = notDone.map((el) => `<@${el}>`).join(", ");
 
                 const embedList = [];
                 if (notDone.length == 0) {
