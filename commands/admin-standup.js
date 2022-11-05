@@ -8,11 +8,6 @@ module.exports = {
         .setDescription("Get standups [ADMIN]")
         .addSubcommand((subcommand) =>
             subcommand
-                .setName("resetstandups")
-                .setDescription("Admin command to reset all standups"),
-        )
-        .addSubcommand((subcommand) =>
-            subcommand
                 .setName("getfullstandups")
                 .setDescription("Returns all standups")
                 .addMentionableOption((option) =>
@@ -31,7 +26,11 @@ module.exports = {
 
     async execute(interaction) {
         const standupDB = global.standupDBGlobal;
-        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        const TEAM_DIRECTOR_ROLE_ID = "921348676692107274";
+        if (
+            !interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR) &&
+            !interaction.member._roles.includes(TEAM_DIRECTOR_ROLE_ID)
+        ) {
             return await interaction.reply({
                 content: "You do not have permission to execute this command.",
                 ephemeral: true,
@@ -100,25 +99,36 @@ module.exports = {
                 notDoneUsersString = notDone.map((el) => `${roleNames[el]}`).join(", ");
 
                 const embedList = [];
-
-                standupEmbeded.forEach((el) => {
-                    embedList.push(
-                        new MessageEmbed()
-                            .setTitle("Standups (" + role.name + ")")
-                            .setDescription(
-                                el +
-                                    "\n\n" +
-                                    "_These users have not done their standup:_\n" +
-                                    notDoneUsersString,
-                            ),
-                    );
-                });
+                if (notDone.length == 0) {
+                    standupEmbeded.forEach((el) => {
+                        embedList.push(
+                            new MessageEmbed()
+                                .setTitle("Standups (" + role.name + ")")
+                                .setDescription(
+                                    el + "\n\n" + "_Everyone has done their standup_\n",
+                                ),
+                        );
+                    });
+                } else {
+                    standupEmbeded.forEach((el) => {
+                        embedList.push(
+                            new MessageEmbed()
+                                .setTitle("Standups (" + role.name + ")")
+                                .setDescription(
+                                    el +
+                                        "\n\n" +
+                                        "_These users have not done their standup:_\n" +
+                                        notDoneUsersString,
+                                ),
+                        );
+                    });
+                }
 
                 if (thisTeamStandups.length == 0) {
                     const embed = new MessageEmbed()
                         .setTitle("Standups (" + role.name + ")")
                         .setDescription(
-                            "No standups recorded\n" +
+                            "No standups recorded\n\n" +
                                 "_These users have not done their standup:_\n" +
                                 notDoneUsersString,
                         );
@@ -141,7 +151,8 @@ module.exports = {
                 sendmsg = "An error - " + error;
                 await interaction.reply({ content: sendmsg, ephemeral: true });
             }
-        } else if (interaction.options.getSubcommand() === "resetstandups") {
+        }
+        /* else if (interaction.options.getSubcommand() === "resetstandups") {
             try {
                 await standupDB.deleteAllStandups();
                 await interaction.reply({
@@ -154,6 +165,6 @@ module.exports = {
                     ephemeral: true,
                 });
             }
-        }
+        }*/
     },
 };
