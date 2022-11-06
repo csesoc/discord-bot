@@ -48,7 +48,8 @@ module.exports = {
                 /*eslint-disable */
                 var roleMembers = [...role.members?.values()];
                 /* eslint-enable */
-                // roleMembers = roleMembers.filter(rm => rm._roles[0] == teamRoleID)
+                const ON_BREAK_ID = "1036905668352942090";
+                roleMembers = roleMembers.filter((rm) => !rm._roles.includes(ON_BREAK_ID));
                 const thisTeamId = interaction.channel.parentId;
                 let thisTeamStandups = await standupDB.getStandups(thisTeamId, numDaysToRetrieve);
 
