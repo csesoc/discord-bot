@@ -54,7 +54,8 @@ jobs:
     name: Deploy (CD)
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/projects-bot' }}
+    if: ${{ github.event_name != 'pull_request' &&
+            ( github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/projects-bot' ) }}
     concurrency: production
     environment:
       name: production (projects-bot)
@@ -72,11 +73,11 @@ jobs:
           BRANCH_NAME: ${{ github.ref }}
         run: |
           if [ "$BRANCH_NAME" = "refs/heads/projects-bot" ]; then
-              echo "{MANIFEST}={apps/projects/bot/ptb/deploy.yml}" >> $GITHUB_OUTPUT
-              echo "{DEPLOYMENT}={ptb}" >> $GITHUB_OUTPUT
+              echo "MANIFEST=apps/projects/bot/ptb/deploy.yml" >> $GITHUB_OUTPUT
+              echo "DEPLOYMENT=ptb" >> $GITHUB_OUTPUT
           elif [ "$BRANCH_NAME" = "refs/heads/develop" ]; then
-              echo "{MANIFEST}={apps/projects/bot/qa/deploy.yml}" >> $GITHUB_OUTPUT
-              echo "{DEPLOYMENT}={qa}" >> $GITHUB_OUTPUT
+              echo "MANIFEST=apps/projects/bot/qa/deploy.yml" >> $GITHUB_OUTPUT
+              echo "DEPLOYMENT=qa" >> $GITHUB_OUTPUT
           else
               exit 1
           fi
