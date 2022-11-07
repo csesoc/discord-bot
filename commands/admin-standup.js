@@ -42,7 +42,7 @@ module.exports = {
 
             try {
                 const team = await interaction.options.getMentionable("teamrole");
-                const numDaysToRetrieve = (await interaction.options.getInteger("days")) ?? 5;
+                const numDaysToRetrieve = (await interaction.options.getInteger("days")) ?? 7;
                 const teamRoleID = team.id;
                 const role = await interaction.guild.roles.fetch(teamRoleID);
                 /*eslint-disable */
