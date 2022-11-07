@@ -161,11 +161,6 @@
             "usage": "/schedulepost <messageid> <channelid> <YYYY-MM-DD HH:MM> <Optional: reminder>"
         },
         {
-            "name": "Standups Reset [ADMIN ONLY]",
-            "description": "Resets all standups",
-            "usage": "/standupstatus resetstandups"
-        },
-        {
             "name": "Standup Status Get Full Standups [ADMIN]",
             "description": "Returns all standups for a team and members who have not completed a standup yet.",
             "usage": "/standupstatus getfullstandups <teamrole> <Optional: days>"
