@@ -19,10 +19,16 @@ module.exports = {
             const standupAuthorId = message.author.id;
 
             const standupExists = await standupDB.thisStandupExists(message.id);
+            const numDaysToRetrieve = 7;
+            const alreadyStandup = await standupDB.getStandups(teamId, numDaysToRetrieve);
+
+            alreadyStandup.filter((st) => st.user_id == message.author.id);
+            const latestStandup = new Date(_oldMessage.createdTimestamp);
+
             // if this standup exists, update the row else insert new row
             if (standupExists) {
                 await standupDB.updateStandup(message.id, messageContent);
-            } else {
+            } else if (latestStandup > alreadyStandup[0].time_stamp) {
                 await standupDB.addStandup(teamId, standupAuthorId, message.id, messageContent);
             }
 
