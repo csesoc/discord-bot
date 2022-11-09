@@ -4,7 +4,7 @@
 
 -   Install Node.js and npm from https://nodejs.org/en/download/
 -   Clone the repository with `git clone https://github.com/csesoc/discord-bot`
--   Go` to `.env` and fill in
+-   Go to `.env` and fill in
     -   `DISCORD_TOKEN` with the token of the bot
     -   `APP_ID` with the ID of the bot application
 -   Install dependencies with `npm install`
