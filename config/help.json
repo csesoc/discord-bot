@@ -6,6 +6,11 @@
             "usage": "/24"
         },
         {
+            "name": "24 Parser",
+            "description": "Checks whether your answer for the 24 game evaluates to 24 (or an inputted target).",
+            "usage": "/24parse <answer> <Optional: target>"
+        },
+        {
             "name": "24 Plus Game",
             "description": "Generates 4 random numbers for the 24 game this time from 1 to 12 and a random target from 1 to 100.",
             "usage": "/24plus"
