@@ -26,7 +26,7 @@ module.exports = {
         const xkcd = require("xkcd-api");
 
         if (interaction.options.getSubcommand() === "latest") {
-            xkcd.latest(function (error, response) {
+            xkcd.latest(async function (error, response) {
                 if (error) {
                     console.log(error);
                     interaction.reply({
@@ -37,13 +37,13 @@ module.exports = {
                     const embed = new MessageEmbed()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
-                    return interaction.reply({ embeds: [embed] });
+                    return await interaction.reply({ embeds: [embed] });
                 }
             });
         } else if (interaction.options.getSubcommand() === "get") {
             const comic_id = interaction.options.getInteger("comic-id");
 
-            xkcd.get(comic_id, function (error, response) {
+            xkcd.get(comic_id, async function (error, response) {
                 if (error) {
                     console.log(error);
                     interaction.reply({
@@ -54,11 +54,11 @@ module.exports = {
                     const embed = new MessageEmbed()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
-                    return interaction.reply({ embeds: [embed] });
+                    return await interaction.reply({ embeds: [embed] });
                 }
             });
         } else if (interaction.options.getSubcommand() === "random") {
-            xkcd.random(function (error, response) {
+            xkcd.random(async function (error, response) {
                 if (error) {
                     console.log(error);
                     interaction.reply({
@@ -69,7 +69,7 @@ module.exports = {
                     const embed = new MessageEmbed()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
-                    return interaction.reply({ embeds: [embed] });
+                    return await interaction.reply({ embeds: [embed] });
                 }
             });
         }
