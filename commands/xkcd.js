@@ -11,12 +11,12 @@ module.exports = {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("get")
-                .setDescription("Get the latest xkcd comic.")
+                .setDescription("Get xkcd comic by its id.")
                 .addIntegerOption((option) =>
                     option
-                        .setName("comic-number")
+                        .setName("comic-id")
                         .setRequired(true)
-                        .setDescription("The number of the xkcd comic you want to get"),
+                        .setDescription("The number id of the xkcd comic you want to get"),
                 ),
         )
         .addSubcommand((subcommand) =>
@@ -26,7 +26,7 @@ module.exports = {
         const xkcd = require("xkcd-api");
 
         if (interaction.options.getSubcommand() === "latest") {
-            xkcd.latest(async function (error, response) {
+            xkcd.latest(function (error, response) {
                 if (error) {
                     console.log(error);
                     interaction.reply({
@@ -37,13 +37,13 @@ module.exports = {
                     const embed = new MessageEmbed()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
-                    return await interaction.reply({ embeds: [embed] });
+                    return interaction.reply({ embeds: [embed] });
                 }
             });
         } else if (interaction.options.getSubcommand() === "get") {
-            const comic_id = interaction.options.getInteger("comic-number");
+            const comic_id = interaction.options.getInteger("comic-id");
 
-            xkcd.get(comic_id, async function (error, response) {
+            xkcd.get(comic_id, function (error, response) {
                 if (error) {
                     console.log(error);
                     interaction.reply({
@@ -54,11 +54,11 @@ module.exports = {
                     const embed = new MessageEmbed()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
-                    return await interaction.reply({ embeds: [embed] });
+                    return interaction.reply({ embeds: [embed] });
                 }
             });
         } else if (interaction.options.getSubcommand() === "random") {
-            xkcd.random(async function (error, response) {
+            xkcd.random(function (error, response) {
                 if (error) {
                     console.log(error);
                     interaction.reply({
@@ -69,7 +69,7 @@ module.exports = {
                     const embed = new MessageEmbed()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
-                    return await interaction.reply({ embeds: [embed] });
+                    return interaction.reply({ embeds: [embed] });
                 }
             });
         }
