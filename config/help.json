@@ -219,6 +219,11 @@
             "name": "XKCD Random",
             "description": "Gets a random xkcd comic",
             "usage": "/xkcd random"
+        },
+        {
+            "name": "What Week Is It",
+            "description": "Returns the current trimester week, study period, exam period or term break.",
+            "usage": "/whatweekisit"
         }
     ]
 }
