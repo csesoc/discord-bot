@@ -158,7 +158,7 @@ module.exports = {
                     if (checkInBetween(date_string, c_date, months)) {
                         week = whatweek(date_string, c_date, months);
                         if (week == 6) {
-                            console.log("It is Term 1, Flex Week (6)");
+                            console.log("It is Term 2, Flex Week (6)");
                         }
                         interaction.reply(`It is Term 2, Week ${week}`);
                         match_c_date = 1;
@@ -168,7 +168,7 @@ module.exports = {
                     if (checkInBetween(date_string, c_date, months)) {
                         week = whatweek(date_string, c_date, months);
                         if (week == 6) {
-                            console.log("It is Term 1, Flex Week (6)");
+                            console.log("It is Term 3, Flex Week (6)");
                         }
                         interaction.reply(`It is Term 3, Week ${week}`);
                         match_c_date = 1;
