@@ -51,13 +51,8 @@
             "usage": "/anonymouspost whitelist"
         },
         {
-            "name": "Cancel Post [ADMIN]",
-            "description": "Cancel a scheduled post",
-            "usage": "/cancelpost <messageid> <channelid>"
-        },
-        {
             "name": "Coin Flip",
-            "description": "Tosses a coin and rondom gives head or tails.",
+            "description": "Tosses a coin and randomly gives head or tails.",
             "usage": "/coinflip"
         },
         {
@@ -166,9 +161,14 @@
             "usage": "/role removeunverified"
         },
         {
-            "name": "Schedule Post [ADMIN]",
+            "name": "Schedule Post Create [ADMIN]",
             "description": "Schedule a post to be sent in a channel at a given time",
-            "usage": "/schedulepost <messageid> <channelid> <YYYY-MM-DD HH:MM> <Optional: reminder>"
+            "usage": "/schedulepost create <messageid> <channelid> <YYYY-MM-DD HH:MM> <Optional: reminder>"
+        },
+        {
+            "name": "Schedule Post Cancel [ADMIN]",
+            "description": "Cancel a scheduled post",
+            "usage": "/schedulepost cancel <messageid> <channelid> <YYYY-MM-DD HH:MM>"
         },
         {
             "name": "Standup Status Get Full Standups [ADMIN]",
