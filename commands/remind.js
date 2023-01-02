@@ -1,23 +1,21 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { Embed } = require("@discordjs/builders");
 
-
-
 const baseCommand = new SlashCommandBuilder()
-.setName("remind")
-.setDescription("Be reminded at a certain time by the bot")
-.addStringOption((option) =>
-    option
-        .setName("datetime")
-        .setDescription("Enter the time as YYYY-MM-DD HH:MM")
-        .setRequired(true),
-)
-.addStringOption((option) =>
-    option
-        .setName("reminder_subject")
-        .setDescription("Enter what the reminder is for")
-        .setRequired(true),
-)
+    .setName("remind")
+    .setDescription("Be reminded at a certain time by the bot")
+    .addStringOption((option) =>
+        option
+            .setName("datetime")
+            .setDescription("Enter the time as YYYY-MM-DD HH:MM")
+            .setRequired(true),
+    )
+    .addStringOption((option) =>
+        option
+            .setName("reminder_subject")
+            .setDescription("Enter what the reminder is for")
+            .setRequired(true),
+    );
 
 module.exports = {
     data: baseCommand,
@@ -34,7 +32,7 @@ module.exports = {
                 ephemeral: true,
             });
         }
-        
+
         const send_time = new Date(datetime);
         const today = new Date();
         const now_time = new Date(
@@ -55,37 +53,41 @@ module.exports = {
             });
         }
 
-        const iconUrl = "https://avatars.githubusercontent.com/u/164179?s=200&v=4"
-        const botName = "CSESOCBOT"
-        // console.log(interaction.user);
+        const iconUrl = "https://avatars.githubusercontent.com/u/164179?s=200&v=4";
+        const botName = "CSESOCBOT";
 
         const reminderRequestEmbed = new Embed()
-        .setColor(0xFFE5B4)
-        .setTitle('Reminder has been queued!')
-        .setAuthor({ name: botName, iconURL: iconUrl })
-        .addFields(
-            { name: 'Requested by' , value: interaction.user.toString(), inline: true},
-            { name: 'For the date', value: '<t:' + (send_time.getTime()/1000) + '>', inline: true}
-        )
-        .setTimestamp()
+            .setColor(0xffe5b4)
+            .setTitle("Reminder has been queued!")
+            .setAuthor({ name: botName, iconURL: iconUrl })
+            .addFields(
+                { name: "Requested by", value: interaction.user.toString(), inline: true },
+                {
+                    name: "For the date",
+                    value: "<t:" + send_time.getTime() / 1000 + ">",
+                    inline: true,
+                },
+            )
+            .setTimestamp();
 
         const reminderEmbed = new Embed()
-        .setColor(0xFFE5B4)
-        .setTitle('⌛ Reminder ⌛')
-        .setAuthor({ name: botName, iconURL: iconUrl })
-        .addFields(
-            { name: '❗ Reminding you to ❗', value: interaction.options.getString('reminder_subject')},
-        )
-        .setTimestamp()
-        
-        await interaction.reply({embeds: [reminderRequestEmbed], ephemeral: true});
+            .setColor(0xffe5b4)
+            .setTitle("⌛ Reminder ⌛")
+            .setAuthor({ name: botName, iconURL: iconUrl })
+            .addFields({
+                name: "❗ Reminding you to ❗",
+                value: interaction.options.getString("reminder_subject"),
+            })
+            .setTimestamp();
+
+        await interaction.reply({ embeds: [reminderRequestEmbed], ephemeral: true });
 
         const message = interaction.user;
 
-        let sleep = async (ms) => await new Promise(r => setTimeout(r,ms));
+        const sleep = async (ms) => await new Promise((r) => setTimeout(r, ms));
         await sleep(time_send_in);
-        
-        console.log('Finished sleeping after ' + time_send_in/1000 + ' seconds');
-        message.send({ embeds: [reminderEmbed]});
+
+        console.log("Finished sleeping after " + time_send_in / 1000 + " seconds");
+        message.send({ embeds: [reminderEmbed] });
     },
 };
