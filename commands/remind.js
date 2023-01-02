@@ -76,7 +76,7 @@ module.exports = {
             .setAuthor({ name: botName, iconURL: iconUrl })
             .addFields({
                 name: "❗ Reminding you to ❗",
-                value: interaction.options.getString("reminder_subject"),
+                value: interaction.options.getString("content"),
             })
             .setTimestamp();
 

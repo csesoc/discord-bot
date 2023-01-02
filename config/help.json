@@ -224,6 +224,11 @@
             "name": "What Week Is It",
             "description": "Returns the current trimester week, study period, exam period or term break.",
             "usage": "/whatweekisit"
+        },
+        {
+            "name": "Remind",
+            "description": "Reminds you at the indicated datetime with the content that is inputted.",
+            "usage": "/remind <datetime> <content>"
         }
     ]
 }
