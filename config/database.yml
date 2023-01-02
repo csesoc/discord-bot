@@ -2,9 +2,8 @@
 #                        Database Settings                         #
 ####################################################################
 
-user: user
+user: postgres
 dbname: bot
-password: pass
+password: 2342789tf2S
 host: 0.0.0.0
-port: 40041
-
+port: 5432
