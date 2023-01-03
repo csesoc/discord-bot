@@ -7,27 +7,27 @@ const COMMAND_LEAVE = "leave";
 
 // map of course aliases to their actual names
 const course_aliases = {
-    "comp6841": "comp6841",
-    "comp9044": "comp2041",
-    "comp3891": "comp3231",
-    "comp9201": "comp3231",
-    "comp9101": "comp3121",
-    "comp9331": "comp3331",
-    "comp9415": "comp3421",
-    "comp9801": "comp3821",
-    "comp9102": "comp3131",
-    "comp9154": "comp3151",
-    "comp9164": "comp3161",
-    "comp9211": "comp3211",
-    "comp9222": "comp3221",
-    "comp9814": "comp3411",
-    "comp9511": "comp3511",
-    "comp9900": "comp3900",
-    "seng4920": "comp4920",
-    "comp9337": "comp4337",
-    "comp6841": "comp6441",
-    "math1141": "math1131",
-    "math1241": "math1231"
+    comp6841: "comp6841",
+    comp9044: "comp2041",
+    comp3891: "comp3231",
+    comp9201: "comp3231",
+    comp9101: "comp3121",
+    comp9331: "comp3331",
+    comp9415: "comp3421",
+    comp9801: "comp3821",
+    comp9102: "comp3131",
+    comp9154: "comp3151",
+    comp9164: "comp3161",
+    comp9211: "comp3211",
+    comp9222: "comp3221",
+    comp9814: "comp3411",
+    comp9511: "comp3511",
+    comp9900: "comp3900",
+    seng4920: "comp4920",
+    comp9337: "comp4337",
+    comp6841: "comp6441",
+    math1141: "math1131",
+    math1241: "math1231",
 };
 
 const get_real_course_name = (course) => {
@@ -64,7 +64,10 @@ module.exports = {
                 .setName(COMMAND_JOIN)
                 .setDescription("Join a course chat.")
                 .addStringOption((option) =>
-                    option.setName("course").setDescription("Course chat to join").setRequired(true),
+                    option
+                        .setName("course")
+                        .setDescription("Course chat to join")
+                        .setRequired(true),
                 ),
         )
         .addSubcommand((subcommand) =>
@@ -72,7 +75,10 @@ module.exports = {
                 .setName(COMMAND_LEAVE)
                 .setDescription("Leave a course chat.")
                 .addStringOption((option) =>
-                    option.setName("course").setDescription("Course chat to leave").setRequired(true),
+                    option
+                        .setName("course")
+                        .setDescription("Course chat to leave")
+                        .setRequired(true),
                 ),
         ),
     async execute(interaction) {
@@ -113,14 +119,16 @@ module.exports = {
                     });
                 }
 
-                const course_with_alias = course != input_course ?
-                    `${course} (alias for \`${input_course}\`)` : `${course}`;
+                const course_with_alias =
+                    course != input_course
+                        ? `${course} (alias for \`${input_course}\`)`
+                        : `${course}`;
 
                 // Check if the member already has an entry in the channel's permission overwrites, and update
                 // the entry if they do just to make sure that they have the correct permissions
                 if (channel.permissionOverwrites.has(interaction.member.id)) {
                     await channel.permissionOverwrites.edit(interaction.member, {
-                        VIEW_CHANNEL: true
+                        VIEW_CHANNEL: true,
                     });
                     return await interaction.reply({
                         content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
@@ -130,7 +138,7 @@ module.exports = {
 
                 // Add the member to the channel's permission overwrites
                 await channel.permissionOverwrites.create(interaction.member, {
-                    VIEW_CHANNEL: true
+                    VIEW_CHANNEL: true,
                 });
 
                 return await interaction.reply({
