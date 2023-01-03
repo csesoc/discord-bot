@@ -5,6 +5,38 @@ const MODERATION_REQUEST_CHANNEL = 824506830641561600;
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
 
+// map of course aliases to their actual names
+const course_aliases = {
+    "comp6841": "comp6841",
+    "comp9044": "comp2041",
+    "comp3891": "comp3231",
+    "comp9201": "comp3231",
+    "comp9101": "comp3121",
+    "comp9331": "comp3331",
+    "comp9415": "comp3421",
+    "comp9801": "comp3821",
+    "comp9102": "comp3131",
+    "comp9154": "comp3151",
+    "comp9164": "comp3161",
+    "comp9211": "comp3211",
+    "comp9222": "comp3221",
+    "comp9814": "comp3411",
+    "comp9511": "comp3511",
+    "comp9900": "comp3900",
+    "seng4920": "comp4920",
+    "comp9337": "comp4337",
+    "comp6841": "comp6441",
+    "math1141": "math1131",
+    "math1241": "math1231"
+};
+
+const get_real_course_name = (course) => {
+    if (course_aliases[course.toLowerCase()]) {
+        return course_aliases[course.toLowerCase()];
+    }
+    return course.toLowerCase();
+};
+
 const is_valid_course = (course) => {
     const reg_comp_course = /^comp\d{4}$/;
     const reg_math_course = /^math\d{4}$/;
@@ -44,10 +76,12 @@ module.exports = {
                 ),
         ),
     async execute(interaction) {
-        try {           
+        try {
             if (interaction.options.getSubcommand() === COMMAND_JOIN) {
-                const course = await interaction.options.getString("course");
-                const other_courses   = /^[a-zA-Z]{4}\d{4}$/;
+                const input_course = await interaction.options.getString("course");
+                const course = get_real_course_name(input_course);
+
+                const other_courses = /^[a-zA-Z]{4}\d{4}$/;
 
                 if (!is_valid_course(course)) {
                     return await interaction.reply({
@@ -59,7 +93,7 @@ module.exports = {
                         content: `❌ | Course chats for other faculties are not supported.`,
                         ephemeral: true,
                     });
-                } 
+                }
 
                 // Find a channel with the same name as the course
                 const channel = await interaction.guild.channels.cache.find(
@@ -78,7 +112,10 @@ module.exports = {
                         ephemeral: true,
                     });
                 }
-                
+
+                const course_with_alias = course != input_course ?
+                    `${course} (alias for \`${input_course}\`)` : `${course}`;
+
                 // Check if the member already has an entry in the channel's permission overwrites, and update
                 // the entry if they do just to make sure that they have the correct permissions
                 if (channel.permissionOverwrites.has(interaction.member.id)) {
@@ -86,7 +123,7 @@ module.exports = {
                         VIEW_CHANNEL: true
                     });
                     return await interaction.reply({
-                        content: `❌ | You are already in the course chat for \`${course}\`.`,
+                        content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
                         ephemeral: true,
                     });
                 }
@@ -97,11 +134,12 @@ module.exports = {
                 });
 
                 return await interaction.reply({
-                    content: `✅ | Gave you the role \`${role.name}\`.`,
+                    content: `✅ | Added you to the chat for ${course_with_alias}.`,
                     ephemeral: true,
                 });
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
-                const course = await interaction.options.getString("course");
+                const input_course = await interaction.options.getString("course");
+                const course = get_real_course_name(input_course);
 
                 if (!is_valid_course(course)) {
                     return await interaction.reply({
