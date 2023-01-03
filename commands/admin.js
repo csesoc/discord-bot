@@ -98,18 +98,18 @@ module.exports = {
                 // to that channel so that they can view it
 
                 for (const role of course_roles.values()) {
-                    const role_channel = await interaction.guild.channels.cache.find(
+                    const channel = await interaction.guild.channels.cache.find(
                         (role_channel) =>
                             role_channel.name.toLowerCase() === role.name.toLowerCase(),
                     );
 
-                    if (role_channel === undefined) {
+                    if (channel === undefined) {
                         console.log("No channel found for role " + role.name);
                         continue;
                     }
 
                     for (const member of role.members.values()) {
-                        await role_channel.permissionOverwrites.create(member, {
+                        await channel.permissionOverwrites.create(member, {
                             VIEW_CHANNEL: true,
                         });
                     }
