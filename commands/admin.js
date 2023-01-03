@@ -1,5 +1,5 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { Permissions } from "discord.js";
+const { SlashCommandBuilder } = require("@discordjs/builders");
+const { Permissions } = require("discord.js");
 
 const COMMAND_KICKUNVERIFIED = "kickunverified";
 const COMMAND_MIGRATE = "migratecourses";
