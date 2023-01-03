@@ -99,7 +99,8 @@ module.exports = {
 
                 for (const role of course_roles.values()) {
                     const role_channel = await interaction.guild.channels.cache.find(
-                        (role_channel) => role_channel.name.toLowerCase() === role.name.toLowerCase(),
+                        (role_channel) =>
+                            role_channel.name.toLowerCase() === role.name.toLowerCase(),
                     );
 
                     if (role_channel === undefined) {
