@@ -1,3 +1,6 @@
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { Permissions } from "discord.js";
+
 const COMMAND_KICKUNVERIFIED = "kickunverified";
 const COMMAND_MIGRATE = "migratecourses";
 const COMMAND_REMOVECOURSEROLES = "nukeremovecourseroles";
@@ -95,17 +98,17 @@ module.exports = {
                 // to that channel so that they can view it
 
                 for (const role of course_roles.values()) {
-                    const channel = await interaction.guild.channels.cache.find(
-                        (channel) => channel.name.toLowerCase() === role.name.toLowerCase(),
+                    const role_channel = await interaction.guild.channels.cache.find(
+                        (role_channel) => role_channel.name.toLowerCase() === role.name.toLowerCase(),
                     );
 
-                    if (channel === undefined) {
+                    if (role_channel === undefined) {
                         console.log("No channel found for role " + role.name);
                         continue;
                     }
 
                     for (const member of role.members.values()) {
-                        await channel.permissionOverwrites.create(member, {
+                        await role_channel.permissionOverwrites.create(member, {
                             VIEW_CHANNEL: true,
                         });
                     }

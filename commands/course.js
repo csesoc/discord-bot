@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
 
 const MODERATION_REQUEST_CHANNEL = 824506830641561600;
 const COMMAND_JOIN = "join";
@@ -25,7 +24,6 @@ const course_aliases = {
     comp9900: "comp3900",
     seng4920: "comp4920",
     comp9337: "comp4337",
-    comp6841: "comp6441",
     math1141: "math1131",
     math1241: "math1231",
 };
