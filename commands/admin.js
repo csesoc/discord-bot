@@ -93,6 +93,8 @@ module.exports = {
                     is_valid_course(role.name),
                 );
 
+                await interaction.deferReply();
+
                 // for each course role, find the corresponding channel
                 // and add a permission overwrite for each member with that role
                 // to that channel so that they can view it
