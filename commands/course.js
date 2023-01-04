@@ -86,15 +86,16 @@ module.exports = {
                 const course = get_real_course_name(input_course);
 
                 const other_courses = /^[a-zA-Z]{4}\d{4}$/;
-
-                if (!is_valid_course(course)) {
-                    return await interaction.reply({
-                        content: `❌ | You are not allowed to join this channel using this command.`,
-                        ephemeral: true,
-                    });
-                } else if (other_courses.test(course.toLowerCase())) {
+                const is_valid = is_valid_course(course);
+                
+                if (!is_valid && other_courses.test(course.toLowerCase())) {
                     return await interaction.reply({
                         content: `❌ | Course chats for other faculties are not supported.`,
+                        ephemeral: true,
+                    });
+                } else if (!is_valid) {
+                    return await interaction.reply({
+                        content: `❌ | You are not allowed to join this channel using this command.`,
                         ephemeral: true,
                     });
                 }
