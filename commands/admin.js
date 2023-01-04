@@ -48,7 +48,7 @@ module.exports = {
                         .setName("course")
                         .setDescription("Course role to remove")
                         .setRequired(true),
-                )
+                ),
         ),
     async execute(interaction) {
         try {
@@ -100,31 +100,30 @@ module.exports = {
                 }
 
                 const role = await interaction.guild.roles.cache.find(
-                    (course_role) => role.name.toLowerCase() === course.toLowerCase(),
-                    );
-                    
-                    
+                    (course_role) => course_role.name.toLowerCase() === course.toLowerCase(),
+                );
+
                 if (role === undefined) {
                     return await interaction.reply("Error: no role exists for course " + course);
                 }
-                
-                
+
                 const channel = await interaction.guild.channels.cache.find(
-                    (role_channel) =>
-                    role_channel.name.toLowerCase() === role.name.toLowerCase(),
-                    );
-                    
+                    (role_channel) => role_channel.name.toLowerCase() === role.name.toLowerCase(),
+                );
+
                 if (channel === undefined) {
                     return await interaction.reply("Error: no channel exists for course " + course);
                 }
-                            
+
                 await interaction.deferReply();
                 for (const member of role.members.values()) {
                     await channel.permissionOverwrites.create(member, {
                         VIEW_CHANNEL: true,
                     });
                 }
-                return await interaction.editReply("Migrated course role to permission overwrites.");
+                return await interaction.editReply(
+                    "Migrated course role to permission overwrites.",
+                );
             } else if (interaction.options.getSubcommand() === COMMAND_REMOVECOURSEROLES) {
                 // get all roles, and find courses which match the regex
                 const course_roles = await interaction.guild.roles.cache.filter((role) =>
