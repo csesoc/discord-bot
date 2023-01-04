@@ -37,18 +37,18 @@ module.exports = {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName(COMMAND_MIGRATE)
-                .setDescription("Migrates course roles to permission overwrites."),
-        )
-        .addSubcommand((subcommand) =>
-            subcommand
-                .setName(COMMAND_REMOVECOURSEROLES)
-                .setDescription("WARNING: Removes a course role from the server.")
+                .setDescription("Migrates course roles to permission overwrites.")
                 .addStringOption((option) =>
                     option
                         .setName("course")
                         .setDescription("Course role to remove")
                         .setRequired(true),
                 ),
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName(COMMAND_REMOVECOURSEROLES)
+                .setDescription("WARNING: Removes a course role from the server.")
         ),
     async execute(interaction) {
         try {
