@@ -87,7 +87,7 @@ module.exports = {
 
                 const other_courses = /^[a-zA-Z]{4}\d{4}$/;
                 const is_valid = is_valid_course(course);
-                
+
                 if (!is_valid && other_courses.test(course.toLowerCase())) {
                     return await interaction.reply({
                         content: `❌ | Course chats for other faculties are not supported.`,
