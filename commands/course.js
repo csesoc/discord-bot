@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { Permissions } = require("discord.js");
 
 const MODERATION_REQUEST_CHANNEL = 824506830641561600;
 const COMMAND_JOIN = "join";
@@ -123,9 +124,18 @@ module.exports = {
                         ? `${course} (alias for \`${input_course}\`)`
                         : `${course}`;
 
+                const permissions = new Permissions(
+                    channel.permissionsFor(interaction.user.id).bitfield,
+                );
+
                 // Check if the member already has an entry in the channel's permission overwrites, and update
                 // the entry if they do just to make sure that they have the correct permissions
-                if (channel.permissionOverwrites.has(interaction.member.id)) {
+                if (
+                    permissions.has([
+                        Permissions.FLAGS.VIEW_CHANNEL,
+                        Permissions.FLAGS.SEND_MESSAGES,
+                    ])
+                ) {
                     await channel.permissionOverwrites.edit(interaction.member, {
                         VIEW_CHANNEL: true,
                     });
@@ -173,8 +183,17 @@ module.exports = {
                     });
                 }
 
+                const permissions = new Permissions(
+                    channel.permissionsFor(interaction.user.id).bitfield,
+                );
+
                 // Check if the member already has an entry in the channel's permission overwrites
-                if (!channel.permissionOverwrites.has(interaction.member.id)) {
+                if (
+                    !permissions.has([
+                        Permissions.FLAGS.VIEW_CHANNEL,
+                        Permissions.FLAGS.SEND_MESSAGES,
+                    ])
+                ) {
                     return await interaction.reply({
                         content: `❌ | You are not in the course chat for \`${course}\`.`,
                         ephemeral: true,
