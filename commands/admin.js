@@ -48,7 +48,7 @@ module.exports = {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName(COMMAND_REMOVECOURSEROLES)
-                .setDescription("WARNING: Removes course roles from the server.")
+                .setDescription("WARNING: Removes course roles from the server."),
         ),
     async execute(interaction) {
         try {
