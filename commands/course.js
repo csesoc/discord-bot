@@ -123,18 +123,6 @@ module.exports = {
                         ? `${course} (alias for \`${input_course}\`)`
                         : `${course}`;
 
-                // Check if the member already has an entry in the channel's permission overwrites, and update
-                // the entry if they do just to make sure that they have the correct permissions
-                if (channel.permissionOverwrites.has(interaction.member.id)) {
-                    await channel.permissionOverwrites.edit(interaction.member, {
-                        VIEW_CHANNEL: true,
-                    });
-                    return await interaction.reply({
-                        content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
-                        ephemeral: true,
-                    });
-                }
-
                 // Add the member to the channel's permission overwrites
                 await channel.permissionOverwrites.create(interaction.member, {
                     VIEW_CHANNEL: true,

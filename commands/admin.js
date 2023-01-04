@@ -97,6 +97,8 @@ module.exports = {
                 // and add a permission overwrite for each member with that role
                 // to that channel so that they can view it
 
+                await interaction.deferReply();
+
                 for (const role of course_roles.values()) {
                     const channel = await interaction.guild.channels.cache.find(
                         (role_channel) =>
