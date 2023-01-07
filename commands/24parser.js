@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const math = require("mathjs");
+const { Util } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,7 +22,7 @@ module.exports = {
         let polarity = "does not equal to";
         let emoji = "❌";
 
-        if (outcome === target) {
+        if (outcome == target) {
             polarity = "does equal to";
             emoji = "✅";
         }
