@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { isNaN } = require("mathjs");
+const { Util } = require("discord.js");
 const math = require("mathjs");
 const { Util } = require("discord.js");
 
