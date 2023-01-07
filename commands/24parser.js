@@ -1,6 +1,53 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { isNaN } = require("mathjs");
 const math = require("mathjs");
 const { Util } = require("discord.js");
+
+const illegalPhraseRegexes = [ /`/g, /@/g ];
+
+const isIllegalCharactersPresent = (expression) => {
+    return illegalPhraseRegexes.some((regex) => regex.test(expression));
+};
+
+const evaluate = (equationString, target) => {
+    if (isIllegalCharactersPresent(equationString)) {
+        return {
+            success: false,
+            message: "Could not compile. Illegal input detected.",
+            ephemeral: true,
+        };
+    }
+
+    const equationObj = math.compile(equationString);
+    if (!equationObj) {
+        return {
+            success: false,
+            message: "Could not compile. The equation is invalid.",
+            ephemeral: true,
+        };
+    }
+
+    const equationOutcome = equationObj.evaluate();
+    const outcomeAsNumber = Number(equationOutcome);
+    if (isNaN(outcomeAsNumber)) {
+        return {
+            success: false,
+            message: "Could not compile. The equation does not evaluate to a number.",
+            ephemeral: true,
+        };
+    }
+
+    return (outcomeAsNumber == target) ? {
+        success: true,
+        message: `Correct! \`${equationString}\` = ${target}, which is equal to the target`,
+        ephemeral: false,
+    } : {
+        success: false,
+        message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target`,
+        ephemeral: false,
+    };
+
+};
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,21 +61,17 @@ module.exports = {
         ),
     async execute(interaction) {
         const equationStr = interaction.options.getString("equation");
-        const equationObj = math.compile(equationStr);
-        const outcome_P = equationObj.evaluate();
-        const outcome = Util.removeMentions(outcome_P.toString());
         const target = interaction.options.getNumber("target") || 24;
 
-        let polarity = "does not equal to";
-        let emoji = "❌";
+        const { success, message, ephemeral } = evaluate(equationStr, target);
 
-        if (outcome == target) {
-            polarity = "does equal to";
-            emoji = "✅";
-        }
+        const emoji = (success) ? "❌" : "✅";
+        const output = `${emoji} ${message}`;
 
-        const output = `${emoji} The equation: \`\`${equationStr}\`\` evaluates to ${outcome}, which ${polarity} the target ${target}.`;
-
-        await interaction.reply(output);
+        await interaction.reply({
+            content: Util.removeMentions(output),
+            ephemeral,
+        });
     },
 };
+
