@@ -14,7 +14,8 @@ module.exports = {
     async execute(interaction) {
         const equationStr = interaction.options.getString("equation");
         const equationObj = math.compile(equationStr);
-        const outcome = equationObj.evaluate();
+        const outcome_P = equationObj.evaluate();
+        const outcome = Util.removeMentions(outcome_P.toString());
         const target = interaction.options.getNumber("target") || 24;
 
         let polarity = "does not equal to";
