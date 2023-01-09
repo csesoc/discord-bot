@@ -89,6 +89,7 @@ module.exports = {
             const role = interaction.member.guild.roles.cache.find((r) => r.name === roleName);
             var roleID = 0;
 
+
             if (role) {
                 const roleIsAdmin = role.permissions.has("ADMINISTRATOR");
                 if (roleIsAdmin) {
@@ -127,6 +128,7 @@ module.exports = {
         }
 
         message += "React to give yourself a role";
+
         for (var j = 0; j < emojiList.length; j++) {
             message += `\n${emojiList[j]}: ${roleList[j]}`;
         }
