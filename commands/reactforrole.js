@@ -89,7 +89,6 @@ module.exports = {
             const role = interaction.member.guild.roles.cache.find((r) => r.name === roleName);
             var roleID = 0;
 
-
             if (role) {
                 const roleIsAdmin = role.permissions.has("ADMINISTRATOR");
                 if (roleIsAdmin) {
