@@ -36,7 +36,7 @@ module.exports = {
 
         const emojis = interaction.options.getString("emojis");
         const roleNames = interaction.options.getString("rolenames");
-        let message = interaction.options.getString("message");
+        var message = interaction.options.getString("message");
 
         const emojiList = emojis.split(",").map((item) => item.trim());
         const roleList = roleNames.split(",").map((item) => item.trim());
@@ -75,11 +75,11 @@ module.exports = {
 
         const roles = {};
 
-        let notificationContent = "This command: \n";
+        var notificationContent = "This command: \n";
 
-        for (let i = 0; i < roleList.length; i++) {
+        for (var i = 0; i < roleList.length; i++) {
             const roleName = roleList[i];
-            let emoji = emojiList[i];
+            var emoji = emojiList[i];
 
             if (custom_emoji_regex.test(emoji)) {
                 emoji = emoji.split(":")[1];
@@ -87,7 +87,7 @@ module.exports = {
 
             // Check if role exist
             const role = interaction.member.guild.roles.cache.find((r) => r.name === roleName);
-            let roleID = 0;
+            var roleID = 0;
 
             if (role) {
                 const roleIsAdmin = role.permissions.has("ADMINISTRATOR");
@@ -127,7 +127,7 @@ module.exports = {
         }
 
         message += "React to give yourself a role";
-        for (let j = 0; j < emojiList.length; j++) {
+        for (var j = 0; j < emojiList.length; j++) {
             message += `\n${emojiList[j]}: ${roleList[j]}`;
         }
 
