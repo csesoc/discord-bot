@@ -157,14 +157,14 @@ module.exports = {
             });
 
             // Add react
-            emojiList.forEach((emoji) => {
-                sentMessage.react(emoji);
+            emojiList.forEach((e) => {
+                sentMessage.react(e);
             });
 
             // Add to database
             await reactRoles.add_react_role_msg(sentMessage.id, interaction.user.id);
-            for (const emoji in roles) {
-                await reactRoles.add_react_role_role(roles[emoji], emoji, sentMessage.id);
+            for (const e in roles) {
+                await reactRoles.add_react_role_role(roles[e], e, sentMessage.id);
             }
         } catch (err) {
             console.log(err);
