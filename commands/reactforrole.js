@@ -78,7 +78,8 @@ module.exports = {
 
         var notificationContent = "This command: \n"; /* eslint-disable */
 
-        for (var i = 0; i < roleList.length; i++) { /* eslint-disable */
+        for (var i = 0; i < roleList.length; i++) {
+            /* eslint-disable */
             const roleName = roleList[i];
             var emoji = emojiList[i]; /* eslint-disable */
 
@@ -129,7 +130,8 @@ module.exports = {
 
         message += "React to give yourself a role";
 
-        for (var j = 0; j < emojiList.length; j++) { /* eslint-disable */
+        for (var j = 0; j < emojiList.length; j++) {
+            /* eslint-disable */
             message += `\n${emojiList[j]}: ${roleList[j]}`;
         }
 
