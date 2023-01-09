@@ -12,7 +12,7 @@ const baseCommand = new SlashCommandBuilder()
     )
     .addStringOption((option) =>
         option
-            .setName("reminder_subject")
+            .setName("content")
             .setDescription("Enter what the reminder is for")
             .setRequired(true),
     );
