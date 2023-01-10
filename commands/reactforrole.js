@@ -36,8 +36,8 @@ module.exports = {
 
         const emojis = interaction.options.getString("emojis");
         const roleNames = interaction.options.getString("rolenames");
-        /* eslint-disable */
-        var message = interaction.options.getString("message");
+
+        let message = interaction.options.getString("message");
 
         const emojiList = emojis.split(",").map((item) => item.trim());
         const roleList = roleNames.split(",").map((item) => item.trim());
@@ -76,12 +76,11 @@ module.exports = {
 
         const roles = {};
 
-        var notificationContent = "This command: \n"; /* eslint-disable */
+        let notificationContent = "This command: \n";
 
-        for (var i = 0; i < roleList.length; i++) {
-            /* eslint-disable */
+        for (let i = 0; i < roleList.length; i++) {
             const roleName = roleList[i];
-            var emoji = emojiList[i]; /* eslint-disable */
+            let emoji = emojiList[i];
 
             if (custom_emoji_regex.test(emoji)) {
                 emoji = emoji.split(":")[1];
@@ -89,7 +88,7 @@ module.exports = {
 
             // Check if role exist
             const role = interaction.member.guild.roles.cache.find((r) => r.name === roleName);
-            var roleID = 0; /* eslint-disable */
+            let roleID = 0;
 
             if (role) {
                 const roleIsAdmin = role.permissions.has("ADMINISTRATOR");
@@ -130,8 +129,7 @@ module.exports = {
 
         message += "React to give yourself a role";
 
-        for (var j = 0; j < emojiList.length; j++) {
-            /* eslint-disable */
+        for (let j = 0; j < emojiList.length; j++) {
             message += `\n${emojiList[j]}: ${roleList[j]}`;
         }
 
