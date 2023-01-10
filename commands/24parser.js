@@ -40,12 +40,12 @@ const evaluate = (equationString, target) => {
     return outcomeAsNumber == target
         ? {
               success: true,
-              message: `Correct! \`${equationString}\` = ${target}, which is equal to the target`,
+              message: `Correct! \`${equationString}\` = ${target}, which is equal to the target of ${target}.`,
               ephemeral: false,
           }
         : {
               success: false,
-              message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target`,
+              message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target of ${target}.`,
               ephemeral: false,
           };
 };
@@ -66,7 +66,7 @@ module.exports = {
 
         const { success, message, ephemeral } = evaluate(equationStr, target);
 
-        const emoji = success ? "❌" : "✅";
+        const emoji = success ? "✅" : "❌";
         const output = `${emoji} ${message}`;
 
         await interaction.reply({
