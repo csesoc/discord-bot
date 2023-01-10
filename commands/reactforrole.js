@@ -79,7 +79,6 @@ module.exports = {
         let notificationContent = "This command: \n";
 
         for (let i = 0; i < roleList.length; i++) {
-
             const roleName = roleList[i];
             let emoji = emojiList[i];
 
@@ -131,7 +130,6 @@ module.exports = {
         message += "React to give yourself a role";
 
         for (let j = 0; j < emojiList.length; j++) {
-
             message += `\n${emojiList[j]}: ${roleList[j]}`;
         }
 
