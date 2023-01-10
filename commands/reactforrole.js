@@ -113,7 +113,7 @@ module.exports = {
                 } catch (err) {
                     console.log(err);
                     return await interaction.reply({
-                        content: `An error occured with creating '${roleName}'`,
+                        content: `An error occured with creating '${roleName} ${err}'`,
                         ephemeral: true,
                     });
                 }
