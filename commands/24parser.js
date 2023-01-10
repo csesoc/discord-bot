@@ -2,9 +2,8 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const { isNaN } = require("mathjs");
 const { Util } = require("discord.js");
 const math = require("mathjs");
-const { Util } = require("discord.js");
 
-const illegalPhraseRegexes = [ /`/g, /@/g ];
+const illegalPhraseRegexes = [/`/g, /@/g];
 
 const isIllegalCharactersPresent = (expression) => {
     return illegalPhraseRegexes.some((regex) => regex.test(expression));
@@ -38,16 +37,17 @@ const evaluate = (equationString, target) => {
         };
     }
 
-    return (outcomeAsNumber == target) ? {
-        success: true,
-        message: `Correct! \`${equationString}\` = ${target}, which is equal to the target`,
-        ephemeral: false,
-    } : {
-        success: false,
-        message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target`,
-        ephemeral: false,
-    };
-
+    return outcomeAsNumber == target
+        ? {
+              success: true,
+              message: `Correct! \`${equationString}\` = ${target}, which is equal to the target`,
+              ephemeral: false,
+          }
+        : {
+              success: false,
+              message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target`,
+              ephemeral: false,
+          };
 };
 
 module.exports = {
@@ -66,7 +66,7 @@ module.exports = {
 
         const { success, message, ephemeral } = evaluate(equationStr, target);
 
-        const emoji = (success) ? "❌" : "✅";
+        const emoji = success ? "❌" : "✅";
         const output = `${emoji} ${message}`;
 
         await interaction.reply({
@@ -75,4 +75,3 @@ module.exports = {
         });
     },
 };
-
