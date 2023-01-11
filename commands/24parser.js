@@ -61,11 +61,11 @@ const evaluate = (equationString, target) => {
 
     return (outcomeAsNumber == target) ? {
         success: true,
-        message: `Correct! \`${equationString}\` = ${target}, which is equal to the target`,
+        message: `Correct! \`${equationString}\` = ${target}, which is equal to the target.`,
         ephemeral: false,
     } : {
         success: false,
-        message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target`,
+        message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target of ${target}.`,
         ephemeral: false,
     };
 
