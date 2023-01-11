@@ -1,5 +1,5 @@
 {
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "prettier"],
     "env": {
         "node": true,
         "es6": true
@@ -9,6 +9,7 @@
         "ecmaVersion": 2021,
         "requireConfigFile": false
     },
+    "plugins": ["prettier"],
     "rules": {
         "arrow-spacing": ["warn", { "before": true, "after": true }],
         "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
@@ -34,6 +35,7 @@
         "no-var": "error",
         "object-curly-spacing": ["error", "always"],
         "prefer-const": "error",
+        "prettier/prettier": "error",
         "semi": ["error", "always"],
         "space-before-blocks": "error",
         "space-in-parens": "error",
