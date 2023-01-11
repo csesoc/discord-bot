@@ -36,6 +36,7 @@ module.exports = {
 
         const emojis = interaction.options.getString("emojis");
         const roleNames = interaction.options.getString("rolenames");
+
         let message = interaction.options.getString("message");
 
         const emojiList = emojis.split(",").map((item) => item.trim());
@@ -87,7 +88,7 @@ module.exports = {
 
             // Check if role exist
             const role = interaction.member.guild.roles.cache.find((r) => r.name === roleName);
-            let roleID;
+            let roleID = 0;
 
             if (role) {
                 const roleIsAdmin = role.permissions.has("ADMINISTRATOR");
@@ -111,7 +112,7 @@ module.exports = {
                 } catch (err) {
                     console.log(err);
                     return await interaction.reply({
-                        content: `An error occured with creating '${roleName}'`,
+                        content: `An error occured with creating '${roleName} ${err}'`,
                         ephemeral: true,
                     });
                 }
@@ -127,47 +128,50 @@ module.exports = {
         }
 
         message += "React to give yourself a role";
-        for (let i = 0; i < emojiList.length; i++) {
-            message += `\n${emojiList[i]}: ${roleList[i]}`;
+
+        for (let j = 0; j < emojiList.length; j++) {
+            message += `\n${emojiList[j]}: ${roleList[j]}`;
         }
 
         try {
             // Send message
-            const sentMessage = await interaction.reply({
-                content: message,
-                fetchReply: true,
-            });
+            const sentMessage = await interaction.guild.channels.cache
+                .get(interaction.channelId)
+                .send({
+                    content: message,
+                    fetchReply: true,
+                });
 
             // Notify user that they used the command
-            const botName = await sentMessage.author.username;
+            const botName = sentMessage.author.username;
             const notification = new MessageEmbed()
                 .setColor("#7cd699")
                 .setTitle("React For Role Command Used!")
                 .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
                 .setDescription(
-                    `You used the 'reactforrole' command "${interaction.member.guild.name} \n\n` +
+                    `You used the 'reactforrole' command in "${interaction.member.guild.name} \n\n` +
                         notificationContent +
-                        "\nReact ⛔ on the reaction message stop users from getting the roles",
+                        "\nReact ⛔ on the reaction message to stop users from getting the roles",
                 );
-            interaction.user.send({
+            interaction.reply({
                 embeds: [notification],
+                ephemeral: true,
             });
 
             // Add react
-            emojiList.forEach((emoji) => {
-                sentMessage.react(emoji);
+            emojiList.forEach((e) => {
+                sentMessage.react(e);
             });
 
             // Add to database
             await reactRoles.add_react_role_msg(sentMessage.id, interaction.user.id);
-            for (const emoji in roles) {
-                await reactRoles.add_react_role_role(roles[emoji], emoji, sentMessage.id);
+            for (const e in roles) {
+                await reactRoles.add_react_role_role(roles[e], e, sentMessage.id);
             }
         } catch (err) {
             console.log(err);
             return await interaction.reply({
-                content:
-                    "An error occured with creating the role reaction messsage or writing to the database",
+                content: `An error occured with creating the role reaction messsage or writing to the database`,
                 ephemeral: true,
             });
         }

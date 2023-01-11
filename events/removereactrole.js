@@ -62,7 +62,7 @@ async function removeRole(reaction, user, roleId) {
             .setTitle("Roles updated!")
             .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
             .setDescription(
-                `You unreacted to a message in "${reaction.message.guild.name}" and was unassigned the "${roleName}" role`,
+                `You unreacted to a message in "${reaction.message.guild.name}" and were unassigned the "${roleName}" role`,
             );
         user.send({
             embeds: [notification],

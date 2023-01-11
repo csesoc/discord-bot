@@ -7,7 +7,7 @@ module.exports = {
         if (message.content.startsWith("/run")) {
             const newlineIndex = message.content.indexOf("\n");
 
-            const language = message.content.substring(5, newlineIndex);
+            const language = message.content.substring(5, newlineIndex).toLowerCase();
 
             // Message without the "/run language" part
             const rawContent = message.content.substring(newlineIndex + 1);

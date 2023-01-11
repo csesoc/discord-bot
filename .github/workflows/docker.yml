@@ -1,80 +1,94 @@
 name: Build projects-bot
 
 on:
-  push:
+    push:
 
 jobs:
-  format-lint-check:
-    name: "Format & lint check"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - run: npm ci
-      - run: npm run format:check
-      - run: npm run lint
-  build:
-    name: "Build"
-    runs-on: ubuntu-latest
-    needs: ["format-lint-check"]
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: arm64
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Log into registry ${{ env.REGISTRY }}
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GH_TOKEN }}
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/projects-bot' }}
-          platforms: linux/amd64
-          file: Dockerfile
-          tags: |
-            ghcr.io/csesoc/projects-discord-bot:${{ github.sha }}
-            ghcr.io/csesoc/projects-discord-bot:latest
-          labels: ${{ steps.meta.outputs.labels }}
-  deploy:
-    name: Deploy (CD)
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/projects-bot' }}
-    concurrency: production
-    environment:
-      name: production (projects-bot)
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          repository: csesoc/deployment
-          token: ${{ secrets.GH_TOKEN }}
-      - name: Install yq - portable yaml processor
-        uses: mikefarah/yq@v4.27.5
-      - name: Update deployment
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git config user.name "CSESoc CD"
-          git config user.email "technical@csesoc.org.au"
-          git checkout -b update/projects-bot/${{ github.sha }}
-          yq -i '.spec.template.spec.containers[0].image = "ghcr.io/csesoc/projects-discord-bot:${{ github.sha }}"' apps/projects/bot/ptb/deploy.yml
-          git add . 
-          git commit -m "feat(projects-bot/ptb): update images" 
-          git push -u origin update/projects-bot/${{ github.sha }}
-          gh pr create --title "feat(projects-bot/ptb): update images" --body "Updates the images for the projects-bot deployment to commit csesoc/discord-bot@${{ github.sha }}." > URL
-          gh pr merge $(cat URL) --squash -d
+    format-lint-check:
+        name: "Format & lint check"
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 16
+            - run: npm ci
+            - run: npm run format:check
+            - run: npm run lint
+    build:
+        name: "Build"
+        runs-on: ubuntu-latest
+        needs: ["format-lint-check"]
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v2
+              with:
+                  platforms: arm64
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
+            - name: Log into registry ${{ env.REGISTRY }}
+              uses: docker/login-action@v2
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GH_TOKEN }}
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v3
+              with:
+                  context: .
+                  push: ${{ github.event_name != 'pull_request' && ( github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/projects-bot' ) }}
+                  platforms: linux/amd64
+                  file: Dockerfile
+                  tags: |
+                      ghcr.io/csesoc/projects-discord-bot:${{ github.sha }}
+                      ghcr.io/csesoc/projects-discord-bot:latest
+                  labels: ${{ steps.meta.outputs.labels }}
+    deploy:
+        name: Deploy (CD)
+        runs-on: ubuntu-latest
+        needs: [build]
+        if: ${{ github.event_name != 'pull_request' && ( github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/projects-bot' ) }}
+        concurrency: production
+        environment:
+            name: production (projects-bot)
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+              with:
+                  repository: csesoc/deployment
+                  token: ${{ secrets.GH_TOKEN }}
+            - name: Install yq - portable yaml processor
+              uses: mikefarah/yq@v4.27.5
+            - name: Determine file to update
+              id: get_manifest
+              env:
+                  BRANCH_NAME: ${{ github.ref }}
+              run: |
+                  if [ "$BRANCH_NAME" = "refs/heads/projects-bot" ]; then
+                      echo "MANIFEST=apps/projects/bot/ptb/deploy.yml" >> $GITHUB_OUTPUT
+                      echo "DEPLOYMENT=ptb" >> $GITHUB_OUTPUT
+                  elif [ "$BRANCH_NAME" = "refs/heads/develop" ]; then
+                      echo "MANIFEST=apps/projects/bot/qa/deploy.yml" >> $GITHUB_OUTPUT
+                      echo "DEPLOYMENT=qa" >> $GITHUB_OUTPUT
+                  else
+                      exit 1
+                  fi
+            - name: Update deployment
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+              run: |
+                  git config user.name "CSESoc CD"
+                  git config user.email "technical@csesoc.org.au"
+                  git checkout -b update/projects-bot/${{ github.sha }}
+                  yq -i '.spec.template.spec.containers[0].image = "ghcr.io/csesoc/projects-discord-bot:${{ github.sha }}"' ${{ steps.get_manifest.outputs.MANIFEST }}
+                  git add .
+                  git commit -m "feat(projects-bot/${{ steps.get_manifest.outputs.DEPLOYMENT }}): update images"
+                  git push -u origin update/projects-bot/${{ github.sha }}
+                  gh pr create --title "feat(projects-bot/${{ steps.get_manifest.outputs.DEPLOYMENT }}): update images" --body "Updates the images for the projects-bot deployment to commit csesoc/discord-bot@${{ github.sha }}." > URL
+                  gh pr merge $(cat URL) --squash -d
