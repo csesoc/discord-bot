@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { isNaN } = require("mathjs");
-const { Util } = require("discord.js");
 const math = require("mathjs");
+const { Util } = require("discord.js");
 
 const illegalPhraseRegexes = [/`/g, /@/g];
 
@@ -9,51 +8,27 @@ const isIllegalCharactersPresent = (expression) => {
     return illegalPhraseRegexes.some((regex) => regex.test(expression));
 };
 
-const evaluate = (equationString, target) => {
-    if (isIllegalCharactersPresent(equationString)) {
-        return {
-            success: false,
-            message: "Could not compile. Illegal input detected.",
-            ephemeral: true,
-        };
-    }
+const tryCompileAndEvaluate = (eqnString) => {
+    try {
+        const equationObj = math.compile(eqnString);
+        if (!equationObj) {
+            throw Error;
+        }
 
-    const equationObj = math.compile(equationString);
-    if (!equationObj) {
+        const equationOutcome = equationObj.evaluate();
+
+        return {
+            success: true,
+            equationOutcome,
+        };
+
+    } catch (e) {
         return {
             success: false,
             message: "Could not compile. The equation is invalid.",
             ephemeral: true,
         };
     }
-
-    const equationOutcome = equationObj.evaluate();
-    const outcomeAsNumber = Number(equationOutcome);
-    if (isNaN(outcomeAsNumber)) {
-        return {
-            success: false,
-            message: "Could not compile. The equation does not evaluate to a number.",
-            ephemeral: true,
-        };
-    }
-
-    return outcomeAsNumber == target
-        ? {
-              success: true,
-              message: `Correct! \`${equationString}\` = ${target}, which is equal to the target of ${target}.`,
-              ephemeral: false,
-          }
-        : {
-              success: false,
-              message: `Incorrect. \`${equationString}\` = ${outcomeAsNumber}, which is not equal to the target of ${target}.`,
-              ephemeral: false,
-          };
-};
-
-const illegalPhraseRegexes = [ /`/g, /@/g ];
-
-const isIllegalCharactersPresent = (expression) => {
-    return illegalPhraseRegexes.some((regex) => regex.test(expression));
 };
 
 const evaluate = (equationString, target) => {
@@ -65,18 +40,18 @@ const evaluate = (equationString, target) => {
         };
     }
 
-    const equationObj = math.compile(equationString);
-    if (!equationObj) {
+    const evaluationOutcome = tryCompileAndEvaluate(equationString);
+    if (!evaluationOutcome.success) {
         return {
             success: false,
-            message: "Could not compile. The equation is invalid.",
+            message: evaluationOutcome.message,
             ephemeral: true,
         };
     }
+    const { equationOutcome } = evaluationOutcome;
 
-    const equationOutcome = equationObj.evaluate();
     const outcomeAsNumber = Number(equationOutcome);
-    if (isNaN(outcomeAsNumber)) {
+    if (math.isNaN(outcomeAsNumber)) {
         return {
             success: false,
             message: "Could not compile. The equation does not evaluate to a number.",
