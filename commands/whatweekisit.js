@@ -119,7 +119,7 @@ module.exports = {
                 const data_const = { period: "", term: "" };
                 // Select the text content of a and span elements
                 // Store the textcontent in the above object
-                data_const.period = $(el).children("td:nth-child(2)").text();
+                data_const.period = $(el).children("td:nth-child(3)").text();
                 data_const.term = $(el).children("td:nth-child(1)").text();
 
                 // console.log($(el).children("td:nth-child(2)").text() + "\n");
