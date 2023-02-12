@@ -52,7 +52,7 @@ const locations = [
         ]
     },
      {
-        'value': 'Quad Food court (under renovation)',
+        'value': 'Quadrangle Food Court (under renovation)',
         'sub': [
             {
                 'name': 'Plume Cafe (Open)'
@@ -66,7 +66,7 @@ const locations = [
                 'name': 'Stellinis Pasta Bar'
             },
             {
-                'name': 'GYG'
+                'name': 'Guzman Y Gomez'
             },
             {
                 'name': 'Mamak Village'
@@ -89,18 +89,18 @@ const locations = [
         'value': 'J17 Ainsworth',
         'sub': [
             {
-                'name': 'Coffee on Campus cafe'
+                'name': 'Coffee on Campus Cafe'
             },
         ]
     },
      {
-        'value': 'Other Options (Still in UNSW)',
+        'value': 'Other Options',
         'sub': [
             {
                 'name': 'Sport'
             },
             {
-                'name': 'On campus study'
+                'name': 'On Campus Study'
             },
         ]
     }
