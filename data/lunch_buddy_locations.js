@@ -1,109 +1,109 @@
 const locations = [
-     {
-        'value': 'Upper Campus Food Court',
-        'sub': [
+    {
+        value: "Upper Campus Food Court",
+        sub: [
             {
-                'name': 'Tropical Green Pho'
+                name: "Tropical Green Pho",
             },
             {
-                'name': 'Pho House'
+                name: "Pho House",
             },
             {
-                'name': 'Classic Kebab'
+                name: "Classic Kebab",
             },
             {
-                'name': 'Chinese Takeaway'
+                name: "Chinese Takeaway",
             },
             {
-                'name': 'Tori Sushi'
+                name: "Tori Sushi",
             },
             {
-                'name': 'Gradu-eat'
+                name: "Gradu-eat",
             },
             {
-                'name': 'The Little Marionette Cafe'
+                name: "The Little Marionette Cafe",
             },
             {
-                'name': 'Lhaksa Delight'
+                name: "Lhaksa Delight",
             },
             {
-                'name': 'Bioscience building Cafe (XS Espresso)'
-            }
-        ]
+                name: "Bioscience building Cafe (XS Espresso)",
+            },
+        ],
     },
-     {
-        'value': 'Subway Zone',
-        'sub': [
+    {
+        value: "Subway Zone",
+        sub: [
             {
-                'name': 'Subway'
+                name: "Subway",
             },
             {
-                'name': 'Boost'
+                name: "Boost",
             },
             {
-                'name': 'Southern Wok'
+                name: "Southern Wok",
             },
             {
-                'name': 'Cafe Brioso'
+                name: "Cafe Brioso",
             },
             {
-                'name': 'Penny Lane'
+                name: "Penny Lane",
             },
-        ]
+        ],
     },
-     {
-        'value': 'Quadrangle Food Court (under renovation)',
-        'sub': [
+    {
+        value: "Quadrangle Food Court (under renovation)",
+        sub: [
             {
-                'name': 'Plume Cafe (Open)'
+                name: "Plume Cafe (Open)",
             },
-        ]
+        ],
     },
-     {
-        'value': 'Lower Campus',
-        'sub': [
+    {
+        value: "Lower Campus",
+        sub: [
             {
-                'name': 'Stellinis Pasta Bar'
+                name: "Stellinis Pasta Bar",
             },
             {
-                'name': 'Guzman Y Gomez'
+                name: "Guzman Y Gomez",
             },
             {
-                'name': 'Mamak Village'
+                name: "Mamak Village",
             },
             {
-                'name': 'Yallah Eats Kebab and Shawarma'
+                name: "Yallah Eats Kebab and Shawarma",
             },
             {
-                'name': 'Sharetea'
+                name: "Sharetea",
             },
             {
-                'name': 'Maze Coffee & Food'
+                name: "Maze Coffee & Food",
             },
             {
-                'name': 'Campus Village Cafe'
+                name: "Campus Village Cafe",
             },
-        ]
+        ],
     },
-     {
-        'value': 'J17 Ainsworth',
-        'sub': [
+    {
+        value: "J17 Ainsworth",
+        sub: [
             {
-                'name': 'Coffee on Campus Cafe'
+                name: "Coffee on Campus Cafe",
             },
-        ]
+        ],
     },
-     {
-        'value': 'Other Options',
-        'sub': [
+    {
+        value: "Other Options",
+        sub: [
             {
-                'name': 'Sport'
+                name: "Sport",
             },
             {
-                'name': 'On Campus Study'
+                name: "On Campus Study",
             },
-        ]
-    }
-]
+        ],
+    },
+];
 
 exports.locations = locations;
