@@ -1,4 +1,4 @@
-onst { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder } = require("@discordjs/builders");
 const { Permissions } = require("discord.js");
 
 const MODERATION_REQUEST_CHANNEL = 824506830641561600;
