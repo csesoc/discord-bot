@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+onst { SlashCommandBuilder } = require("@discordjs/builders");
 const { Permissions } = require("discord.js");
 
 const MODERATION_REQUEST_CHANNEL = 824506830641561600;
@@ -208,7 +208,7 @@ module.exports = {
                         ephemeral: true,
                     });
                 }
-                
+
                 // Find a channel with the same name as the course
                 const channel = await interaction.guild.channels.cache.find(
                     (c) => c.name.toLowerCase() === course.toLowerCase(),
