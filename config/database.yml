@@ -2,8 +2,8 @@
 #                        Database Settings                         #
 ####################################################################
 
-user: postgres
-dbname: dis_test
-password: Hash#2Cipher
-host: localhost
-port: 5432
+user: user
+dbname: bot
+password: pass
+host: 0.0.0.0
+port: 40041
