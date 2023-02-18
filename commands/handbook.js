@@ -31,6 +31,7 @@ module.exports = {
                 // https://circlesapi.csesoc.app/docs#/courses/get_course_courses_getCourse__courseCode__get
                 const response = await axios.get(`${apiURL}/courses/getCourse/${courseCode}`);
                 data = response.data;
+                console.log(data);
             } catch (e) {
                 return await interaction.reply({
                     content: "Invalid course code.",
@@ -39,8 +40,8 @@ module.exports = {
             }
 
             const {
-                title, code, uoc, level, description, study_level, school,
-                faculty, equivalents, exclusions, terms, raw_requirements
+                title, code, UOC, level, description, study_level, school, campus, 
+                equivalents, raw_requirements, exclusions, handbook_note, terms
             } = data;
 
             const courseInfo = new MessageEmbed()
@@ -48,7 +49,7 @@ module.exports = {
                 .setURL(`${handbookURL}/${code}`)
                 .setColor(0x3a76f8)
                 .setAuthor(
-                    `Course Info: ${code} (${uoc} UOC)`,
+                    `Course Info: ${code} (${UOC} UOC)`,
                     "https://i.imgur.com/EE3Q40V.png",
                 )
                 .addFields(
@@ -76,16 +77,16 @@ module.exports = {
                     },
                     {
                         name: "Equivalent Courses",
-                        value:
-                        equivalents
-                                .map((course) => `[${course}](${handbookURL}${course})`)
-                                .join(", ") || "None",
+                        value: 
+                            Object.keys(equivalents)
+                            .map((course) => `[${course}](${course})`)
+                            .join(", ") || "None",
                         inline: true,
                     },
                     {
                         name: "Exclusion Courses",
                         value:
-                            exclusions
+                        Object.keys(exclusions)
                                 .map((course) => `[${course}](${handbookURL}${course})`)
                                 .join(", ") || "None",
                         inline: true,
@@ -98,7 +99,6 @@ module.exports = {
                 )
                 .setTimestamp()
                 .setFooter("Data fetched from Circles' Api");
-
             await interaction.reply({ embeds: [courseInfo] });
         }
     },
