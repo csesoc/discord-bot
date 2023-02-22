@@ -31,7 +31,7 @@ module.exports = {
                 // https://circlesapi.csesoc.app/docs#/courses/get_course_courses_getCourse__courseCode__get
                 const response = await axios.get(`${apiURL}/courses/getCourse/${courseCode}`);
                 data = response.data;
-                console.log(data);
+                // console.log(data);
             } catch (e) {
                 return await interaction.reply({
                     content: "Invalid course code.",
