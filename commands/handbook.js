@@ -40,18 +40,26 @@ module.exports = {
             }
 
             const {
-                title, code, UOC, level, description, study_level, school, campus, 
-                equivalents, raw_requirements, exclusions, handbook_note, terms
+                title,
+                code,
+                UOC,
+                level,
+                description,
+                study_level,
+                school,
+                campus,
+                equivalents,
+                raw_requirements,
+                exclusions,
+                handbook_note,
+                terms,
             } = data;
 
             const courseInfo = new MessageEmbed()
                 .setTitle(title)
                 .setURL(`${handbookURL}/${code}`)
                 .setColor(0x3a76f8)
-                .setAuthor(
-                    `Course Info: ${code} (${UOC} UOC)`,
-                    "https://i.imgur.com/EE3Q40V.png",
-                )
+                .setAuthor(`Course Info: ${code} (${UOC} UOC)`, "https://i.imgur.com/EE3Q40V.png")
                 .addFields(
                     {
                         name: "Overview",
@@ -77,16 +85,16 @@ module.exports = {
                     },
                     {
                         name: "Equivalent Courses",
-                        value: 
+                        value:
                             Object.keys(equivalents)
-                            .map((course) => `[${course}](${course})`)
-                            .join(", ") || "None",
+                                .map((course) => `[${course}](${course})`)
+                                .join(", ") || "None",
                         inline: true,
                     },
                     {
                         name: "Exclusion Courses",
                         value:
-                        Object.keys(exclusions)
+                            Object.keys(exclusions)
                                 .map((course) => `[${course}](${handbookURL}${course})`)
                                 .join(", ") || "None",
                         inline: true,
