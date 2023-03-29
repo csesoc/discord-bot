@@ -1,0 +1,18 @@
+{
+    "guide": {
+        "category1": [
+            {
+                "name": "store1",
+                "description": "nice place",
+                "season": ""
+            }
+        ],
+        "category2": [
+            {
+                "name": "store2",
+                "description": "nice place",
+                "season": ""
+            }
+        ]
+    }
+}
