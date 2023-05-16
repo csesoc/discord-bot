@@ -9,7 +9,19 @@ module.exports = {
         .addStringOption((option) =>
             option.setName("project")
             .setDescription("Which project do you want to be introduced to?")
-            .setRequired(true),
+            .setRequired(true)
+            .addChoices(
+				[["Chaos", "chaos"], 
+                ["Circles", "circles"],
+                ["CS Electives", "cselectives"],
+                ["Discord Bot", "discordbot"],
+                ["Freerooms", "freerooms"],
+                ["Jobsboard", "jobsboard"],
+                ["Notangles", "notangles"],
+                ["Structs.sh", "structs.sh"],
+                ["UI/UX", "ui/ux"],
+                ["Website", "website"]],
+			)
         ),
 
     async execute(interaction) {
