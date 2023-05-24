@@ -1,19 +1,36 @@
+// import { Partials } from "discord.js";
+
 const fs = require("fs");
-const { Client, Collection, Intents } = require("discord.js");
+const { Client, Collection, Intents, Partials} = require("discord.js");
 require("dotenv").config();
+
+const { GatewayIntentBits } = require("discord.js");
 
 // Create a new client instance
 const client = new Client({
     intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MEMBERS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        Intents.FLAGS.GUILD_VOICE_STATES,
-        Intents.FLAGS.GUILD_PRESENCES,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions,
+        // GatewayIntentBits.GuideVoiceStates,
+        // GatewayIntentBits.GuidePresences,
     ],
-    partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"],
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.GuildMembers, Partials.User]
 });
+// Create a new client instance
+// const client = new Client({
+//     intents: [
+//         Intents.FLAGS.GUILDS,
+//         Intents.FLAGS.GUILD_MEMBERS,
+//         Intents.FLAGS.GUILD_MESSAGES,
+//         Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+//         Intents.FLAGS.GUILD_VOICE_STATES,
+//         Intents.FLAGS.GUILD_PRESENCES,
+//     ],
+//     partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"],
+// });
 // Add commands to the client
 client.commands = new Collection();
 const commandFiles = fs.readdirSync("./commands").filter((file: string) => file.endsWith(".js"));

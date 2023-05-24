@@ -1,3 +1,4 @@
+// import { Partials } from "discord.js";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,20 +37,34 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 var fs = require("fs");
-var _a = require("discord.js"), Client = _a.Client, Collection = _a.Collection, Intents = _a.Intents;
+var _a = require("discord.js"), Client = _a.Client, Collection = _a.Collection, Intents = _a.Intents, Partials = _a.Partials;
 require("dotenv").config();
+var GatewayIntentBits = require("discord.js").GatewayIntentBits;
 // Create a new client instance
 var client = new Client({
     intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MEMBERS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        Intents.FLAGS.GUILD_VOICE_STATES,
-        Intents.FLAGS.GUILD_PRESENCES,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions,
+        // GatewayIntentBits.GuideVoiceStates,
+        // GatewayIntentBits.GuidePresences,
     ],
-    partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"]
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.GuildMembers, Partials.User]
 });
+// Create a new client instance
+// const client = new Client({
+//     intents: [
+//         Intents.FLAGS.GUILDS,
+//         Intents.FLAGS.GUILD_MEMBERS,
+//         Intents.FLAGS.GUILD_MESSAGES,
+//         Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+//         Intents.FLAGS.GUILD_VOICE_STATES,
+//         Intents.FLAGS.GUILD_PRESENCES,
+//     ],
+//     partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"],
+// });
 // Add commands to the client
 client.commands = new Collection();
 var commandFiles = fs.readdirSync("./commands").filter(function (file) { return file.endsWith(".js"); });

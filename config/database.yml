@@ -6,4 +6,4 @@ user:
 dbname: chenzhitao
 password: 
 host: localhost
-port: 8000
+port: 5411

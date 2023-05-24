@@ -1,6 +1,7 @@
 const help = require("../config/help.json");
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+// const { SlashCommandBuilder } = require("@discordjs/builders");
+// const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+const { ButtonBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
 
 // Fetches commands from the help data
 const commands = help.commands;
@@ -9,18 +10,27 @@ const commands = help.commands;
 const prevId = "helpPrevButtonId";
 const nextId = "helpNextButtonId";
 
-const prevButton = new MessageButton({
-    style: "SECONDARY",
-    label: "Previous",
-    emoji: "⬅️",
-    customId: prevId,
-});
-const nextButton = new MessageButton({
-    style: "SECONDARY",
-    label: "Next",
-    emoji: "➡️",
-    customId: nextId,
-});
+const prevButton = new ButtonBuilder()
+    .setCustomId(prevId)
+    .setLabel('Previous')
+    .setStyle('Secondary')
+    .setEmoji('⬅️');
+//     style: "SECONDARY",
+//     label: "Previous",
+//     emoji: "⬅️",
+//     customId: prevId,
+// });
+const nextButton = new ButtonBuilder()
+    .setCustomId(nextId)
+    .setLabel('Next')
+    .setStyle('Secondary')
+    .setEmoji('➡️');
+// const nextButton = new MessageButton({
+//     style: "SECONDARY",
+//     label: "Next",
+//     emoji: "➡️",
+//     customId: nextId,
+// });
 
 const PAGE_SIZE = 10;
 
