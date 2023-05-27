@@ -114,7 +114,7 @@ module.exports = {
             const areaVotes = {};
 
             const conductAreaVote = () => {
-                return new Promise(async (resolve, reject) => {
+                return new Promise(async (resolve) => {
                     // Setup for voting
                     areasList.forEach((area) => (areaVotes[area] = []));
                     // Fetch channel object and send voting message
@@ -159,7 +159,6 @@ module.exports = {
                             } else {
                                 oldVoteString = ` removed your vote for ${priorVoteOption} and`;
                             }
-
                         } else if (newOption === "Remove") {
                             newVoteString = " no vote to remove.";
                         }
@@ -213,7 +212,7 @@ module.exports = {
                     // Fetch channel and prepare voting message
 
                     const voteChannel = await client.channels.fetch(voteOriginId);
-                    
+
                     // client.channels.fetch(voteOriginId).then(async (voteChannel) => {
                     const locationsButtons = locationData.sub.map(
                         (element) =>
@@ -310,7 +309,6 @@ module.exports = {
                         locationMessage.edit({ components: [] });
 
                         let locationInfo;
-                        
 
                         // Finds the highest voted option, and randomises for ties
                         const mostVotedLocation = getMostVoted(locationVotes);
@@ -338,23 +336,25 @@ module.exports = {
             };
 
             const createMeetupThread = () => {
-                const dateString = new Date().toLocaleDateString('en-AU')
+                const dateString = new Date().toLocaleDateString("en-AU");
 
-                client.channels.fetch(threadDestinationId).then( async (channel) => {
+                client.channels.fetch(threadDestinationId).then(async (channel) => {
                     // Creates thread which expires after 1 day
                     const thread = await channel.threads.create({
                         name: `${dateString}-${selectedLocation}`,
-                        autoArchiveDuration: 1440
+                        autoArchiveDuration: 1440,
                     });
 
                     Object.values(areaVotes).forEach(async (area) => {
                         area.forEach(async (id) => {
                             await thread.members.add(id);
-                        })
+                        });
                     });
 
-                    client.channels.fetch(voteOriginId).then(async (channel) => {
-                        await channel.send(`Created a thread for today's lunch buddy meet: ${thread}`)
+                    client.channels.fetch(voteOriginId).then(async (threadId) => {
+                        await threadId.send(
+                            `Created a thread for today's lunch buddy meet: ${thread}`,
+                        );
                     });
                 });
             };
