@@ -1,26 +1,26 @@
-const COURSE_CHATS_CHANNEL_ID = "860388285511630868";
+const COURSE_CHATS_CHANNEL_ID: string = "860388285511630868";
 
-module.exports = {
+export const messageCreate = {
     name: "messageCreate",
-    async execute(message) {
+    async execute(message: any): Promise<void> {
         try {
-            /*eslint-disable */
-            if (message.content.includes("/role") && message.channelId == COURSE_CHATS_CHANNEL_ID) {
-                const msg =
+            /* eslint-disable */
+            if (message.content.includes("/role") && message.channelId === COURSE_CHATS_CHANNEL_ID) {
+                const msg: string =
                     "❌ Role command entered incorrectly. Please see the above messages on how to correctly give or remove a role.";
 
                 // Send error and then delete it shortly afterwards
                 // Can't send ephemeral messages though...
                 await message
                     .reply({ content: msg, ephemeral: true })
-                    .then((msg) => {
+                    .then((msg: any) => {
                         setTimeout(() => msg.delete(), 5000);
                     })
-                    .catch((e) => console.log("error: " + e));
+                    .catch((e: any) => console.log("error: " + e));
 
                 return message.delete();
             }
-        } catch (e) {
+        } catch (e: any) {
             await message.reply("An error occurred: " + e);
         }
     },

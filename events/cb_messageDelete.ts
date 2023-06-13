@@ -1,19 +1,19 @@
-// @ts-check
+import { Message } from "discord.js";
+import { CarrotboardStorage } from "../lib/carrotboard";
 
-module.exports = {
+/**
+ * @param {Message} message
+ */
+export const messageDelete = {
     name: "messageDelete",
     once: false,
-    /**
-     * @param {Message} message
-     */
-    async execute(message) {
+    async execute(message: Message) {
         // check if partial
         if (message.partial) {
             message = await message.fetch();
         }
 
-        /** @type {CarrotboardStorage} */
-        const cbStorage = global.cbStorage;
+        const cbStorage: CarrotboardStorage = global.cbStorage;
 
         // remove it from storage, and update leaderboard
         await cbStorage.db.del_entry(message.id, message.channelId);

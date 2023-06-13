@@ -1,7 +1,7 @@
-module.exports = {
+export const ready = {
     name: "ready",
     once: true,
-    execute(client) {
+    execute(client: any): void {
         console.log("------------------------------------------------------------");
         console.log(`Logged in as ${client.user.tag} (ID: ${client.user.id}).`);
         console.log(`Connected to ${client.guilds.cache.size} guilds:`);
@@ -15,3 +15,4 @@ module.exports = {
         console.log("------------------------------------------------------------");
     },
 };
+  

@@ -1,4 +1,4 @@
-function messagelog(message) {
+function messagelog(message: any): void {
     // ignore messages sent from bot
     if (message.author.bot) {
         return;
@@ -10,26 +10,22 @@ function messagelog(message) {
         message.author.id,
         message.author.username,
         message.content,
-        message.channelId,
+        message.channelId
     );
 }
 
 module.exports = {
     name: "messageCreate",
-    async execute(message) {
+    async execute(message: any): Promise<void> {
         const standupDB = global.standupDBGlobal;
-
         messagelog(message);
 
         if (message.content.startsWith("$standup")) {
             // Get standup content
-            const messages = String(message.content);
-            const messageContent = messages.slice(8).trim();
-            // console.log(message.channel.parent.name)
-
-            const teamId = message.channel.parentId;
-
-            const standupAuthorId = message.author.id;
+            const messages: string = String(message.content);
+            const messageContent: string = messages.slice(8).trim();
+            const teamId: string = message.channel.parentId;
+            const standupAuthorId: string = message.author.id;
 
             await standupDB.addStandup(teamId, standupAuthorId, message.id, messageContent);
         }

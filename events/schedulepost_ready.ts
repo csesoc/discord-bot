@@ -1,10 +1,9 @@
-const { DBSchedulePost } = require("../lib/database/dbschedulepost");
-/* eslint-disable */
+import { DBSchedulePost } from "../lib/database/dbschedulepost";
 
-module.exports = {
+export const ready = {
     name: "ready",
     once: true,
-    async execute() {
+    async execute(): Promise<void> {
         const schedulePost = new DBSchedulePost();
         global.schedulePost = schedulePost;
     },

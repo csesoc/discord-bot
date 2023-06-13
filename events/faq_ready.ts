@@ -1,8 +1,8 @@
 // @ts-check
-const { DBFaq } = require("../lib/database/faq");
+import { DBFaq } from "../lib/database/faq";
 /* eslint-disable */
 
-module.exports = {
+export const ready = {
     name: "ready",
     once: true,
     async execute() {
@@ -10,3 +10,4 @@ module.exports = {
         global.faqStorage = faqStorage;
     },
 };
+

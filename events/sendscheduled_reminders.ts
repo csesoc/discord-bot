@@ -1,23 +1,23 @@
-const { MessageEmbed } = require("discord.js");
+import { MessageEmbed } from "discord.js";
 
 // Checks database every minute to check if a reminder needs
 // to be sent to the users who reacted with an alarm clock emoji in the original
-// scheduled post. Reminders are direct messages to the user contaning the content
+// scheduled post. Reminders are direct messages to the user containing the content
 // of the original message.
 
-module.exports = {
+export const ready = {
     name: "ready",
     once: true,
-    execute(client) {
+    execute(client: any): void {
         setInterval(async () => {
-            const today = new Date();
+            const today: Date = new Date();
 
-            const year = String(today.getFullYear()).padStart(4, "0");
-            const month = String(today.getMonth() + 1).padStart(2, "0");
-            const day = String(today.getDate()).padStart(2, "0");
-            const hour = String(today.getHours()).padStart(2, "0");
-            const minute = String(today.getMinutes()).padStart(2, "0");
-            const now_time = `${year}-${month}-${day} ${hour}:${minute}`;
+            const year: string = String(today.getFullYear()).padStart(4, "0");
+            const month: string = String(today.getMonth() + 1).padStart(2, "0");
+            const day: string = String(today.getDate()).padStart(2, "0");
+            const hour: string = String(today.getHours()).padStart(2, "0");
+            const minute: string = String(today.getMinutes()).padStart(2, "0");
+            const now_time: string = `${year}-${month}-${day} ${hour}:${minute}`;
 
             const schedulePost = global.schedulePost;
             const reminders = await schedulePost.get_reminders(now_time);
@@ -30,23 +30,22 @@ module.exports = {
                     const reaction = sent_msg.reactions.cache.get("⏰");
                     const users_reacted = await reaction.users.fetch();
 
-                    users_reacted.forEach((user) => {
+                    users_reacted.forEach((user: any) => {
                         if (!user.bot) {
                             const reminder_msg = new MessageEmbed()
                                 .setColor("#C492B1")
                                 .setTitle("Reminder")
-                                .setDescription(
-                                    sent_msg.content.length === 0 ? " " : sent_msg.content,
-                                );
+                                .setDescription(sent_msg.content.length === 0 ? " " : sent_msg.content);
 
                             client.users.cache.get(user.id).send({
                                 embeds: [reminder_msg],
                             });
                         }
                     });
+                    
                     await schedulePost.remove_scheduled(reminder.scheduled_post_id);
-                } catch (err) {
-                    console.log("An error occured in sendscheduled_reminders.js " + err);
+                } catch (err: any) {
+                    console.log("An error occurred in sendscheduled_reminders.js " + err);
                 }
             }
         }, 1000 * 60);

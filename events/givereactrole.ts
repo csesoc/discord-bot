@@ -1,6 +1,6 @@
-const { MessageEmbed } = require("discord.js");
+import { MessageEmbed } from "discord.js";
 
-module.exports = {
+export const messageReactionAdd = {
     name: "messageReactionAdd",
     once: false,
     async execute(reaction, user) {
@@ -16,43 +16,35 @@ module.exports = {
         }
 
         const messageId = reaction.message.id;
-
         const reactRoles = global.reactRoles;
-
         const data = await reactRoles.get_roles(messageId, reaction.emoji.name);
 
-        // Return if message id and emoji doesn't match anything in the database
+        // Return if message id and emoji don't match anything in the database
         if (data.length == 0) return;
 
         const roleId = data[0].role_id;
-
         const senderId = await reactRoles.get_sender(messageId);
 
         // Check if emoji is ⛔ and if the user is the sender
         if (reaction.emoji.name === "⛔" && user.id === senderId) return;
 
         // Check if message has ⛔ reacted by the sender
-        // If not assign the role to the user
+        // If not, assign the role to the user
         const reactions = reaction.message.reactions;
         const noEntryReact = reactions.resolve("⛔");
         if (noEntryReact) {
             noEntryReact.users.fetch().then(async (userList) => {
                 if (userList.has(senderId)) {
                     reactions.resolve(reaction).users.remove(user);
-
                     const botName = await reaction.message.author.username;
 
                     // Notify user that role was not assigned
                     const notification = new MessageEmbed()
                         .setColor("#7cd699")
                         .setTitle("Role could not be assigned")
-                        .setAuthor(
-                            botName,
-                            "https://avatars.githubusercontent.com/u/164179?s=200&v=4",
-                        )
-                        .setDescription(
-                            `You can no longer react to the message in "${reaction.message.guild.name}" to get a role`,
-                        );
+                        .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
+                        .setDescription(`You can no longer react to the message in "${reaction.message.guild.name}" to get a role`);
+                    
                     user.send({
                         embeds: [notification],
                     });
@@ -69,7 +61,9 @@ module.exports = {
 async function giveRole(reaction, user, roleId) {
     try {
         reaction.message.guild.members.cache.get(user.id).roles.add(roleId);
-        const roleName = await reaction.message.guild.roles.cache.find((r) => r.id === roleId).name;
+        const roleName = await reaction.message.guild.roles.cache.find(
+            (r) => r.id === roleId
+        ).name;
         const botName = await reaction.message.author.username;
 
         // Notify user role was successfully added
@@ -77,12 +71,12 @@ async function giveRole(reaction, user, roleId) {
             .setColor("#7cd699")
             .setTitle("Roles updated!")
             .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
-            .setDescription(
-                `You reacted to a message in "${reaction.message.guild.name}" and were assigned the "${roleName}" role`,
-            );
+            .setDescription(`You reacted to a message in "${reaction.message.guild.name}" and were assigned the "${roleName}" role`);
+        
         user.send({
             embeds: [notification],
         });
+
     } catch (err) {
         console.log(err);
     }

@@ -1,9 +1,9 @@
-const { DBstandup } = require("../lib/database/dbstandup");
+import { DBstandup } from "../lib/database/dbstandup";
 
-module.exports = {
+export const ready = {
     name: "ready",
     once: true,
-    execute() {
+    execute(): void {
         const standupDBGlobal = new DBstandup();
         global.standupDBGlobal = standupDBGlobal;
     },

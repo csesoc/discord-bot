@@ -1,9 +1,9 @@
-const { MessageEmbed } = require("discord.js");
+import { MessageEmbed } from "discord.js";
 
-module.exports = {
+export const messageReactionRemove = {
     name: "messageReactionRemove",
     once: false,
-    async execute(reaction, user) {
+    async execute(reaction: any, user: any): Promise<void> {
         if (user.bot) return;
 
         if (reaction.partial) {
@@ -15,28 +15,26 @@ module.exports = {
             }
         }
 
-        const messageId = reaction.message.id;
-
+        const messageId: string = reaction.message.id;
         const reactRoles = global.reactRoles;
-
         const data = await reactRoles.get_roles(messageId, reaction.emoji.name);
 
-        // Return if message id and emoji doesn't match anything in the database
-        if (data.length == 0) return;
+        // Return if message id and emoji don't match anything in the database
+        if (data.length === 0) return;
 
-        const roleId = data[0].role_id;
-
-        const senderId = await reactRoles.get_sender(messageId);
+        const roleId: string = data[0].role_id;
+        const senderId: string = await reactRoles.get_sender(messageId);
 
         // Check if message has ⛔ reacted by the sender and if the user already has the role
-        // If so remove the role from the user
+        // If so, remove the role from the user
         const noEntryReact = reaction.message.reactions.resolve("⛔");
         if (noEntryReact) {
             try {
-                noEntryReact.users.fetch().then(async (userList) => {
-                    const hasRole = await reaction.message.guild.members.cache
+                noEntryReact.users.fetch().then(async (userList: any) => {
+                    const hasRole: boolean = await reaction.message.guild.members.cache
                         .get(user.id)
                         ._roles.includes(roleId);
+
                     if (!userList.has(senderId) || hasRole) {
                         removeRole(reaction, user, roleId);
                     }
@@ -50,11 +48,11 @@ module.exports = {
     },
 };
 
-async function removeRole(reaction, user, roleId) {
+async function removeRole(reaction: any, user: any, roleId: string): Promise<void> {
     try {
         reaction.message.guild.members.cache.get(user.id).roles.remove(roleId);
-        const roleName = await reaction.message.guild.roles.cache.find((r) => r.id === roleId).name;
-        const botName = await reaction.message.author.username;
+        const roleName: string = await reaction.message.guild.roles.cache.find((r: any) => r.id === roleId).name;
+        const botName: string = await reaction.message.author.username;
 
         // Notify user role was successfully removed
         const notification = new MessageEmbed()
