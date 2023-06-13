@@ -1,10 +1,10 @@
-const { DBlog } = require("../lib/database/dblog");
+import { DBlog } from "../lib/database/dblog";
 
 module.exports = {
     name: "ready",
     once: true,
-    execute(client) {
-        const guilds = client.guilds.cache.map((guild) => guild.id);
+    execute(client: any) {
+        const guilds = client.guilds.cache.map((guild: any) => guild.id);
         const logDB = new DBlog();
         global.logDB = logDB;
 
@@ -17,9 +17,9 @@ module.exports = {
                 const channels_arr = [...channels.values()];
                 const channels_filtered = channels_arr.filter((c) => c.type === "GUILD_TEXT");
 
-                for (const m in channels_filtered) {
-                    // console.log(channels_filtered[m].id, channels_filtered[m].name);
-                    logDB.channel_add(channels_filtered[m].id, channels_filtered[m].name, g.id);
+                for (const channel of channels_filtered) {
+                    // console.log(channel.id, channel.name);
+                    logDB.channel_add(channel.id, channel.name, g.id);
                 }
             }
         })();
