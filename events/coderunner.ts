@@ -1,9 +1,9 @@
-const axios = require("axios");
-const { Util } = require("discord.js");
+import axios from "axios";
+import { Util } from "discord.js";
 
 module.exports = {
     name: "messageCreate",
-    async execute(message) {
+    async execute(message: any) {
         if (message.content.startsWith("/run")) {
             const newlineIndex = message.content.indexOf("\n");
 
@@ -25,7 +25,7 @@ module.exports = {
                 .slice(args.length === 0 ? 1 : 2, stdin === "" ? -1 : -2)
                 .join("\n");
 
-            let data = {};
+            let data: any = {};
             try {
                 const response = await axios.get("https://emkc.org/api/v2/piston/runtimes");
                 data = response.data;
@@ -33,7 +33,7 @@ module.exports = {
                 return message.reply("Could not retrieve runtimes.");
             }
 
-            const runtime = data.find((r) => r.language === language);
+            const runtime = data.find((r: any) => r.language === language);
 
             if (!runtime) {
                 return message.reply("Language not found.");
@@ -57,9 +57,9 @@ module.exports = {
             // Trim the output if it is too long
             const output =
                 data.run.output.length > 1000
-                    ? data.run.output.substring(0, 1000) +
-                      `\n...${data.run.output.length - 1000} more characters`
-                    : data.run.output;
+                ? data.run.output.substring(0, 1000) +
+                    `\n...${data.run.output.length - 1000} more characters`
+                : data.run.output;
 
             if (!output) {
                 return message.reply("No output.");
