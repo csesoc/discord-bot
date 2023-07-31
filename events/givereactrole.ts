@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 
 export const messageReactionAdd = {
     name: "messageReactionAdd",
@@ -31,18 +31,18 @@ export const messageReactionAdd = {
         // Check if message has ⛔ reacted by the sender
         // If not, assign the role to the user
         const reactions = reaction.message.reactions;
-        const noEntryReact = reactions.resolve("⛔");
+        const noEntryReact = reactions.cache.find(r => r.emoji.name === "⛔");
         if (noEntryReact) {
             noEntryReact.users.fetch().then(async (userList) => {
                 if (userList.has(senderId)) {
-                    reactions.resolve(reaction).users.remove(user);
+                    reactions.cache.find(r => r.emoji === reaction.emoji).users.remove(user);
                     const botName = await reaction.message.author.username;
 
                     // Notify user that role was not assigned
-                    const notification = new MessageEmbed()
+                    const notification = new EmbedBuilder()
                         .setColor("#7cd699")
                         .setTitle("Role could not be assigned")
-                        .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
+                        .setAuthor(botName)
                         .setDescription(`You can no longer react to the message in "${reaction.message.guild.name}" to get a role`);
                     
                     user.send({
@@ -67,10 +67,10 @@ async function giveRole(reaction, user, roleId) {
         const botName = await reaction.message.author.username;
 
         // Notify user role was successfully added
-        const notification = new MessageEmbed()
+        const notification = new EmbedBuilder()
             .setColor("#7cd699")
             .setTitle("Roles updated!")
-            .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
+            .setAuthor(botName)
             .setDescription(`You reacted to a message in "${reaction.message.guild.name}" and were assigned the "${roleName}" role`);
         
         user.send({

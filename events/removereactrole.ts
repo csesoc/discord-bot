@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 
 export const messageReactionRemove = {
     name: "messageReactionRemove",
@@ -51,14 +51,14 @@ export const messageReactionRemove = {
 async function removeRole(reaction: any, user: any, roleId: string): Promise<void> {
     try {
         reaction.message.guild.members.cache.get(user.id).roles.remove(roleId);
-        const roleName: string = await reaction.message.guild.roles.cache.find((r: any) => r.id === roleId).name;
-        const botName: string = await reaction.message.author.username;
+        const roleName = await reaction.message.guild.roles.cache.find((r: any) => r.id === roleId).name;
+        const botName = await reaction.message.author.username;
 
         // Notify user role was successfully removed
-        const notification = new MessageEmbed()
+        const notification = new EmbedBuilder()
             .setColor("#7cd699")
             .setTitle("Roles updated!")
-            .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
+            .setAuthor(botName)
             .setDescription(
                 `You unreacted to a message in "${reaction.message.guild.name}" and were unassigned the "${roleName}" role`,
             );

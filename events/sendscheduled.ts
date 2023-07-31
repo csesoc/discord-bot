@@ -1,4 +1,4 @@
-import { MessageAttachment } from "discord.js";
+import { AttachmentBuilder } from "discord.js";
 
 // Checks database every minute to see if there is a message to be sent
 
@@ -27,9 +27,9 @@ export const ready = {
                     const send_msg = await init_channel.messages.fetch(post.msg_id);
 
                     // Retrieve attachments if applicable
-                    const attachment_list: MessageAttachment[] = [];
+                    const attachment_list: AttachmentBuilder[] = [];
                     send_msg.attachments.forEach((attachment: any) => {
-                        attachment_list.push(new MessageAttachment(attachment.proxyURL));
+                        attachment_list.push(new AttachmentBuilder(attachment.proxyURL));
                     });
 
                     // Retrieve message content

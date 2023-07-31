@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Util } from "discord.js";
+import { Utils } from "discord.js";
 
 module.exports = {
     name: "messageCreate",
@@ -64,8 +64,8 @@ module.exports = {
             if (!output) {
                 return message.reply("No output.");
             }
-            const code_output = Util.removeMentions(output);
-            message.reply("Output:\n" + "```\n" + `${code_output}` + "```\n");
+            const code_output = { allowedMentions: { parse: ["users", "roles"], repliedUser: false } };
+            message.reply({ content: "Output:\n" + "```\n" + output + "```\n", code_output });
         }
     },
 };

@@ -3,8 +3,9 @@ module.exports = {
     once: false,
     /**
      * @param {import("discord.js").MessageReaction} reaction
+     * @param {import("discord.js").User} user
      */
-    async execute(reaction) {
+    async execute(reaction, user) {
         // check if partial
         if (reaction.partial) {
             reaction = await reaction.fetch();
