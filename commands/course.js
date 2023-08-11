@@ -65,7 +65,7 @@ const is_course = (course) => courseRegex.test(course);
  * @param {string} course
  * @returns {boolean}
  */
-const is_valid_course = (course) => {
+function is_valid_course(course) {
     const course_code = cleanup_course_name(course);
     const reg_comp_course = /^comp\d{4}$/;
     const reg_math_course = /^math\d{4}$/;
@@ -83,6 +83,71 @@ const is_valid_course = (course) => {
         reg_desn_course.test(course_code)
     );
 };
+
+async function handleCourseJoin(interaction) {
+    const input_course = await interaction.options.getString("course").toLowerCase();
+    const course = get_real_course_name(cleanup_course_name(input_course));
+
+    const is_valid = is_valid_course(course);
+
+    const course_with_alias =
+        course != input_course
+            ? `${course} (same course chat as ${input_course})`
+            : `${course}`;
+
+    if (!is_valid) {
+        return is_course(course)
+            ? await replyError("Course chats for other faculties are not supported.")
+            : await replyError("This this not a valid course code.");
+    }
+
+    // First, let's see if there's a role that matches the name of the course
+    const role = await interaction.guild.roles.cache.find(
+        (r) => r.name.toLowerCase() === course.toLowerCase(),
+    );
+
+    // If there is, let's see if the member already has that role
+    if (role === undefined) {
+        return await replyError(interaction, `There is no course chat for \`${course_with_alias}\``);
+    }
+
+    if (interaction.member.roles.cache.has(role.id)) {
+        return await replyError(`You are already in the course chat for \`${course_with_alias}\`.`);
+    }
+
+    // If they don't, let's add the role to them
+    await interaction.member.roles.add(role);
+    return await replySuccess(interaction, `Added you to the chat for \`${course_with_alias}\`.`);
+}
+
+async function handleCourseLeave(interaction) {
+    const input_course = await interaction.options.getString("course");
+    const course = get_real_course_name(input_course);
+
+    if (!is_valid) {
+        return is_course(course)
+            ? replyError("Course chats for other faculties are not supported.")
+            : replyError("This this not a valid course code.");
+    }
+
+    // First, let's see if there's a role that matches the name of the course
+    const role = await interaction.guild.roles.cache.find(
+        (r) => r.name.toLowerCase() === course.toLowerCase(),
+    );
+    if (role === undefined) {
+        return await replyError(interaction, `There is no course chat for \`${course_with_alias}\``);
+    }
+
+    // If there is, let's see if the member already has that role
+    if (!interaction.member.roles.cache.has(role.id)) {
+        return await replyError(interaction, `You are not in the course chat for \`${course}\`.`);
+    }
+
+    // If they do, let's remove the role from them
+    await interaction.member.roles.remove(role);
+    return await replyError(interaction, `Removed you from the chat for \`${course}\`.`);
+}
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -113,66 +178,9 @@ module.exports = {
     async execute(interaction) {
         try {
             if (interaction.options.getSubcommand() === COMMAND_JOIN) {
-                const input_course = await interaction.options.getString("course").toLowerCase();
-                const course = get_real_course_name(cleanup_course_name(input_course));
-
-                const is_valid = is_valid_course(course);
-
-                const course_with_alias =
-                    course != input_course
-                        ? `${course} (same course chat as ${input_course})`
-                        : `${course}`;
-
-                if (!is_valid) {
-                    return is_course(course)
-                        ? await replyError("Course chats for other faculties are not supported.")
-                        : await replyError("This this not a valid course code.");
-                }
-
-                // First, let's see if there's a role that matches the name of the course
-                const role = await interaction.guild.roles.cache.find(
-                    (r) => r.name.toLowerCase() === course.toLowerCase(),
-                );
-
-                // If there is, let's see if the member already has that role
-                if (role === undefined) {
-                    return await replyError(interaction, `There is no course chat for \`${course_with_alias}\``);
-                }
-
-                if (interaction.member.roles.cache.has(role.id)) {
-                    return await replyError(`You are already in the course chat for \`${course_with_alias}\`.`);
-                }
-
-                // If they don't, let's add the role to them
-                await interaction.member.roles.add(role);
-                return await replySuccess(interaction, `Added you to the chat for \`${course_with_alias}\`.`);
+                return await handleCourseJoin(interaction);
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
-                const input_course = await interaction.options.getString("course");
-                const course = get_real_course_name(input_course);
-
-                if (!is_valid) {
-                    return is_course(course)
-                        ? replyError("Course chats for other faculties are not supported.")
-                        : replyError("This this not a valid course code.");
-                }
-
-                // First, let's see if there's a role that matches the name of the course
-                const role = await interaction.guild.roles.cache.find(
-                    (r) => r.name.toLowerCase() === course.toLowerCase(),
-                );
-                if (role === undefined) {
-                    return await replyError(interaction, `There is no course chat for \`${course_with_alias}\``);
-                }
-
-                // If there is, let's see if the member already has that role
-                if (!interaction.member.roles.cache.has(role.id)) {
-                    return await replyError(interaction, `You are not in the course chat for \`${course}\`.`);
-                }
-
-                // If they do, let's remove the role from them
-                await interaction.member.roles.remove(role);
-                return await replyError(interaction, `Removed you from the chat for \`${course}\`.`);
-
+                return await handleCourseLeave(interaction);
             }
 
             return await interaction.reply("Error: invalid subcommand.");
