@@ -4,6 +4,7 @@ const { Permissions } = require("discord.js");
 const MODERATION_REQUEST_CHANNEL = 824506830641561600;
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
+const COMMAND_PURGE = "purge";
 
 const replyError = async (interaction, message) => {
     return await interaction.reply({
@@ -148,6 +149,19 @@ async function handleCourseLeave(interaction) {
     return await replyError(interaction, `Removed you from the chat for \`${course}\`.`);
 }
 
+async function handlePurgePermissionOverrides(interaction) {
+    if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        return await replyError("You do not have permission to execute this command.");
+    }
+    const channels = interaction.guild.channels.cache.filter(
+        (channel) => is_course(cleanup_course_name(channel.name))
+    );
+    const purged_channels = channels.map((channel) => {
+        channel.permissionOverwrites.map(async (perm) => perm.delete());
+        return channel.name;
+    }).join(', ');
+    return await replySuccess(interaction, `Purged permission overrides for \`\`\`${purged_channels}\`\`\``);
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -174,6 +188,11 @@ module.exports = {
                         .setDescription("Course chat to leave")
                         .setRequired(true),
                 ),
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName(COMMAND_PURGE)
+                .setDescription("Purge all permission overrides for course chats")
         ),
     async execute(interaction) {
         try {
@@ -181,6 +200,8 @@ module.exports = {
                 return await handleCourseJoin(interaction);
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
                 return await handleCourseLeave(interaction);
+            } else if (interaction.options.getSubcommand() === COMMAND_PURGE) {
+                return await handlePurgePermissionOverrides(interaction);
             }
 
             return await interaction.reply("Error: invalid subcommand.");
