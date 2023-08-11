@@ -5,6 +5,20 @@ const MODERATION_REQUEST_CHANNEL = 824506830641561600;
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
 
+const replyError = async (interaction, message) => {
+    return await interaction.reply({
+        content: `❌ | ${message}`,
+        ephemeral: true,
+    });
+}
+
+const replySuccess = async (interaction, message) => {
+    return await interaction.reply({
+        content: `✅ | ${message}`,
+        ephemeral: true,
+    });
+}
+
 // map of course aliases to their actual names
 const course_aliases = {
     comp6841: "comp6441",
@@ -29,14 +43,26 @@ const course_aliases = {
     math1241: "math1231",
 };
 
-const get_real_course_name = (course) => {
-    if (course_aliases[course.toLowerCase()]) {
-        return course_aliases[course.toLowerCase()];
-    }
-    return course.toLowerCase();
-};
+/**
+ * @param {string} course
+ * @returns {string}
+ */
+const get_real_course_name = (course) => course_aliases[course.toLowerCase()] ?? course;
+/**
+ * @param {string} course
+ * @returns {string}
+ */
+const cleanup_course_name = (course) => course.toLowerCase().trim();
+
+const courseRegex = /^([a-zA-Z]{4}\d{4})$/;
+/**
+ * @param {string} course
+ * @returns {boolean}
+ */
+const is_course = (course) => courseRegex.test(course);
 
 const is_valid_course = (course) => {
+    const course_code = cleanup_course_name(course);
     const reg_comp_course = /^comp\d{4}$/;
     const reg_math_course = /^math\d{4}$/;
     const reg_binf_course = /^binf\d{4}$/;
@@ -45,12 +71,12 @@ const is_valid_course = (course) => {
     const reg_desn_course = /^desn\d{4}$/;
 
     return (
-        reg_comp_course.test(course.toLowerCase()) ||
-        reg_math_course.test(course.toLowerCase()) ||
-        reg_binf_course.test(course.toLowerCase()) ||
-        reg_engg_course.test(course.toLowerCase()) ||
-        reg_seng_course.test(course.toLowerCase()) ||
-        reg_desn_course.test(course.toLowerCase())
+        reg_comp_course.test(course_code) ||
+        reg_math_course.test(course_code) ||
+        reg_binf_course.test(course_code) ||
+        reg_engg_course.test(course_code) ||
+        reg_seng_course.test(course_code) ||
+        reg_desn_course.test(course_code)
     );
 };
 
@@ -84,9 +110,8 @@ module.exports = {
         try {
             if (interaction.options.getSubcommand() === COMMAND_JOIN) {
                 const input_course = await interaction.options.getString("course").toLowerCase();
-                const course = get_real_course_name(input_course);
+                const course = get_real_course_name(cleanup_course_name(input_course));
 
-                const other_courses = /^[a-zA-Z]{4}\d{4}$/;
                 const is_valid = is_valid_course(course);
 
                 const course_with_alias =
@@ -94,16 +119,10 @@ module.exports = {
                         ? `${course} (same course chat as ${input_course})`
                         : `${course}`;
 
-                if (!is_valid && other_courses.test(course.toLowerCase())) {
-                    return await interaction.reply({
-                        content: `❌ | Course chats for other faculties are not supported.`,
-                        ephemeral: true,
-                    });
-                } else if (!is_valid) {
-                    return await interaction.reply({
-                        content: `❌ | You are not allowed to join this channel using this command.`,
-                        ephemeral: true,
-                    });
+                if (!is_valid) {
+                    return is_course(course)
+                        ? replyError("Course chats for other faculties are not supported.")
+                        : replyError("This this not a valid course code.");
                 }
 
                 // First, let's see if there's a role that matches the name of the course
@@ -112,70 +131,17 @@ module.exports = {
                 );
 
                 // If there is, let's see if the member already has that role
-                if (role !== undefined) {
-                    if (interaction.member.roles.cache.has(role.id)) {
-                        return await interaction.reply({
-                            content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
-                            ephemeral: true,
-                        });
-                    }
-
-                    // If they don't, let's add the role to them
-                    await interaction.member.roles.add(role);
-                    return await interaction.reply({
-                        content: `✅ | Added you to the chat for \`${course_with_alias}\`.`,
-                        ephemeral: true,
-                    });
+                if (role === undefined) {
+                    return replyError(interaction, `There is no course chat for \`${course_with_alias}\``);
                 }
 
-                // Otherwise, find a channel with the same name as the course
-                const channel = await interaction.guild.channels.cache.find(
-                    (c) => c.name.toLowerCase() === course.toLowerCase(),
-                );
-
-                // Make sure that the channel exists, and is a text channel
-                if (channel === undefined) {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` does not exist. If you'd like for it to be created, please raise a ticket in <#${MODERATION_REQUEST_CHANNEL}>.`,
-                        ephemeral: true,
-                    });
-                } else if (channel.type !== "GUILD_TEXT") {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` is not a text channel.`,
-                        ephemeral: true,
-                    });
+                if (interaction.member.roles.cache.has(role.id)) {
+                    return replyError(`You are already in the course chat for \`${course_with_alias}\`.`);
                 }
 
-                const permissions = new Permissions(
-                    channel.permissionsFor(interaction.user.id).bitfield,
-                );
-
-                // Check if the member already has an entry in the channel's permission overwrites, and update
-                // the entry if they do just to make sure that they have the correct permissions
-                if (
-                    permissions.has([
-                        Permissions.FLAGS.VIEW_CHANNEL,
-                        Permissions.FLAGS.SEND_MESSAGES,
-                    ])
-                ) {
-                    await channel.permissionOverwrites.edit(interaction.member, {
-                        VIEW_CHANNEL: true,
-                    });
-                    return await interaction.reply({
-                        content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
-                        ephemeral: true,
-                    });
-                }
-
-                // Add the member to the channel's permission overwrites
-                await channel.permissionOverwrites.create(interaction.member, {
-                    VIEW_CHANNEL: true,
-                });
-
-                return await interaction.reply({
-                    content: `✅ | Added you to the chat for ${course_with_alias}.`,
-                    ephemeral: true,
-                });
+                // If they don't, let's add the role to them
+                await interaction.member.roles.add(role);
+                return replySuccess(interaction, `Added you to the chat for \`${course_with_alias}\`.`);
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
                 const input_course = await interaction.options.getString("course");
                 const course = get_real_course_name(input_course);
