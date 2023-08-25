@@ -107,231 +107,220 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-        cron.schedule("* * * * *", async function () {
+        cron.schedule("* * * * *", async () => {
             let locationData;
             let selectedArea;
             let selectedLocation;
             const areaVotes = {};
 
-            const conductAreaVote = () => {
-                return new Promise(async (resolve) => {
-                    // Setup for voting
-                    areasList.forEach((area) => (areaVotes[area] = []));
-                    // Fetch channel object and send voting message
+            const conductAreaVote = async () => {
+                // Setup for voting
+                areasList.forEach((area) => (areaVotes[area] = []));
 
-                    const voteChannel = await client.channels.fetch(voteOriginId);
+                // Fetch channel object and send voting message
+                const voteChannel = await client.channels.fetch(voteOriginId);
 
-                    const areaMessage = await voteChannel.send({
-                        embeds: [generateAreasEmbed()],
-                        components: areasActionRows,
-                    });
+                const areaMessage = await voteChannel.send({
+                    embeds: [generateAreasEmbed()],
+                    components: areasActionRows,
+                });
 
-                    // Setup receiving message interactions
-                    const areaCollector = areaMessage.createMessageComponentCollector({
-                        filter: areasButtonsFilter,
-                        time: interactionTimeout,
-                        idle: interactionTimeout,
-                    });
+                // Setup receiving message interactions
+                const areaCollector = areaMessage.createMessageComponentCollector({
+                    filter: areasButtonsFilter,
+                    time: interactionTimeout,
+                    idle: interactionTimeout,
+                });
 
-                    areaCollector.on("collect", async (interaction) => {
-                        const interactorId = String(interaction.user.id);
-                        const priorVoteOption = getVoteOption(interactorId, areaVotes);
-                        const newOption = interaction.customId.replace(areaButtonCustomId, "");
+                areaCollector.on("collect", async (interaction) => {
+                    const interactorId = String(interaction.user.id);
+                    const priorVoteOption = getVoteOption(interactorId, areaVotes);
+                    const newOption = interaction.customId.replace(areaButtonCustomId, "");
 
-                        let newVoteString = ` voted for ${newOption}!`;
-                        let oldVoteString = "";
+                    let newVoteString = ` voted for ${newOption}!`;
+                    let oldVoteString = "";
 
-                        // Checks whether voter has previously cast vote and edits accordingly
-                        if (priorVoteOption) {
-                            if (priorVoteOption === newOption) {
-                                interaction.reply({
-                                    content: "You have already voted for this option.",
-                                    ephemeral: true,
-                                });
-                                return;
-                            }
-                            // Removes previously cast vote
-                            const location = areaVotes[priorVoteOption].indexOf(interactorId);
-                            areaVotes[priorVoteOption].splice(location, 1);
-
-                            if (newOption === "Remove") {
-                                newVoteString = " removed your vote.";
-                            } else {
-                                oldVoteString = ` removed your vote for ${priorVoteOption} and`;
-                            }
-                        } else if (newOption === "Remove") {
-                            newVoteString = " no vote to remove.";
-                        }
-
-                        const voteString = `You have${oldVoteString}${newVoteString}`;
-
-                        // Appends new vote if cast
-                        if (newOption !== "Remove") {
-                            areaVotes[newOption].push(interactorId);
-                        }
-
-                        interaction.reply({ content: voteString, ephemeral: true });
-                        areaMessage.edit({ embeds: [generateAreasEmbed(areaVotes)] });
-                    });
-
-                    areaCollector.on("end", async () => {
-                        // Removes options to vote for area
-                        await areaMessage.edit({ components: [] });
-
-                        let areaInfo;
-
-                        // Finds the highest voted option, and randomises for ties
-                        const mostVoted = getMostVoted(areaVotes);
-
-                        if (mostVoted.length !== 1) {
-                            selectedArea = mostVoted[Math.floor(Math.random() * mostVoted.length)];
-                            areaInfo = `Several options had the highest votes, and the area ${selectedArea} was randomly selected from the tied options.`;
-                        } else {
-                            selectedArea = mostVoted[0];
-                            areaInfo = `The area ${selectedArea} had the highest votes.`;
-                        }
-
-                        if (areaVotes[selectedArea].length) {
-                            await areaMessage.reply(areaInfo);
-                        } else {
-                            await areaMessage.reply("No votes were cast for the area.");
+                    // Checks whether voter has previously cast vote and edits accordingly
+                    if (priorVoteOption) {
+                        if (priorVoteOption === newOption) {
+                            interaction.reply({
+                                content: "You have already voted for this option.",
+                                ephemeral: true,
+                            });
                             return;
                         }
+                        // Removes previously cast vote
+                        const location = areaVotes[priorVoteOption].indexOf(interactorId);
+                        areaVotes[priorVoteOption].splice(location, 1);
 
+                        if (newOption === "Remove") {
+                            newVoteString = " removed your vote.";
+                        } else {
+                            oldVoteString = ` removed your vote for ${priorVoteOption} and`;
+                        }
+                    } else if (newOption === "Remove") {
+                        newVoteString = " no vote to remove.";
+                    }
+
+                    const voteString = `You have${oldVoteString}${newVoteString}`;
+
+                    // Appends new vote if cast
+                    if (newOption !== "Remove") {
+                        areaVotes[newOption].push(interactorId);
+                    }
+
+                    interaction.reply({ content: voteString, ephemeral: true });
+                    areaMessage.edit({ embeds: [generateAreasEmbed(areaVotes)] });
+                });
+
+                areaCollector.on("end", async () => {
+                    // Removes options to vote for area
+                    await areaMessage.edit({ components: [] });
+
+                    let areaInfo;
+
+                    // Finds the highest voted option, and randomises for ties
+                    const mostVoted = getMostVoted(areaVotes);
+
+                    if (mostVoted.length !== 1) {
+                        selectedArea = mostVoted[Math.floor(Math.random() * mostVoted.length)];
+                        areaInfo = `Several options had the highest votes, and the area ${selectedArea} was randomly selected from the tied options.`;
+                    } else {
+                        selectedArea = mostVoted[0];
+                        areaInfo = `The area ${selectedArea} had the highest votes.`;
+                    }
+
+                    if (areaVotes[selectedArea].length) {
+                        await areaMessage.reply(areaInfo);
                         locationData = getLocations(selectedArea);
-
-                        resolve();
-                    });
+                        await conductLocationVote();
+                    } else {
+                        await areaMessage.reply("No votes were cast for the area.");
+                    }
                 });
             };
 
-            const conductLocationVote = () => {
-                return new Promise(async (resolve) => {
-                    const locationsList = locationData.sub.map((element) => element.name);
+            const conductLocationVote = async () => {
+                const locationsList = locationData.sub.map((element) => element.name);
 
-                    // Fetch channel and prepare voting message
+                // Fetch channel and prepare voting message
 
-                    const voteChannel = await client.channels.fetch(voteOriginId);
+                const voteChannel = await client.channels.fetch(voteOriginId);
 
-                    // client.channels.fetch(voteOriginId).then(async (voteChannel) => {
-                    const locationsButtons = locationData.sub.map(
-                        (element) =>
-                            new MessageButton({
-                                style: "PRIMARY",
-                                label: element.name,
-                                customId: `${element.name}${locationButtonCustomId}`,
-                            }),
-                    );
-                    locationsButtons.push(
+                // client.channels.fetch(voteOriginId).then(async (voteChannel) => {
+                const locationsButtons = locationData.sub.map(
+                    (element) =>
                         new MessageButton({
-                            style: "DANGER",
-                            label: "Remove Vote",
-                            customId: `Remove${locationButtonCustomId}`,
+                            style: "PRIMARY",
+                            label: element.name,
+                            customId: `${element.name}${locationButtonCustomId}`,
+                        }),
+                );
+                locationsButtons.push(
+                    new MessageButton({
+                        style: "DANGER",
+                        label: "Remove Vote",
+                        customId: `Remove${locationButtonCustomId}`,
+                    }),
+                );
+                const locationsButtonsIds = locationData.sub.map(
+                    (element) => `${element.name}${locationButtonCustomId}`,
+                );
+                locationsButtonsIds.push(`Remove${locationButtonCustomId}`);
+                const locationsActionRows = [];
+                for (let i = 0; i < locationsButtons.length; i += maxRowButtons) {
+                    locationsActionRows.push(
+                        new MessageActionRow({
+                            components: locationsButtons.slice(i, i + maxRowButtons),
                         }),
                     );
-                    const locationsButtonsIds = locationData.sub.map(
-                        (element) => `${element.name}${locationButtonCustomId}`,
-                    );
-                    locationsButtonsIds.push(`Remove${locationButtonCustomId}`);
-                    const locationsActionRows = [];
-                    for (let i = 0; i < locationsButtons.length; i += maxRowButtons) {
-                        locationsActionRows.push(
-                            new MessageActionRow({
-                                components: locationsButtons.slice(i, i + maxRowButtons),
-                            }),
-                        );
-                    }
+                }
 
-                    const locationVotes = {};
-                    locationsList.forEach((location) => (locationVotes[location] = []));
+                const locationVotes = {};
+                locationsList.forEach((location) => (locationVotes[location] = []));
 
-                    const locationMessage = await voteChannel.send({
-                        embeds: [generateLocationsEmbed(selectedArea)],
-                        components: locationsActionRows,
-                    });
+                const locationMessage = await voteChannel.send({
+                    embeds: [generateLocationsEmbed(selectedArea)],
+                    components: locationsActionRows,
+                });
 
-                    const locationsButtonsFilter = (resInteraction) => {
-                        return locationsButtonsIds.includes(resInteraction.customId);
-                    };
+                const locationsButtonsFilter = (resInteraction) => {
+                    return locationsButtonsIds.includes(resInteraction.customId);
+                };
 
-                    // Setup receiving message interactions
-                    const locationCollector = locationMessage.createMessageComponentCollector({
-                        filter: locationsButtonsFilter,
-                        time: interactionTimeout,
-                        idle: interactionTimeout,
-                    });
+                // Setup receiving message interactions
+                const locationCollector = locationMessage.createMessageComponentCollector({
+                    filter: locationsButtonsFilter,
+                    time: interactionTimeout,
+                    idle: interactionTimeout,
+                });
 
-                    locationCollector.on("collect", async (interaction) => {
-                        const interactorId = String(interaction.user.id);
-                        const priorVoteOption = getVoteOption(interactorId, locationVotes);
-                        const newOption = interaction.customId.replace(locationButtonCustomId, "");
+                locationCollector.on("collect", async (interaction) => {
+                    const interactorId = String(interaction.user.id);
+                    const priorVoteOption = getVoteOption(interactorId, locationVotes);
+                    const newOption = interaction.customId.replace(locationButtonCustomId, "");
 
-                        let newVoteString = ` voted for ${newOption}!`;
-                        let oldVoteString = "";
+                    let newVoteString = ` voted for ${newOption}!`;
+                    let oldVoteString = "";
 
-                        // Checks whether voter has previously cast vote and edits accordingly
-                        if (priorVoteOption) {
-                            if (priorVoteOption === newOption) {
-                                interaction.reply({
-                                    content: "You have already voted for this option.",
-                                    ephemeral: true,
-                                });
-                                return;
-                            }
-                            // Removes previously cast vote
-                            const location = locationVotes[priorVoteOption].indexOf(interactorId);
-                            locationVotes[priorVoteOption].splice(location, 1);
-
-                            if (newOption === "Remove") {
-                                newVoteString = " removed your vote.";
-                            } else {
-                                oldVoteString = ` removed your vote for ${priorVoteOption} and`;
-                            }
-                        } else if (newOption === "Remove") {
-                            newVoteString = " no vote to remove.";
-                        }
-
-                        const voteString = `You have${oldVoteString}${newVoteString}`;
-
-                        // Appends new vote if cast
-                        if (newOption !== "Remove") {
-                            locationVotes[newOption].push(interactorId);
-                        }
-
-                        interaction.reply({ content: voteString, ephemeral: true });
-                        locationMessage.edit({
-                            embeds: [generateLocationsEmbed(selectedArea, locationVotes)],
-                        });
-                    });
-
-                    locationCollector.on("end", async () => {
-                        // Removes options to vote for location
-                        locationMessage.edit({ components: [] });
-
-                        let locationInfo;
-
-                        // Finds the highest voted option, and randomises for ties
-                        const mostVotedLocation = getMostVoted(locationVotes);
-                        if (mostVotedLocation.length !== 1) {
-                            selectedLocation =
-                                mostVotedLocation[
-                                    Math.floor(Math.random() * mostVotedLocation.length)
-                                ];
-                            locationInfo = `Several options had the highest votes, and the location ${selectedLocation} was randomly selected from the tied options.`;
-                        } else {
-                            selectedLocation = mostVotedLocation[0];
-                            locationInfo = `The location ${selectedLocation} had the highest votes.`;
-                        }
-
-                        if (locationVotes[selectedLocation].length) {
-                            await locationMessage.reply(locationInfo);
-                        } else {
-                            await locationMessage.reply("No votes were cast for the location.");
+                    // Checks whether voter has previously cast vote and edits accordingly
+                    if (priorVoteOption) {
+                        if (priorVoteOption === newOption) {
+                            interaction.reply({
+                                content: "You have already voted for this option.",
+                                ephemeral: true,
+                            });
                             return;
                         }
+                        // Removes previously cast vote
+                        const location = locationVotes[priorVoteOption].indexOf(interactorId);
+                        locationVotes[priorVoteOption].splice(location, 1);
 
-                        resolve();
+                        if (newOption === "Remove") {
+                            newVoteString = " removed your vote.";
+                        } else {
+                            oldVoteString = ` removed your vote for ${priorVoteOption} and`;
+                        }
+                    } else if (newOption === "Remove") {
+                        newVoteString = " no vote to remove.";
+                    }
+
+                    const voteString = `You have${oldVoteString}${newVoteString}`;
+
+                    // Appends new vote if cast
+                    if (newOption !== "Remove") {
+                        locationVotes[newOption].push(interactorId);
+                    }
+
+                    interaction.reply({ content: voteString, ephemeral: true });
+                    locationMessage.edit({
+                        embeds: [generateLocationsEmbed(selectedArea, locationVotes)],
                     });
+                });
+
+                locationCollector.on("end", async () => {
+                    // Removes options to vote for location
+                    locationMessage.edit({ components: [] });
+
+                    let locationInfo;
+
+                    // Finds the highest voted option, and randomises for ties
+                    const mostVotedLocation = getMostVoted(locationVotes);
+                    if (mostVotedLocation.length !== 1) {
+                        selectedLocation =
+                            mostVotedLocation[Math.floor(Math.random() * mostVotedLocation.length)];
+                        locationInfo = `Several options had the highest votes, and the location ${selectedLocation} was randomly selected from the tied options.`;
+                    } else {
+                        selectedLocation = mostVotedLocation[0];
+                        locationInfo = `The location ${selectedLocation} had the highest votes.`;
+                    }
+
+                    if (locationVotes[selectedLocation].length) {
+                        await locationMessage.reply(locationInfo);
+                        createMeetupThread();
+                    } else {
+                        await locationMessage.reply("No votes were cast for the location.");
+                    }
                 });
             };
 
@@ -360,8 +349,6 @@ module.exports = {
             };
 
             await conductAreaVote();
-            await conductLocationVote();
-            createMeetupThread();
         });
     },
 };
