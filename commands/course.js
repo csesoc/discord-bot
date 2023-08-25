@@ -7,7 +7,7 @@ const COMMAND_LEAVE = "leave";
 
 // map of course aliases to their actual names
 const course_aliases = {
-    comp6841: "comp6841",
+    comp6841: "comp6441",
     comp9044: "comp2041",
     comp3891: "comp3231",
     comp9201: "comp3231",
@@ -83,11 +83,16 @@ module.exports = {
     async execute(interaction) {
         try {
             if (interaction.options.getSubcommand() === COMMAND_JOIN) {
-                const input_course = await interaction.options.getString("course");
+                const input_course = await interaction.options.getString("course").toLowerCase();
                 const course = get_real_course_name(input_course);
 
                 const other_courses = /^[a-zA-Z]{4}\d{4}$/;
                 const is_valid = is_valid_course(course);
+
+                const course_with_alias =
+                    course != input_course
+                        ? `${course} (same course chat as ${input_course})`
+                        : `${course}`;
 
                 if (!is_valid && other_courses.test(course.toLowerCase())) {
                     return await interaction.reply({
@@ -101,7 +106,29 @@ module.exports = {
                     });
                 }
 
-                // Find a channel with the same name as the course
+                // First, let's see if there's a role that matches the name of the course
+                const role = await interaction.guild.roles.cache.find(
+                    (r) => r.name.toLowerCase() === course.toLowerCase(),
+                );
+
+                // If there is, let's see if the member already has that role
+                if (role !== undefined) {
+                    if (interaction.member.roles.cache.has(role.id)) {
+                        return await interaction.reply({
+                            content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
+                            ephemeral: true,
+                        });
+                    }
+
+                    // If they don't, let's add the role to them
+                    await interaction.member.roles.add(role);
+                    return await interaction.reply({
+                        content: `✅ | Added you to the chat for \`${course_with_alias}\`.`,
+                        ephemeral: true,
+                    });
+                }
+
+                // Otherwise, find a channel with the same name as the course
                 const channel = await interaction.guild.channels.cache.find(
                     (c) => c.name.toLowerCase() === course.toLowerCase(),
                 );
@@ -118,11 +145,6 @@ module.exports = {
                         ephemeral: true,
                     });
                 }
-
-                const course_with_alias =
-                    course != input_course
-                        ? `${course} (alias for \`${input_course}\`)`
-                        : `${course}`;
 
                 const permissions = new Permissions(
                     channel.permissionsFor(interaction.user.id).bitfield,
@@ -165,12 +187,34 @@ module.exports = {
                     });
                 }
 
+                // First, let's see if there's a role that matches the name of the course
+                const role = await interaction.guild.roles.cache.find(
+                    (r) => r.name.toLowerCase() === course.toLowerCase(),
+                );
+
+                // If there is, let's see if the member already has that role
+                if (role !== undefined) {
+                    if (!interaction.member.roles.cache.has(role.id)) {
+                        return await interaction.reply({
+                            content: `❌ | You are not in the course chat for \`${course}\`.`,
+                            ephemeral: true,
+                        });
+                    }
+
+                    // If they do, let's remove the role from them
+                    await interaction.member.roles.remove(role);
+                    return await interaction.reply({
+                        content: `✅ | Removed you from the chat for \`${course}\`.`,
+                        ephemeral: true,
+                    });
+                }
+
                 // Find a channel with the same name as the course
                 const channel = await interaction.guild.channels.cache.find(
                     (c) => c.name.toLowerCase() === course.toLowerCase(),
                 );
 
-                // Make sure that the channel exists, and is a text channel
+                // Otherwise, make sure that the channel exists, and is a text channel
                 if (channel === undefined) {
                     return await interaction.reply({
                         content: `❌ | The course chat for \`${course}\` does not exist.`,

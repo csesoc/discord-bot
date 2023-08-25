@@ -27,8 +27,11 @@ module.exports = {
 
             let data;
             try {
-                const response = await axios.get(`${apiURL}${courseCode}`);
+                // Documented at:
+                // https://circlesapi.csesoc.app/docs#/courses/get_course_courses_getCourse__courseCode__get
+                const response = await axios.get(`${apiURL}/courses/getCourse/${courseCode}`);
                 data = response.data;
+                // console.log(data);
             } catch (e) {
                 return await interaction.reply({
                     content: "Invalid course code.",
@@ -36,27 +39,40 @@ module.exports = {
                 });
             }
 
+            const {
+                title,
+                code,
+                UOC,
+                // level,
+                description,
+                // study_level,
+                // school,
+                // campus,
+                equivalents,
+                raw_requirements,
+                exclusions,
+                // handbook_note,
+                terms,
+            } = data;
+
             const courseInfo = new MessageEmbed()
-                .setTitle(data["title"])
-                .setURL(`${handbookURL}${courseCode}`)
+                .setTitle(title)
+                .setURL(`${handbookURL}/${code}`)
                 .setColor(0x3a76f8)
-                .setAuthor(
-                    `Course Info: ${courseCode} (${data["credit_points"]} UOC)`,
-                    "https://i.imgur.com/EE3Q40V.png",
-                )
+                .setAuthor(`Course Info: ${code} (${UOC} UOC)`, "https://i.imgur.com/EE3Q40V.png")
                 .addFields(
                     {
                         name: "Overview",
-                        value: textVersion(data["description"]).substring(
+                        value: textVersion(description).substring(
                             0,
-                            Math.min(textVersion(data["description"]).indexOf("\n"), 1024),
+                            Math.min(textVersion(description).indexOf("\n"), 1024),
                         ),
                         inline: false,
                     },
                     {
                         name: "Enrolment Requirements",
                         value:
-                            data["enrolment_requirements"].replace(
+                            raw_requirements.replace(
                                 /[A-Z]{4}[0-9]{4}/g,
                                 `[$&](${handbookURL}$&)`,
                             ) || "None",
@@ -64,39 +80,33 @@ module.exports = {
                     },
                     {
                         name: "Offering Terms",
-                        value: data["offering_terms"],
-                        inline: true,
-                    },
-                    {
-                        name: "Delivery Mode",
-                        value: data["delivery_mode"],
+                        value: terms.join(", "),
                         inline: true,
                     },
                     {
                         name: "Equivalent Courses",
                         value:
-                            data["equivalent_courses"]
-                                .map((course) => `[${course}](${handbookURL}${course})`)
+                            Object.keys(equivalents)
+                                .map((course) => `[${course}](${course})`)
                                 .join(", ") || "None",
                         inline: true,
                     },
                     {
                         name: "Exclusion Courses",
                         value:
-                            data["exclusion_courses"]
+                            Object.keys(exclusions)
                                 .map((course) => `[${course}](${handbookURL}${course})`)
                                 .join(", ") || "None",
                         inline: true,
                     },
-                    {
-                        name: "Course Outline",
-                        value: `[${courseCode} Course Outline](${data["course_outline_url"]})`,
-                        inline: true,
-                    },
+                    /* { */
+                    /*     name: "Course Outline", */
+                    /*     value: `[${courseCode} Course Outline](${data["course_outline_url"]})`, */
+                    /*     inline: true, */
+                    /* }, */
                 )
                 .setTimestamp()
-                .setFooter("Data fetched from Zac's Handbook API");
-
+                .setFooter("Data fetched from Circles' Api");
             await interaction.reply({ embeds: [courseInfo] });
         }
     },
