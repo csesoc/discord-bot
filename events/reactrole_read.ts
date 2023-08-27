@@ -1,10 +1,9 @@
-const { DBReactRole } = require("../lib/database/dbreactrole");
-/* eslint-disable */
+import { DBReactRole } from "../lib/database/dbreactrole";
 
-module.exports = {
+export const ready = {
     name: "ready",
     once: true,
-    async execute() {
+    async execute(): Promise<void> {
         const reactRoles = new DBReactRole();
         global.reactRoles = reactRoles;
     },

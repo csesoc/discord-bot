@@ -1,21 +1,22 @@
-// @ts-check
 /* eslint-disable */
 // const { Embed } = require("@discordjs/builders");
 const { MessageEmbed } = require("discord.js");
 const { DBcarrotboard } = require("../database/dbcarrotboard");
-const fs = require("fs");
+import fs from 'fs';
 const YAML = require("yaml");
 
-class CarrotboardStorage {
+export class CarrotboardStorage {
     pin = "📌";
     maxMsgLen = 50;
     rowsPerPage = 5;
 
     /** @protected @type {Client} */
     _client;
+    config: CarrotboardConfig;
+    db: any;
 
     /** @param {Client} client */
-    constructor(client) {
+    constructor(client:any) {
         this.config = new CarrotboardConfig();
         this.db = new DBcarrotboard();
         this._client = client;
@@ -26,7 +27,7 @@ class CarrotboardStorage {
      * @param {Number} CBID
      * @param {String} emoji
      */
-    async sendCBAlert(messageReaction, CBID, emoji) {
+    async sendCBAlert(messageReaction:any, CBID:any, emoji:any) {
         // get the alert channel and check it
         let alertChannel;
         try {
@@ -122,7 +123,7 @@ class CarrotboardStorage {
         } else {
             entries = await this.db.get_all(this.config.minimum);
         }
-        entries.sort((a, b) => Number(b["count"]) - Number(a["count"]));
+        entries.sort((a:any, b:any) => Number(b["count"]) - Number(a["count"]));
 
         // generate the leaderboard
         const embedPages = [];
@@ -403,7 +404,7 @@ class CarrotboardConfig {
  * Returns the first emoji seen in the message, or null sometimes
  * @param {String} messageStr
  */
-function extractOneEmoji(messageStr) {
+function extractOneEmoji(messageStr:String) {
     if (messageStr.length == 0) {
         return null;
     }

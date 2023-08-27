@@ -1,10 +1,11 @@
-const { Pool } = require("pg");
+import { Pool } from "pg";
 const yaml = require("js-yaml");
-const fs = require("fs");
+import fs from 'fs';
 // const { count, table } = require('console');
 
 // Class for the user database
 class DBuser {
+    private pool: Pool;
     constructor() {
         // Loads the db configuration file
         const details = this.load_db_login();
@@ -35,31 +36,28 @@ class DBuser {
     }
 
     // Checks if the table exists in the database
-    async check_table(table_name) {
+    async check_table(table_name: string): Promise<boolean> {
         const client = await this.pool.connect();
         try {
-            // console.log("Running check_table command")
-            await client.query("BEGIN");
-            const values = [table_name];
-            const result = await client.query(
-                "select * from information_schema.tables where table_name=$1",
-                values,
-            );
-            await client.query("COMMIT");
-
-            if (result.rowCount == 0) {
-                return false;
-            } else {
-                return true;
-            }
+          // console.log("Running check_table command")
+          await client.query("BEGIN");
+          const values = [table_name];
+          const result = await client.query(
+            "select * from information_schema.tables where table_name=$1",
+            values,
+          );
+          await client.query("COMMIT");
+    
+          return result.rowCount === 0 ? false : true;
         } catch (ex) {
-            console.log(`Something wrong happend ${ex}`);
+          console.log(`Something wrong happened ${ex}`);
+          return false; // You might want to handle this differently
         } finally {
-            await client.query("ROLLBACK");
-            client.release();
-            // console.log("Client released successfully.")
+          await client.query("ROLLBACK");
+          client.release();
+          // console.log("Client released successfully.")
         }
-    }
+      }
 
     // Helper function to create all the required tables
     async create_tables() {
@@ -189,15 +187,15 @@ class DBuser {
     }
 
     // When a user leaves the server
-    async user_leave(userid) {
+    async user_leave(userid: Number) {
         let time = new Date();
         time.setMilliseconds(0);
-        time = time.toISOString();
+        const timeString = time.toISOString();
 
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
-            const values = [time, true, userid];
+            const values = [timeString, true, userid];
             const query = "UPDATE users  SET leavedate = $1 , userleft = $2 where userid = $3";
             await client.query(query, values);
 
@@ -212,10 +210,10 @@ class DBuser {
     }
 
     // When a user joins the server
-    async user_join(userid) {
+    async user_join(userid: Number) {
         let time = new Date();
         time.setMilliseconds(0);
-        time = time.toISOString();
+        const timeString = time.toISOString();
 
         const client = await this.pool.connect();
         try {
@@ -226,13 +224,13 @@ class DBuser {
             const result = await client.query(query, values);
 
             if (result.rows.length != 0) {
-                query = "UPDATE users SET joindate=$1, userleft=$2 where userid=$3";
-                values = [time, false, userid];
+                const query = "UPDATE users SET joindate=$1, userleft=$2 where userid=$3";
+                const values = [timeString, false, userid];
                 await client.query(query, values);
             } else {
-                query =
+                const query =
                     "INSERT INTO users (USERID, JOINDATE, LEAVEDATE, USERLEFT) VALUES ($1,$2,$3,$4)";
-                values = [userid, time, null, false];
+                const values = [userid, time, null, false];
                 await client.query(query, values);
             }
             await client.query("COMMIT");
@@ -246,7 +244,7 @@ class DBuser {
     }
 
     // Adding a user role
-    async add_user_role(userid, role) {
+    async add_user_role(userid: Number, role: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -270,7 +268,7 @@ class DBuser {
     }
 
     // Removing a user role
-    async remove_user_role(userid, role) {
+    async remove_user_role(userid: Number, role: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -289,7 +287,7 @@ class DBuser {
     }
 
     // Counting the number of unique roles of user with userid
-    async count_user_roles(userid) {
+    async count_user_roles(userid:Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -309,7 +307,7 @@ class DBuser {
     }
 
     // Counting the number of unique permissions of the user with userid
-    async count_user_permissions(userid) {
+    async count_user_permissions(userid:Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -331,7 +329,7 @@ class DBuser {
     }
 
     // Adding a permission
-    async add_user_permission(userid, permission) {
+    async add_user_permission(userid:Number, permission:String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -354,7 +352,7 @@ class DBuser {
     }
 
     // Removing a permission
-    async remove_user_permission(userid, permission) {
+    async remove_user_permission(userid:Number, permission:String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -375,7 +373,7 @@ class DBuser {
     }
 
     // When a user joins a channel
-    async user_join_channel(userid, channel) {
+    async user_join_channel(userid:Number, channel:String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -399,7 +397,7 @@ class DBuser {
     }
 
     // When a user leaves the channel
-    async user_leave_channel(userid, channel) {
+    async user_leave_channel(userid:Number, channel:String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -438,7 +436,7 @@ class DBuser {
     }
 
     // Number of channels the user with userid is in
-    async count_user_channels(userid) {
+    async count_user_channels(userid:Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
