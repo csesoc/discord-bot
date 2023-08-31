@@ -13,10 +13,18 @@
         "yaml": "^2.3.0"
     },
     "devDependencies": {
+        "@babel/eslint-parser": "^7.22.11",
         "@types/pg": "^8.10.2",
+        "eslint": "^8.48.0",
+        "eslint-config-prettier": "^9.0.0",
+        "eslint-plugin-prettier": "^5.0.0",
         "prettier": "^3.0.3"
     },
     "scripts": {
-        "format:check": "prettier --check ."
+        "format": "prettier -w './**/*.js'",
+        "format:check": "prettier --check './**/*.js'",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix ",
+        "test": "echo \"Error: no test specified\" && exit 1"
     }
 }

@@ -1,7 +1,7 @@
 const help = require("../config/help.json");
 // const { SlashCommandBuilder } = require("@discordjs/builders");
 const { ActionRowBuilder } = require("discord.js");
-const { ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { ButtonBuilder, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 // Fetches commands from the help data
 const commands = help.commands;
