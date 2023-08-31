@@ -1,7 +1,6 @@
 import { Pool } from "pg";
 const yaml = require("js-yaml");
-import fs from 'fs';
-
+import fs from "fs";
 
 // Class for standup db
 export class DBstandup {
@@ -41,7 +40,7 @@ export class DBstandup {
     }
 
     // Checks if the table exists in the db
-    async check_table(table_name:any) {
+    async check_table(table_name: any) {
         const client = await this.pool.connect();
         try {
             // console.log("Running check_table command")
@@ -60,7 +59,7 @@ export class DBstandup {
             }
         } catch (ex) {
             console.log(`dbstandup:load_db_login:${ex}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -99,7 +98,7 @@ export class DBstandup {
         }
     }
 
-    async getStandups(channelParentId:Number, numDays:Number) {
+    async getStandups(channelParentId: Number, numDays: Number) {
         const timeInterval = `${numDays} DAYS`;
 
         const client = await this.pool.connect();
@@ -126,14 +125,19 @@ export class DBstandup {
             return result.rows;
         } catch (e) {
             console.log(`dbstandup:getStandups:${e}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
         }
     }
 
-    async addStandup(channelParentId:Number, userId:Number, messageId:Number, messageContent:String) {
+    async addStandup(
+        channelParentId: Number,
+        userId: Number,
+        messageId: Number,
+        messageContent: String,
+    ) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -154,14 +158,14 @@ export class DBstandup {
             return result.rows;
         } catch (e) {
             console.log(`dbstandup:addStandup:${e}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
         }
     }
 
-    async thisStandupExists(messageId:Number) {
+    async thisStandupExists(messageId: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -177,14 +181,14 @@ export class DBstandup {
             return result.rows.length != 0;
         } catch (e) {
             console.log(`dbstandup:thisStandupExists:${e}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
         }
     }
 
-    async updateStandup(messageId:Number, messageContent:String) {
+    async updateStandup(messageId: Number, messageContent: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -222,7 +226,7 @@ export class DBstandup {
             return result.rows;
         } catch (e) {
             console.log(`dbstandup:deleteAllStandups:${e}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();

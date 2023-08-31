@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 const yaml = require("js-yaml");
-import fs from 'fs';
+import fs from "fs";
 
 export class DBlog {
     private pool: Pool;
@@ -47,7 +47,7 @@ export class DBlog {
             }
         } catch (ex) {
             console.log(`Something wrong happend ${ex}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -124,7 +124,7 @@ export class DBlog {
         }
     }
 
-    async channel_add(channel_id:Number, channel_name:any, guild_id:Number) {
+    async channel_add(channel_id: Number, channel_name: any, guild_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -149,7 +149,7 @@ export class DBlog {
         }
     }
 
-    async channel_delete(channel_id:Number) {
+    async channel_delete(channel_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -178,7 +178,7 @@ export class DBlog {
         }
     }
 
-    async channelname_get(channel_id:Number) {
+    async channelname_get(channel_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -196,7 +196,7 @@ export class DBlog {
             }
         } catch (ex) {
             console.log(`Something wrong happend ${ex}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -204,7 +204,7 @@ export class DBlog {
         }
     }
 
-    async channelname_update(channel_name:String, channel_id:Number) {
+    async channelname_update(channel_name: String, channel_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -221,7 +221,13 @@ export class DBlog {
         }
     }
 
-    async message_create(messageid:Number, userid:Number, user:String, message:String, channelid:Number) {
+    async message_create(
+        messageid: Number,
+        userid: Number,
+        user: String,
+        message: String,
+        channelid: Number,
+    ) {
         let time = new Date();
         time.setMilliseconds(0);
         const timeString = time.toLocaleString("sv", { timeZoneName: "short" });
@@ -244,7 +250,7 @@ export class DBlog {
         }
     }
 
-    async message_delete(messageid:Number) {
+    async message_delete(messageid: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -272,7 +278,7 @@ export class DBlog {
         }
     }
 
-    async message_update(oldMessage_id:Number, newMessage_id:Number, newMessage:Number) {
+    async message_update(oldMessage_id: Number, newMessage_id: Number, newMessage: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -296,7 +302,7 @@ export class DBlog {
         }
     }
 
-    async collect_messages(start:any, end:any) {
+    async collect_messages(start: any, end: any) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -313,7 +319,7 @@ export class DBlog {
             return result.rows;
         } catch (ex) {
             console.log(`Something wrong happend ${ex}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();

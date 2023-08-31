@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 const yaml = require("js-yaml");
-import fs from 'fs';
+import fs from "fs";
 
 // Class for the carrotboard db
 export class DBFaq {
@@ -39,7 +39,7 @@ export class DBFaq {
     }
 
     // Checks if the table exists in the db
-    async check_table(table_name:String) {
+    async check_table(table_name: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -54,7 +54,7 @@ export class DBFaq {
             return result.rowCount > 0;
         } catch (err) {
             console.log(`Something went wrong ${err}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -84,7 +84,7 @@ export class DBFaq {
     }
 
     // get a faq
-    async get_faq(keyword:String) {
+    async get_faq(keyword: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -96,7 +96,7 @@ export class DBFaq {
             return res.rows;
         } catch (err) {
             console.log(`FAQ DB ERR: ${err}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -104,7 +104,7 @@ export class DBFaq {
     }
 
     // get all faqs that have a certain tag
-    async get_tagged_faqs(tag:String) {
+    async get_tagged_faqs(tag: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -118,7 +118,7 @@ export class DBFaq {
             return res.rows;
         } catch (err) {
             console.log(`FAQ DB ERR: ${err}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -143,7 +143,7 @@ export class DBFaq {
             return keyword_list;
         } catch (err) {
             console.log(`FAQ DB ERR: ${err}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -176,7 +176,7 @@ export class DBFaq {
             return tag_list_str;
         } catch (err) {
             console.log(`FAQ DB ERR: ${err}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -184,11 +184,11 @@ export class DBFaq {
     }
 
     // Insert a new faq
-    async new_faq(keyword:String, answer:String, tags:String) {
+    async new_faq(keyword: String, answer: String, tags: String) {
         const client = await this.pool.connect();
         try {
             // check if its not already in
-            const rows:any = await this.get_faq(keyword);
+            const rows: any = await this.get_faq(keyword);
             if (rows.length != 0) {
                 return false;
             }
@@ -202,7 +202,7 @@ export class DBFaq {
             return true;
         } catch (err) {
             console.log(`FAQ DB ERR: ${err}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -210,11 +210,11 @@ export class DBFaq {
     }
 
     // delete a faq
-    async del_faq(keyword:String) {
+    async del_faq(keyword: String) {
         const client = await this.pool.connect();
         try {
             // check if it exists first
-            const rows:any = await this.get_faq(keyword);
+            const rows: any = await this.get_faq(keyword);
             if (rows.length == 0) {
                 return false;
             }
@@ -228,7 +228,7 @@ export class DBFaq {
             return true;
         } catch (err) {
             console.log(`FAQ DB ERR: ${err}`);
-            return null
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();

@@ -1,7 +1,7 @@
 const help = require("../config/help.json");
 // const { SlashCommandBuilder } = require("@discordjs/builders");
-const {ActionRowBuilder} = require("discord.js");
-const { ButtonBuilder, ButtonStyle, SlashCommandBuilder ,EmbedBuilder} = require('discord.js');
+const { ActionRowBuilder } = require("discord.js");
+const { ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 // Fetches commands from the help data
 const commands = help.commands;
@@ -12,9 +12,9 @@ const nextId = "helpNextButtonId";
 
 const prevButton = new ButtonBuilder()
     .setCustomId(prevId)
-    .setLabel('Previous')
-    .setStyle('Secondary')
-    .setEmoji('⬅️');
+    .setLabel("Previous")
+    .setStyle("Secondary")
+    .setEmoji("⬅️");
 //     style: "SECONDARY",
 //     label: "Previous",
 //     emoji: "⬅️",
@@ -22,9 +22,9 @@ const prevButton = new ButtonBuilder()
 // });
 const nextButton = new ButtonBuilder()
     .setCustomId(nextId)
-    .setLabel('Next')
-    .setStyle('Secondary')
-    .setEmoji('➡️');
+    .setLabel("Next")
+    .setStyle("Secondary")
+    .setEmoji("➡️");
 // const nextButton = new MessageButton({
 //     style: "SECONDARY",
 //     label: "Next",
@@ -47,15 +47,15 @@ const generateEmbed = (start) => {
         .setTitle(`Help Command - Page ${pageNum}`)
         .setColor(0x3a76f8)
         .setAuthor({
-                name: "CSESoc Bot",
-                icon_url: "https://i.imgur.com/EE3Q40V.png",
-            })
+            name: "CSESoc Bot",
+            icon_url: "https://i.imgur.com/EE3Q40V.png",
+        })
         .setFields(
             current.map((command, index) => ({
-                         name: `${start + index + 1}. ${command.name}`,
-                         value: `${command.description}\nUsage: ${command.usage}`,
-                     })),
-        )
+                name: `${start + index + 1}. ${command.name}`,
+                value: `${command.description}\nUsage: ${command.usage}`,
+            })),
+        );
     // ({
     //     title: `Help Command - Page ${pageNum}`,
     //     color: 0x3a76f8,
@@ -110,12 +110,13 @@ module.exports = {
             embeds: [helpEmbed],
             components: [
                 new ActionRowBuilder()
-                    .addComponents( ...(currentIndex ? [prevButton] : []))
-                    .addComponents( ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []))
-                    ,
+                    .addComponents(...(currentIndex ? [prevButton] : []))
+                    .addComponents(
+                        ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
+                    ),
             ],
         });
-        
+
         // await interaction.reply({
         //     embeds: [helpEmbed],
         //     components: [
@@ -151,13 +152,16 @@ module.exports = {
                 embeds: [generateEmbed(currentIndex)],
                 components: [
                     new ActionRowBuilder()
-                        .addComponents(// previous button if it isn't the start
-                                         ...(currentIndex ? [prevButton] : []))
-                        .addComponents( ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []))
-                        ,
+                        .addComponents(
+                            // previous button if it isn't the start
+                            ...(currentIndex ? [prevButton] : []),
+                        )
+                        .addComponents(
+                            ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
+                        ),
                 ],
             });
-            
+
             // await i.update({
             //     embeds: [generateEmbed(currentIndex)],
             //     components: [

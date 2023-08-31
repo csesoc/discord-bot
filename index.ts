@@ -1,7 +1,7 @@
 // import { Partials } from "discord.js";
 
 const fs = require("fs");
-const { Client, Collection, Intents, Partials} = require("discord.js");
+const { Client, Collection, Intents, Partials } = require("discord.js");
 require("dotenv").config();
 
 const { GatewayIntentBits } = require("discord.js");
@@ -17,7 +17,13 @@ const client = new Client({
         // GatewayIntentBits.GuideVoiceStates,
         // GatewayIntentBits.GuidePresences,
     ],
-    partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.GuildMembers, Partials.User]
+    partials: [
+        Partials.Message,
+        Partials.Channel,
+        Partials.Reaction,
+        Partials.GuildMembers,
+        Partials.User,
+    ],
 });
 // Create a new client instance
 // const client = new Client({
@@ -55,23 +61,30 @@ for (const file of eventFiles) {
 }
 
 // Handle commands
-client.on("interactionCreate", async (interaction: { isCommand: () => any; commandName: any; reply: (arg0: { content: string; ephemeral: boolean; }) => any; }) => {
-    if (!interaction.isCommand()) return;
+client.on(
+    "interactionCreate",
+    async (interaction: {
+        isCommand: () => any;
+        commandName: any;
+        reply: (arg0: { content: string; ephemeral: boolean }) => any;
+    }) => {
+        if (!interaction.isCommand()) return;
 
-    const command = client.commands.get(interaction.commandName);
+        const command = client.commands.get(interaction.commandName);
 
-    if (!command) return;
+        if (!command) return;
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({
-            content: "There was an error while executing this command!",
-            ephemeral: true,
-        });
-    }
-});
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({
+                content: "There was an error while executing this command!",
+                ephemeral: true,
+            });
+        }
+    },
+);
 
 client.on("shardError", (error: any) => {
     console.error("A websocket connection encountered an error:", error);
