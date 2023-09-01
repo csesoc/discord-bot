@@ -242,13 +242,11 @@ module.exports = {
                 const toPing = [];
                 Object.values(areaVotes).forEach((area) => {
                     area.forEach((id) => {
-                        toPing.push(id)
+                        toPing.push(id);
                     });
                 });
 
-                const pingStr = toPing.reduce((str, id) => {
-                    return str + `<@${id}>`;
-                }, "||") + "||";
+                const pingStr = toPing.reduce((str, id) => str + `<@${id}>`, "||") + "||";
 
                 const locationMessage = await voteChannel.send({
                     content: pingStr,
@@ -355,12 +353,12 @@ module.exports = {
                     Object.values(locationVotes).forEach((location) => {
                         location.forEach((id) => {
                             if (!toAdd.includes(id)) toAdd.push(id);
-                        })
-                    })
+                        });
+                    });
 
                     toAdd.forEach(async (id) => {
                         await thread.members.add(id);
-                    })
+                    });
 
                     client.channels.fetch(voteOriginId).then(async (threadId) => {
                         await threadId.send(
