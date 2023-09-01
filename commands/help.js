@@ -1,6 +1,13 @@
 const help = require("../config/help.json");
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+const { 
+    EmbedBuilder, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    ChatInputCommandInteraction,
+    ButtonInteraction
+} = require("discord.js");
 
 // Fetches commands from the help data
 const commands = help.commands;
@@ -9,14 +16,15 @@ const commands = help.commands;
 const prevId = "helpPrevButtonId";
 const nextId = "helpNextButtonId";
 
-const prevButton = new MessageButton({
-    style: "SECONDARY",
+const prevButton = new ButtonBuilder({
+    style: ButtonStyle.Secondary,
     label: "Previous",
     emoji: "⬅️",
     customId: prevId,
 });
-const nextButton = new MessageButton({
-    style: "SECONDARY",
+
+const nextButton = new ButtonBuilder({
+    style: ButtonStyle.Secondary,
     label: "Next",
     emoji: "➡️",
     customId: nextId,
@@ -27,13 +35,13 @@ const PAGE_SIZE = 10;
 /**
  * Creates an embed with commands starting from an index.
  * @param {number} start The index to start from.
- * @returns {MessageEmbed}
+ * @returns {EmbedBuilder}
  */
 const generateEmbed = (start) => {
     const current = commands.slice(start, start + PAGE_SIZE);
     const pageNum = Math.floor(start / PAGE_SIZE) + 1;
 
-    return new MessageEmbed({
+    return new EmbedBuilder({
         title: `Help Command - Page ${pageNum}`,
         color: 0x3a76f8,
         author: {
@@ -55,8 +63,17 @@ module.exports = {
             "Displays info for all commands. Also type / in the chat to check out other commands.",
         )
         .addNumberOption((option) =>
-            option.setName("page").setDescription("Requested Help Page").setRequired(false),
+            option.setName("page")
+                .setDescription("Requested Help Page")
+                .setRequired(false)
         ),
+
+    /**
+     *
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns {Promise<InteractionResponse<boolean>>}
+     */
     async execute(interaction) {
         // Calculates required command page index if inputted
         const page = interaction.options.getNumber("page");
@@ -86,7 +103,7 @@ module.exports = {
         await interaction.reply({
             embeds: [helpEmbed],
             components: [
-                new MessageActionRow({
+                new ActionRowBuilder({
                     components: [
                         // previous button if it isn't the start
                         ...(currentIndex ? [prevButton] : []),
@@ -99,12 +116,18 @@ module.exports = {
 
         // Creates a collector for button interaction events, setting a 120s maximum
         // timeout and a 30s inactivity timeout
+
+        /**
+         * @param {ButtonInteraction} resInteraction
+         * @returns {boolean}
+         */
         const filter = (resInteraction) => {
             return (
                 (resInteraction.customId === prevId || resInteraction.customId === nextId) &&
                 resInteraction.user.id === authorId
             );
         };
+
         const collector = interaction.channel.createMessageComponentCollector({
             filter,
             time: 120000,
@@ -118,7 +141,7 @@ module.exports = {
             await i.update({
                 embeds: [generateEmbed(currentIndex)],
                 components: [
-                    new MessageActionRow({
+                    new ActionRowBuilder({
                         components: [
                             // previous button if it isn't the start
                             ...(currentIndex ? [prevButton] : []),
