@@ -2,8 +2,8 @@
 #                        Database Settings                         #
 ####################################################################
 
-user: user
-dbname: bot
-password: pass
+user: docker
+dbname: docker
+password: docker
 host: 0.0.0.0
-port: 40041
+port: 5432
