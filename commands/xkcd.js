@@ -80,7 +80,7 @@ module.exports = {
                 break;
             case "get":
                 /**
-                 * @type {Number}
+                 * @type {number}
                  */
                 const comic_id = interaction.options.getInteger("comic-id");
 
