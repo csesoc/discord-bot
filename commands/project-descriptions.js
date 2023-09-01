@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { ChatInputCommandInteraction } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,20 +10,26 @@ module.exports = {
                 .setName("project")
                 .setDescription("Which project do you want to be introduced to?")
                 .setRequired(true)
-                .addChoices([
-                    ["Chaos", "chaos"],
-                    ["Circles", "circles"],
-                    ["CS Electives", "cselectives"],
-                    ["Discord Bot", "discordbot"],
-                    ["Freerooms", "freerooms"],
-                    ["Jobsboard", "jobsboard"],
-                    ["Notangles", "notangles"],
-                    ["Structs.sh", "structs.sh"],
-                    ["UI/UX", "ui/ux"],
-                    ["Website", "website"],
-                ]),
+                .addChoices(
+                    { name: "Chaos", value: "chaos" },
+                    { name: "Circles", value: "circles" },
+                    { name: "CS Electives", value: "cselectives" },
+                    { name: "Discord Bot", value: "discordbot" },
+                    { name: "Freerooms", value: "freerooms" },
+                    { name: "Jobsboard", value: "jobsboard" },
+                    { name: "Notangles", value: "notangles" },
+                    { name: "Structs.sh", value: "structs.sh" },
+                    { name: "UI/UX", value: "ui/ux" },
+                    { name: "Website", value: "website" },
+                ),
         ),
 
+    /**
+     *
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns {Promise<InteractionResponse<boolean>>}
+     */
     async execute(interaction) {
         const parsedOption = interaction.options.get("project").value.toLowerCase();
         // console.log(`.${parsedOption}.`);
