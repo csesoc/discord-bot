@@ -1,8 +1,8 @@
 const {
     SlashCommandBuilder,
     InteractionResponse,
-    CommandInteraction,
-    EmbedBuilder
+    EmbedBuilder,
+    ChatInputCommandInteraction
 } = require("discord.js");
 const xkcd = require("xkcd-api");
 
@@ -26,7 +26,7 @@ const xkcd = require("xkcd-api");
  * @async
  * @param {*} err error when requesting an xkcd comic
  * @param {xkcdJSON} res JSON object containing a successful response w/ comic
- * @param {CommandInteraction} interaction
+ * @param {ChatInputCommandInteraction} interaction
  * @returns {Promise<InteractionResponse<boolean>>}
  */
 const xkcd_response = async (err, res, interaction) => {
@@ -69,7 +69,7 @@ module.exports = {
     /**
      *
      * @async
-     * @param {CommandInteraction} interaction
+     * @param {ChatInputCommandInteraction} interaction
      * @returns {Promise<InteractionResponse<boolean>>}
      */
 
