@@ -1,5 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Embed } = require("@discordjs/builders");
+const { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } = require("discord.js");
 
 const baseCommand = new SlashCommandBuilder()
     .setName("remind")
@@ -20,6 +19,12 @@ const baseCommand = new SlashCommandBuilder()
 module.exports = {
     data: baseCommand,
 
+    /**
+     *
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns {Promise<InteractionResponse<boolean>>}
+     */
     async execute(interaction) {
         const datetime = interaction.options.getString("datetime");
 
@@ -56,7 +61,7 @@ module.exports = {
         const iconUrl = "https://avatars.githubusercontent.com/u/164179?s=200&v=4";
         const botName = "CSESOCBOT";
 
-        const reminderRequestEmbed = new Embed()
+        const reminderRequestEmbed = new EmbedBuilder()
             .setColor(0xffe5b4)
             .setTitle("Reminder has been queued!")
             .setAuthor({ name: botName, iconURL: iconUrl })
@@ -70,7 +75,7 @@ module.exports = {
             )
             .setTimestamp();
 
-        const reminderEmbed = new Embed()
+        const reminderEmbed = new EmbedBuilder()
             .setColor(0xffe5b4)
             .setTitle("⌛ Reminder ⌛")
             .setAuthor({ name: botName, iconURL: iconUrl })
