@@ -16,11 +16,18 @@
 // tutorial:
 // https://www.freecodecamp.org/news/how-to-scrape-websites-with-node-js-and-cheerio/
 
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 
 const axios = require("axios");
 const cheerio = require("cheerio");
 
+/**
+ * 
+ * @param {string} date_string 
+ * @param {Date} c_date 
+ * @param {string} months 
+ * @returns {boolean}
+ */
 function checkInBetween(date_string, c_date, months) {
     const beginning_date = date_string[0];
     const beginning_month = months.indexOf(date_string[1]);
@@ -56,6 +63,13 @@ function checkInBetween(date_string, c_date, months) {
     return false;
 }
 
+/**
+ * 
+ * @param {string} date_string 
+ * @param {Date} c_date 
+ * @param {string} months 
+ * @returns {number}
+ */
 function whatweek(date_string, c_date, months) {
     const beginning_date = date_string[0];
     const beginning_month = months.indexOf(date_string[1]);
@@ -110,12 +124,25 @@ module.exports = {
             const $ = cheerio.load(data);
             // Select all the list items in plainlist class
             const listItems = $(".table-striped tbody tr");
+
+            /**
+             * @typedef {Object} TermInfo
+             * @property {string} period
+             * @property {string} term
+             */
+
             // Stores data for all datas
+            /**
+             * @type {TermInfo[]}
+             */
             const datas = [];
 
             // Use .each method to loop through the li we selected
             listItems.each((idx, el) => {
                 // Object holding data for each data_const/jurisdiction
+                /**
+                 * @type {TermInfo}
+                 */
                 const data_const = { period: "", term: "" };
                 // Select the text content of a and span elements
                 // Store the textcontent in the above object
