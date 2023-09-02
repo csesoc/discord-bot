@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder } = require("discord.js");
 const { createGame } = require("../lib/tictactoe/tttHelper");
 
 const baseCommand = new SlashCommandBuilder()
@@ -7,5 +7,5 @@ const baseCommand = new SlashCommandBuilder()
 
 module.exports = {
     data: baseCommand,
-    execute: createGame,
+    execute: createGame
 };
