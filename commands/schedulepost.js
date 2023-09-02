@@ -1,5 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, Permissions } = require("discord.js");
+const { EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -65,9 +64,15 @@ module.exports = {
                 ),
         ),
 
+    /**
+     *
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns
+     */
     async execute(interaction) {
         // Check if user has admin permission
-        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return await interaction.reply({
                 content: "You do not have permission to execute this command.",
                 ephemeral: true,
@@ -87,7 +92,16 @@ module.exports = {
     },
 };
 
-// Schedules a new post
+
+/**
+ * Schedules a new post
+ * @async
+ * @param {ChatInputCommandInteraction} interaction
+ * @param {string | null} msg_id
+ * @param {import("discord.js").Channel} channel
+ * @param {string | null} datetime
+ * @returns
+ */
 async function create_scheduled_post(interaction, msg_id, channel, datetime) {
     // Check if message id is valid
     let message;
@@ -164,7 +178,7 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
     const send_in = ("in " + dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
 
     // Create message preview
-    const preview = new MessageEmbed()
+    const preview = new EmbedBuilder()
         .setColor("#C492B1")
         .setTitle("Message Preview")
         .setDescription(
@@ -208,7 +222,15 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
     });
 }
 
-// Cancels a scheduled post
+/**
+ * Cancels a scheduled post
+ * @async
+ * @param {ChatInputCommandInteraction} interaction
+ * @param {string | null} msg_id
+ * @param {import("discord.js").Channel} channel
+ * @param {string | null} datetime
+ * @returns
+ */
 async function cancel_scheduled_post(interaction, msg_id, channel, datetime) {
     const channel_name = channel.name;
     const channel_id = channel.id;
