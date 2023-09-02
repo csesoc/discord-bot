@@ -91,6 +91,12 @@ module.exports = {
         .setName("whatweekisit")
         .setDescription("Tells you what week of the trimester it is!"),
 
+    /**
+     *
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns {Promise<InteractionResponse<boolean>>}
+     */
     async execute(interaction) {
         // Statically coded stuff:
         const months = [
