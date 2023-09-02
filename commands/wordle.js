@@ -1,19 +1,27 @@
 /* eslint-disable no-unused-vars */
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { wordOfTheDay, timeChanged, words } = require("../config/words.json");
-const { players } = require("../config/wordle.json");
+const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
+const { words } = require("../config/words.json");
 const fs = require("fs");
 const Canvas = require("canvas");
 
-// Letter class
-// Because OOP is always a good idea
-class Letter {
-    constructor(letter, pos, color = 1) {
-        this.letter = letter;
-        this.pos = pos;
-        this.color = color;
-    }
-}
+/**
+ * @typedef {Object} Player 
+ * @property {string} id 
+ * @property {string} name 
+ * @property {string} wordOfTheDay 
+ * @property {number} timeChanged 
+ * @property {boolean} if_finished 
+ * @property {string[]} words 
+ * @property {string[]} guesses 
+ * @property {number} score 
+ * @property {number} total_games 
+*/
+
+/**
+ * @type {Player[]}
+ */
+
+const players = require("../config/wordle.json").players;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,9 +40,20 @@ module.exports = {
                     option.setName("word").setDescription("The word to guess.").setRequired(true),
                 ),
         ),
+
+
+    /**
+     *
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns {Promise<InteractionResponse<boolean>>}
+     */
     async execute(interaction) {
         const userID = interaction.user.id;
         // check if userID exists in players value
+        /**
+         * @type {Player}
+         */
         let player = undefined;
 
         for (let i = 0; i < players.length; i++) {
@@ -48,6 +67,10 @@ module.exports = {
             // add user to players
             console.log("New user");
             const word = words[Math.floor(Math.random() * words.length)];
+
+            /**
+             * @type {Player}
+             */
             const NewPlayer = {
                 id: userID,
                 name: interaction.user.username,
@@ -106,9 +129,15 @@ module.exports = {
             );
         };
         // function to returns every unique letter in a string with count of each letter
+        /**
+         * 
+         * @param {string} answer
+         * @returns {{}}
+         */
         const eachLetterCount = (answer) => {
             const letters = answer.split("");
             const letterCount = {};
+            
             letters.forEach((letter) => {
                 if (letterCount[letter]) {
                     letterCount[letter]++;
@@ -118,9 +147,19 @@ module.exports = {
             });
             return letterCount;
         };
+
+        /**
+         * @param {string} answer 
+         * @param {string} guess 
+         * @returns 
+         */
         const getAnswer = (answer, guess) => {
             const max_match = eachLetterCount(answer);
             const match = {};
+
+            /**
+             * @type {number[]}
+             */
             const colors = Array(5).fill(0);
             if (guess === undefined) {
                 return colors;
@@ -164,6 +203,13 @@ module.exports = {
             return colors;
         };
 
+        /**
+         * 
+         * @param {ChatInputCommandInteraction} msg 
+         * @param {string} guesses 
+         * @param {string} answer
+         * @returns {void}
+         */
         async function LoadGame(msg, guesses, answer) {
             // make a blank canvas
             const canvas = Canvas.createCanvas(330, 397);
