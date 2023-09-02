@@ -46,7 +46,7 @@ module.exports = {
      *
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         const userID = interaction.user.id;
@@ -285,7 +285,7 @@ module.exports = {
         }
 
         if (interaction.options.length === 0) {
-            interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
+            await interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
             return;
         } else if (interaction.options.getSubcommand() === "play") {
             this.guesses = player.guesses;
@@ -297,7 +297,7 @@ module.exports = {
             // Guess a word
             // console.log("Guess: " + interaction.options.getString("word"));
             if (interaction.options.getString("word") === undefined) {
-                interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
+                await interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
                 throw new Error("Invalid Usage");
             } else {
                 if (this.guesses === undefined) {
@@ -306,7 +306,7 @@ module.exports = {
 
                 const guess = interaction.options.getString("word").toLowerCase();
                 if (guess.length !== 5) {
-                    interaction.channel.send(
+                    await interaction.channel.send(
                         "Invalid Usage! Use a 5 lettered word \nUsage: `/wordle guess <word>`",
                     );
                     throw new Error("Invalid Usage");

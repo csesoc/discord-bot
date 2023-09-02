@@ -12,7 +12,7 @@ module.exports = {
      *
      * @async
      * @param {CommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         const coinNum = Math.floor(Math.random() * 2);

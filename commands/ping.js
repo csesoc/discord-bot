@@ -1,4 +1,4 @@
-const { InteractionResponse, SlashCommandBuilder, CommandInteraction } = require("discord.js");
+const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,7 +9,7 @@ module.exports = {
      *
      * @async
      * @param {CommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         await interaction.reply("🏓 Pong!");

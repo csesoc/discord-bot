@@ -1,4 +1,4 @@
-const { InteractionResponse, SlashCommandBuilder, CommandInteraction, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } = require("discord.js");
 const axios = require("axios").default;
 
 module.exports = {
@@ -6,8 +6,8 @@ module.exports = {
     
     /**
      * @async
-     * @param {CommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns 
      */
     async execute(interaction) {
         axios

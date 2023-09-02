@@ -27,12 +27,12 @@ const xkcd = require("xkcd-api");
  * @param {*} err error when requesting an xkcd comic
  * @param {xkcdJSON} res JSON object containing a successful response w/ comic
  * @param {ChatInputCommandInteraction} interaction
- * @returns {Promise<InteractionResponse<boolean>>}
+ * @returns 
  */
 const xkcd_response = async (err, res, interaction) => {
     if (err) {
         console.log(err);
-        interaction.reply({
+        await interaction.reply({
             content: `sorry something went wrong!😔`,
             ephemeral: true,
         });
@@ -40,7 +40,7 @@ const xkcd_response = async (err, res, interaction) => {
         const embed = new EmbedBuilder()
             .setTitle(res.safe_title)
             .setImage(res.img);
-        return await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed] });
     }
 }
 
@@ -70,7 +70,7 @@ module.exports = {
      *
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
 
     async execute(interaction) {
@@ -79,9 +79,7 @@ module.exports = {
                 xkcd.latest(async (err, res) => xkcd_response(err, res, interaction));
                 break;
             case "get":
-                /**
-                 * @type {number}
-                 */
+                /** @type {number} */
                 const comic_id = interaction.options.getInteger("comic-id");
 
                 xkcd.get(

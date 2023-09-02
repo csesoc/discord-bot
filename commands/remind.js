@@ -23,7 +23,7 @@ module.exports = {
      *
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         const datetime = interaction.options.getString("datetime");
@@ -87,12 +87,12 @@ module.exports = {
 
         await interaction.reply({ embeds: [reminderRequestEmbed], ephemeral: true });
 
-        const message = interaction.user;
+        const { user } = interaction;
 
         const sleep = async (ms) => await new Promise((r) => setTimeout(r, ms));
         await sleep(time_send_in);
 
         console.log("Finished sleeping after " + time_send_in / 1000 + " seconds");
-        message.send({ embeds: [reminderEmbed] });
+        await user.send({ embeds: [reminderEmbed] });
     },
 };

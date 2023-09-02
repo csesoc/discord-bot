@@ -101,7 +101,7 @@ module.exports = {
     /**
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         const equationStr = interaction.options.getString("equation");
@@ -115,7 +115,7 @@ module.exports = {
         await interaction.reply({
             content: output,
             ephemeral,
-            allowedMentions: {}
+            allowedMentions: {},
         });
     },
 };

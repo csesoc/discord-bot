@@ -1,16 +1,15 @@
-const help = require("../config/help.json");
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { 
-    EmbedBuilder, 
-    ActionRowBuilder, 
-    ButtonBuilder, 
-    ButtonStyle, 
+const {
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     ChatInputCommandInteraction,
-    ButtonInteraction
+    ButtonInteraction,
+    SlashCommandBuilder
 } = require("discord.js");
 
 // Fetches commands from the help data
-const commands = help.commands;
+const { commands } = require("../config/help.json");
 
 // Creates general object and id constants for function use
 const prevId = "helpPrevButtonId";
@@ -72,7 +71,7 @@ module.exports = {
      *
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         // Calculates required command page index if inputted

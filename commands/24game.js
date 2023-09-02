@@ -10,9 +10,10 @@ module.exports = {
     /**
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
+        /** @type {number[]} */
         const resultNums = [];
 
         for (let i = 0; i < 4; i++) {

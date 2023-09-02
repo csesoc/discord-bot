@@ -22,7 +22,7 @@ const fs = require("fs");
 /**
  * @async
  * @param {ChatInputCommandInteraction} interaction
- * @returns {Promise<InteractionResponse<boolean>>}
+ * @returns
  */
 const vote_vote = async (interaction) => {
     // Getting the required string and data from the input
@@ -59,7 +59,7 @@ const vote_vote = async (interaction) => {
 /**
  * @async
  * @param {ChatInputCommandInteraction} interaction
- * @returns {Promise<InteractionResponse<boolean>>}
+ * @returns
  */
 const vote_voteresult = async (interaction) => {
     // Get the last messageid of the vote done on this channel
@@ -123,7 +123,7 @@ const vote_voteresult = async (interaction) => {
 /**
  * @async
  * @param {ChatInputCommandInteraction} interaction
- * @returns {Promise<InteractionResponse<boolean>>}
+ * @returns
  */
 
 const vote_voteresultfull = async (interaction) => {
@@ -213,7 +213,7 @@ module.exports = {
     /**
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         // Starting a vote

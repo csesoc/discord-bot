@@ -28,7 +28,7 @@ module.exports = {
      *
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns {Promise<InteractionResponse<boolean>>}
+     * @returns
      */
     async execute(interaction) {
         const parsedOption = interaction.options.get("project").value.toLowerCase();
