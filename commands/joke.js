@@ -1,6 +1,4 @@
-const { InteractionResponse, SlashCommandBuilder, CommandInteraction } = require("discord.js");
-
-const { EmbedBuilder } = require("discord.js");
+const { InteractionResponse, SlashCommandBuilder, CommandInteraction, EmbedBuilder } = require("discord.js");
 const axios = require("axios").default;
 
 module.exports = {

@@ -1,13 +1,22 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 const math = require("mathjs");
-const { Util } = require("discord.js");
 
 const illegalPhraseRegexes = [/`/g, /@/g];
 
+/**
+ * 
+ * @param {string} expression 
+ * @returns 
+ */
 const isIllegalCharactersPresent = (expression) => {
     return illegalPhraseRegexes.some((regex) => regex.test(expression));
 };
 
+/**
+ * 
+ * @param {string} eqnString 
+ * @returns 
+ */
 const tryCompileAndEvaluate = (eqnString) => {
     try {
         const equationObj = math.compile(eqnString);
@@ -15,6 +24,7 @@ const tryCompileAndEvaluate = (eqnString) => {
             throw Error;
         }
 
+        /** @type {number} */
         const equationOutcome = equationObj.evaluate();
 
         return {
@@ -30,6 +40,12 @@ const tryCompileAndEvaluate = (eqnString) => {
     }
 };
 
+/**
+ * 
+ * @param {string} equationString 
+ * @param {number} target 
+ * @returns 
+ */
 const evaluate = (equationString, target) => {
     if (isIllegalCharactersPresent(equationString)) {
         return {
@@ -81,6 +97,12 @@ module.exports = {
         .addNumberOption((option) =>
             option.setName("target").setDescription("Target for your equation").setRequired(false),
         ),
+
+    /**
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns {Promise<InteractionResponse<boolean>>}
+     */
     async execute(interaction) {
         const equationStr = interaction.options.getString("equation");
         const target = interaction.options.getNumber("target") || 24;
@@ -91,8 +113,9 @@ module.exports = {
         const output = `${emoji} ${message}`;
 
         await interaction.reply({
-            content: Util.removeMentions(output),
+            content: output,
             ephemeral,
+            allowedMentions: {}
         });
     },
 };
