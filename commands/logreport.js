@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+// @ts-check
+const { PermissionFlagsBits, SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 const path = require("path");
 const nodemailer = require("nodemailer");
 
@@ -42,9 +42,16 @@ module.exports = {
                 ),
         ),
 
+    /**
+     * 
+     * @param {ChatInputCommandInteraction} interaction 
+     * @returns 
+     */
     async execute(interaction) {
         try {
-            if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            if (!interaction.inCachedGuild()) return;
+
+            if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
                 await interaction.reply({
                     content: "You do not have permission to execute this command.",
                     ephemeral: true,
@@ -54,7 +61,7 @@ module.exports = {
 
             const email_reg =
                 /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; /* eslint-disable-line */
-            const email = interaction.options.getString("email");
+            const email = interaction.options.getString("email", true);
 
             if (!email_reg.test(email)) {
                 await interaction.reply({
@@ -71,7 +78,7 @@ module.exports = {
                 const today = new Date();
 
                 const t_year = today.getFullYear().toString();
-                const mon = parseInt(today.getMonth()) + 1;
+                const mon = today.getMonth() + 1;
                 const t_month = mon.toLocaleString("en-US", {
                     minimumIntegerDigits: 2,
                     useGrouping: false,
@@ -91,8 +98,8 @@ module.exports = {
             } else if (interaction.options.getSubcommand() === "timeperiod") {
                 const re =
                     /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
-                start = interaction.options.getString("start-datetime");
-                end = interaction.options.getString("end-datetime");
+                start = interaction.options.getString("start-datetime", true);
+                end = interaction.options.getString("end-datetime", true);
 
                 if (!re.test(start)) {
                     await interaction.reply({
