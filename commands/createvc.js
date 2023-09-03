@@ -1,10 +1,15 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, ChatInputCommandInteraction, ChannelType, BaseChannel } = require("discord.js");
 const fs = require("fs");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("createvc")
         .setDescription("Create a temporary voice channel"),
+
+    /**
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns
+     */
     async execute(interaction) {
         try {
             // Limit on concurrent temporary channels
@@ -12,6 +17,13 @@ module.exports = {
             // Name of the category under which the temporary channels are
             const CATEGORY_NAME = "TEMPORARY VCS";
 
+            /**
+             * @typedef {Object} VCData
+             * @property {{ authorid: string, count: number }[]} users 
+             * @property {{ channel_id: string, delete: boolean }[]} channels 
+             */
+
+            /** @type {VCData} */
             const data = JSON.parse(fs.readFileSync("./data/createvc.json", "utf8"));
             // console.log(data);
             // const authorid = interaction.user.id;
@@ -23,6 +35,7 @@ module.exports = {
                 // data.users.unshift(temp);
 
                 const channelmanager = interaction.guild.channels;
+                /** @type {BaseChannel} */
                 let parentChannel = null;
                 const allchannels = await channelmanager.fetch();
 
@@ -32,7 +45,7 @@ module.exports = {
                     allchannels.forEach((item) => {
                         if (
                             item != null &&
-                            item.type == "GUILD_CATEGORY" &&
+                            item.type == ChannelType.GuildCategory &&
                             item.name == CATEGORY_NAME
                         ) {
                             parentChannel = item;
