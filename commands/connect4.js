@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder } = require("discord.js");
 const { createConnect4 } = require("../lib/connect4/connect4Runner");
 
 const baseCommand = new SlashCommandBuilder()
