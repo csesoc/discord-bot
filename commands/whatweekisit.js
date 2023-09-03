@@ -1,3 +1,4 @@
+// @ts-check
 // WhatWeekIsIt.js
 // Written by Alexander Ziqi Chen CSESoc Projects 22T3 Discord Bot Team on 5/10/2022.
 // Command that returns the current trimester week during the 10 teaching weeks per regular trimester.
@@ -18,14 +19,14 @@
 
 const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 
-const axios = require("axios");
+const axios = require("axios").default;
 const cheerio = require("cheerio");
 
 /**
  * 
- * @param {string} date_string 
+ * @param {string[]} date_string 
  * @param {Date} c_date 
- * @param {string} months 
+ * @param {string[]} months 
  * @returns {boolean}
  */
 function checkInBetween(date_string, c_date, months) {
@@ -37,12 +38,12 @@ function checkInBetween(date_string, c_date, months) {
         ending_month = months.indexOf(date_string[5]);
         ending_date = date_string[4];
 
-        if (c_date.getFullYear() == date_string[2]) {
-            if (beginning_month <= c_date.getMonth() && beginning_date <= c_date.getDate()) {
+        if (c_date.getFullYear().toString() == date_string[2]) {
+            if (beginning_month <= c_date.getMonth() && Number(beginning_date) <= c_date.getDate()) {
                 return true;
             }
-        } else if (c_date.getFullYear() == date_string[6]) {
-            if (ending_month <= c_date.getMonth() && ending_date >= c_date.getDate()) {
+        } else if (c_date.getFullYear().toString() == date_string[6]) {
+            if (ending_month <= c_date.getMonth() && Number(ending_date) >= c_date.getDate()) {
                 return true;
             }
         }
@@ -51,9 +52,9 @@ function checkInBetween(date_string, c_date, months) {
     }
 
     if (beginning_month <= c_date.getMonth() && ending_month >= c_date.getMonth()) {
-        if (beginning_month == c_date.getMonth() && beginning_date > c_date.getDate()) {
+        if (beginning_month == c_date.getMonth() && Number(beginning_date) > c_date.getDate()) {
             return false;
-        } else if (ending_month == c_date.getMonth() && ending_date < c_date.getDate()) {
+        } else if (ending_month == c_date.getMonth() && Number(ending_date) < c_date.getDate()) {
             return false;
         } else {
             return true;
@@ -65,16 +66,16 @@ function checkInBetween(date_string, c_date, months) {
 
 /**
  * 
- * @param {string} date_string 
+ * @param {string[]} date_string 
  * @param {Date} c_date 
- * @param {string} months 
+ * @param {string[]} months 
  * @returns {number}
  */
 function whatweek(date_string, c_date, months) {
     const beginning_date = date_string[0];
     const beginning_month = months.indexOf(date_string[1]);
 
-    const date_begin = new Date(c_date.getFullYear(), beginning_month, beginning_date, 0, 0, 0);
+    const date_begin = new Date(c_date.getFullYear(), beginning_month, Number(beginning_date), 0, 0, 0);
 
     // To calculate the time difference of two dates
     const Difference_In_Time = c_date.getTime() - date_begin.getTime();
