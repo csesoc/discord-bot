@@ -1,3 +1,4 @@
+// @ts-check
 const { SlashCommandBuilder } = require("discord.js");
 const { createGame } = require("../lib/tictactoe/tttHelper");
 

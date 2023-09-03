@@ -1,7 +1,7 @@
+// @ts-check
 const {
     EmbedBuilder,
     SlashCommandBuilder,
-    InteractionResponse,
     ChatInputCommandInteraction
 } = require("discord.js");
 
@@ -56,6 +56,8 @@ const vote_vote = async (interaction) => {
     fs.writeFileSync("./config/votes.json", JSON.stringify({ data: data }, null, 4));
 }
 
+
+
 /**
  * @async
  * @param {ChatInputCommandInteraction} interaction
@@ -75,18 +77,22 @@ const vote_voteresult = async (interaction) => {
     } else {
         const channelID = found.channelid;
         const messageID = found.messageid;
+        if (!interaction.channel) return;
 
         const msghandler = interaction.channel.messages;
         const msg = await msghandler.fetch(found.messageid);
 
-        const cacheChannel = msg.guild.channels.cache.get(channelID);
+        const cacheChannel = msg.guild?.channels.cache.get(channelID);
 
-        if (cacheChannel) {
+        
+
+        if (cacheChannel && cacheChannel.isTextBased()) {
             cacheChannel.messages.fetch(messageID).then((reactionMessage) => {
+
                 /**
-                 * @type {[{name: string, value: string}]}
+                 * @type {[{name: string, value: string}] | any}
                 */
-                const responses = [];
+                const responses = Array();
                 reactionMessage.reactions.cache.forEach((value, key) => {
                     if (key == "👍" || key == "👎") {
                         responses.push({
@@ -141,12 +147,13 @@ const vote_voteresultfull = async (interaction) => {
         const channelID = found.channelid;
         const messageID = found.messageid;
 
+        if (!interaction.channel) return;
         const msghandler = interaction.channel.messages;
+
         const msg = await msghandler.fetch(found.messageid);
+        const cacheChannel = msg.guild?.channels.cache.get(channelID);
 
-        const cacheChannel = msg.guild.channels.cache.get(channelID);
-
-        if (cacheChannel) {
+        if (cacheChannel && cacheChannel.isTextBased()) {
             cacheChannel.messages.fetch(messageID).then((reactionMessage) => {
                 const responses = [];
                 reactionMessage.reactions.cache.forEach((value, key) => {
