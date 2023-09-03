@@ -1,3 +1,4 @@
+// @ts-check
 const { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction, GuildMember } = require("discord.js");
 
 // Tools to help manage meetings
@@ -64,8 +65,8 @@ module.exports = {
      * @returns 
      */
     async execute(interaction) {
-        /** @type {GuildMember} */
-        const member = interaction.member;
+        if (!interaction.inCachedGuild()) return;
+        const { member } = interaction;
         const voice_channel = member.voice.channel;
 
         // Check if connected to voice channel
@@ -94,9 +95,9 @@ module.exports = {
                 .split(/\s+/)
                 .forEach((user) => {
                     const user_id = user.substr(3, 18);
-                    const member = interaction.member.guild.members.cache.get(user_id);
-                    if (member) {
-                        participants.push(member.user.tag);
+                    const m = interaction.member.guild.members.cache.get(user_id);
+                    if (m) {
+                        participants.push(m.user.tag);
                     }
                 });
         }
@@ -138,7 +139,7 @@ module.exports = {
             // Groups users into a given number of groups
             shuffleArray(participants);
 
-            const num_groups = interaction.options.getInteger("num_groups");
+            const num_groups = interaction.options.getInteger("num_groups", true);
             const members_per_group = Math.round(participants.length / num_groups);
 
             let group_num = 1;
