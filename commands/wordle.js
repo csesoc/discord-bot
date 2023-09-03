@@ -1,3 +1,4 @@
+// @ts-check
 /* eslint-disable no-unused-vars */
 const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 const { words } = require("../config/words.json");
@@ -52,7 +53,7 @@ module.exports = {
         const userID = interaction.user.id;
         // check if userID exists in players value
         /**
-         * @type {Player}
+         * @type {Player | undefined}
          */
         let player = undefined;
 
@@ -89,7 +90,7 @@ module.exports = {
         } else {
             // user exists
             console.log("user exists");
-            const timeDiff = Math.abs(new Date() - new Date(player.timeChanged));
+            const timeDiff = Math.abs(new Date().valueOf() - new Date(player.timeChanged).valueOf());
             // If day has changed, select new word and reset game state
             if (
                 timeDiff > 86400000 ||
@@ -110,6 +111,7 @@ module.exports = {
         // if timeChanged is more than a day ago, pick a new word
         console.log("Selected Word: " + selectedWord);
         const setWin = () => {
+            if (!player) return;
             player.if_finished = true;
             player.total_games++;
             player.score++;
@@ -120,6 +122,7 @@ module.exports = {
             );
         };
         const setLoss = () => {
+            if (!player) return;
             player.if_finished = true;
             player.total_games++;
             const editedPlayers = players;
@@ -206,11 +209,12 @@ module.exports = {
         /**
          * 
          * @param {ChatInputCommandInteraction} msg 
-         * @param {string} guesses 
+         * @param {string[]} guesses 
          * @param {string} answer
-         * @returns {void}
+         * @returns
          */
         async function LoadGame(msg, guesses, answer) {
+            if (!player || !msg.channel) return;
             // make a blank canvas
             const canvas = Canvas.createCanvas(330, 397);
             const context = canvas.getContext("2d");
@@ -283,8 +287,10 @@ module.exports = {
             });
             // msg.message.author.send({ files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
         }
+        
+        if (!interaction.channel) return;
 
-        if (interaction.options.length === 0) {
+        if (interaction.options.data.length === 0) {    
             await interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
             return;
         } else if (interaction.options.getSubcommand() === "play") {
@@ -304,7 +310,7 @@ module.exports = {
                     this.guesses = player.guesses;
                 }
 
-                const guess = interaction.options.getString("word").toLowerCase();
+                const guess = interaction.options.getString("word", true).toLowerCase();
                 if (guess.length !== 5) {
                     await interaction.channel.send(
                         "Invalid Usage! Use a 5 lettered word \nUsage: `/wordle guess <word>`",
