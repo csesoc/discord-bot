@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { ChatInputCommandInteraction } = require("discord.js");
+// @ts-check
+const { ChatInputCommandInteraction, SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -28,10 +28,12 @@ module.exports = {
      *
      * @async
      * @param {ChatInputCommandInteraction} interaction
-     * @returns
+     * @returns {Promise<void>}
      */
     async execute(interaction) {
-        const parsedOption = interaction.options.get("project").value.toLowerCase();
+        const get_project = interaction.options.get("project", true).value;
+        if (!get_project) return;
+        const parsedOption = get_project.toString().toLowerCase();
         // console.log(`.${parsedOption}.`);
         switch (parsedOption) {
             case "chaos":
