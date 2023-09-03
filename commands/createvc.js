@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, ChatInputCommandInteraction, ChannelType, BaseChannel } = require("discord.js");
+// @ts-check
+const { SlashCommandBuilder, ChatInputCommandInteraction, ChannelType, CategoryChannel } = require("discord.js");
 const fs = require("fs");
 
 module.exports = {
@@ -33,9 +34,9 @@ module.exports = {
             if (size < CHANNEL_LIMIT) {
                 // let temp = {"authorid":authorid,"count":1};
                 // data.users.unshift(temp);
-
+                if (!interaction.guild) return;
                 const channelmanager = interaction.guild.channels;
-                /** @type {BaseChannel} */
+                /** @type {CategoryChannel | null} */
                 let parentChannel = null;
                 const allchannels = await channelmanager.fetch();
 
@@ -56,16 +57,21 @@ module.exports = {
                 }
 
                 if (parentChannel == null) {
-                    parentChannel = await channelmanager.create(CATEGORY_NAME, {
-                        type: 4,
+                    parentChannel = await channelmanager.create({
+                        name: CATEGORY_NAME,
+                        type: ChannelType.GuildCategory,
                     });
+                    // parentChannel = await channelmanager.create(CATEGORY_NAME, {
+                    //     type: 4,
+                    // });
                 }
 
                 // Create a new channel and then add it to the limit
 
-                const tempchannel = await channelmanager.create("Temp VC", {
-                    type: 2,
-                    parent: parentChannel,
+                const tempchannel = await channelmanager.create({
+                    name: "Temp VC",
+                    type: ChannelType.GuildVoice,
+                    parent: parentChannel
                 });
                 const data_add = { channel_id: tempchannel.id, delete: false };
                 data.channels.unshift(data_add);
