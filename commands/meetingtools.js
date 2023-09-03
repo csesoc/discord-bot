@@ -1,5 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction, GuildMember } = require("discord.js");
 
 // Tools to help manage meetings
 
@@ -59,8 +58,15 @@ module.exports = {
                 ),
         ),
 
+    /**
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns 
+     */
     async execute(interaction) {
-        const voice_channel = interaction.member.voice.channel;
+        /** @type {GuildMember} */
+        const member = interaction.member;
+        const voice_channel = member.voice.channel;
 
         // Check if connected to voice channel
         if (!voice_channel) {
@@ -70,6 +76,7 @@ module.exports = {
             });
         }
 
+        /** @type {string[]} */
         const participants = [];
 
         // Gets all participants of the voice channel
@@ -153,9 +160,9 @@ module.exports = {
             });
         }
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(command)
-            .setColor("#0099ff")
+            .setColor(0x0099ff)
             .setDescription(ret_val);
 
         return await interaction.reply({
@@ -166,7 +173,10 @@ module.exports = {
 
 // shuffleArray function from
 // https://www.geeksforgeeks.org/how-to-shuffle-an-array-using-javascript/
-
+/**
+ * 
+ * @param {any[]} array 
+ */
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         // Generate random number
