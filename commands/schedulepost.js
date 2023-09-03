@@ -1,4 +1,5 @@
-const { EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } = require("discord.js");
+// @ts-check
+const { EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction, Message } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -71,6 +72,8 @@ module.exports = {
      * @returns
      */
     async execute(interaction) {
+        if (!interaction.inCachedGuild()) return;
+
         // Check if user has admin permission
         if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return await interaction.reply({
@@ -80,9 +83,9 @@ module.exports = {
         }
 
         const command = interaction.options.getSubcommand();
-        const msg_id = interaction.options.getString("messageid");
-        const channel = interaction.options.getChannel("channel");
-        const datetime = interaction.options.getString("datetime");
+        const msg_id = interaction.options.getString("messageid", true);
+        const channel = interaction.options.getChannel("channel", true);
+        const datetime = interaction.options.getString("datetime", true);
 
         if (command === "create") {
             create_scheduled_post(interaction, msg_id, channel, datetime);
@@ -97,23 +100,27 @@ module.exports = {
  * Schedules a new post
  * @async
  * @param {ChatInputCommandInteraction} interaction
- * @param {string | null} msg_id
- * @param {import("discord.js").Channel} channel
- * @param {string | null} datetime
+ * @param {string} msg_id
+ * @param {import("discord.js").GuildBasedChannel} channel
+ * @param {string} datetime
  * @returns
  */
 async function create_scheduled_post(interaction, msg_id, channel, datetime) {
     // Check if message id is valid
+    /** @type {Message | undefined} */
     let message;
     try {
-        message = await interaction.channel.messages.fetch(msg_id);
+        const { channel } = interaction;
+        if (!channel) return;
+        message = channel.messages.cache.get(msg_id);
     } catch (err) {
         return await interaction.reply({
             content: "Invalid message ID",
             ephemeral: true,
         });
     }
-
+    if (!message) return;
+ 
     const re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
 
     // Check if datetime is valid
@@ -152,7 +159,7 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
         today.getMinutes(),
         0,
     );
-    const time_send_in = send_time - now_time;
+    const time_send_in = send_time.valueOf() - now_time.valueOf();
 
     // Check that the datetime the post is scheduled for is in the futre
     if (time_send_in <= 0) {
@@ -227,7 +234,7 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
  * @async
  * @param {ChatInputCommandInteraction} interaction
  * @param {string | null} msg_id
- * @param {import("discord.js").Channel} channel
+ * @param {import("discord.js").GuildBasedChannel} channel
  * @param {string | null} datetime
  * @returns
  */
