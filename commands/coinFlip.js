@@ -1,8 +1,8 @@
-const { 
-    InteractionResponse, 
-    CommandInteraction, 
+// @ts-check
+const {
     EmbedBuilder, 
-    SlashCommandBuilder
+    SlashCommandBuilder,
+    ChatInputCommandInteraction
 } = require("discord.js");
 
 module.exports = {
@@ -11,7 +11,7 @@ module.exports = {
     /**
      *
      * @async
-     * @param {CommandInteraction} interaction
+     * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
     async execute(interaction) {
