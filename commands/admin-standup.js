@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, MessageButton, Permissions } = require("discord.js");
+// @ts-check
+const { EmbedBuilder, ButtonBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction, InteractionResponse, ButtonStyle } = require("discord.js");
 const paginationEmbed = require("discordjs-button-pagination");
 
 module.exports = {
@@ -24,12 +24,19 @@ module.exports = {
                 ),
         ),
 
+    /**
+     * 
+     * @param {ChatInputCommandInteraction} interaction 
+     * @returns {Promise<InteractionResponse<boolean> | undefined>}
+     */
     async execute(interaction) {
         const standupDB = global.standupDBGlobal;
         const TEAM_DIRECTOR_ROLE_ID = "921348676692107274";
+        if (!interaction.inCachedGuild()) return;
+
         if (
-            !interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR) &&
-            !interaction.member._roles.includes(TEAM_DIRECTOR_ROLE_ID)
+            !interaction.member.permissions.has(PermissionFlagsBits.Administrator) &&
+            !interaction.member.roles.cache.has(TEAM_DIRECTOR_ROLE_ID)
         ) {
             return await interaction.reply({
                 content: "You do not have permission to execute this command.",
@@ -41,18 +48,25 @@ module.exports = {
             let sendmsg = "";
 
             try {
-                const team = await interaction.options.getMentionable("teamrole");
-                const numDaysToRetrieve = (await interaction.options.getInteger("days")) ?? 7;
+                const team = interaction.options.getMentionable("teamrole", true);
                 const teamRoleID = team.id;
                 const role = await interaction.guild.roles.fetch(teamRoleID);
+                if (!role) return;
                 /*eslint-disable */
-                var roleMembers = [...role.members?.values()];
+                var roleMembers = [...role.members.values()];
                 /* eslint-enable */
+
                 const ON_BREAK_ID = "1036905668352942090";
-                roleMembers = roleMembers.filter((rm) => !rm._roles.includes(ON_BREAK_ID));
+                roleMembers = roleMembers.filter((rm) => !rm.roles.cache.has(ON_BREAK_ID));
+                
+                if (!interaction.channel) return;
                 const thisTeamId = interaction.channel.parentId;
+                const numDaysToRetrieve = (interaction.options.getInteger("days")) ?? 7;
+
+                /** @type {{ user_id: string; standup_content: string; }[]} */
                 let thisTeamStandups = await standupDB.getStandups(thisTeamId, numDaysToRetrieve);
 
+                /** @type {Record<string, string>} */
                 const roleNames = {};
                 roleMembers.forEach((el) => {
                     const author = el.user.username;
@@ -67,17 +81,21 @@ module.exports = {
                     Object.keys(roleNames).includes(st.user_id),
                 );
 
+                /** @type {string[]} */
                 const standupDone = [];
+
+                /** @type {string[]} */
                 const standupEmbeded = [];
+                
                 // add all standups
                 thisTeamStandups.forEach((standUp) => {
                     standupDone.push(standUp.user_id);
                     standupEmbeded.push(
                         "**" +
-                            `${roleNames[standUp.user_id]}` +
-                            "**" +
-                            "\n" +
-                            standUp.standup_content,
+                        `${roleNames[standUp.user_id]}` +
+                        "**" +
+                        "\n" +
+                        standUp.standup_content,
                     );
                     sendmsg +=
                         "**" +
@@ -88,6 +106,7 @@ module.exports = {
                     sendmsg += "\n";
                 });
 
+                /** @type {string[]} */
                 const notDone = [];
 
                 roleMembers.forEach((el) => {
@@ -100,11 +119,12 @@ module.exports = {
                 let notDoneUsersString = "";
                 notDoneUsersString = notDone.map((el) => `<@${el}>`).join(", ");
 
+                /** @type {EmbedBuilder[]} */
                 const embedList = [];
                 if (notDone.length == 0) {
                     standupEmbeded.forEach((el) => {
                         embedList.push(
-                            new MessageEmbed()
+                            new EmbedBuilder()
                                 .setTitle("Standups (" + role.name + ")")
                                 .setDescription(
                                     el + "\n\n" + "_Everyone has done their standup_\n",
@@ -114,37 +134,38 @@ module.exports = {
                 } else {
                     standupEmbeded.forEach((el) => {
                         embedList.push(
-                            new MessageEmbed()
+                            new EmbedBuilder()
                                 .setTitle("Standups (" + role.name + ")")
                                 .setDescription(
                                     el +
-                                        "\n\n" +
-                                        "_These users have not done their standup:_\n" +
-                                        notDoneUsersString,
+                                    "\n\n" +
+                                    "_These users have not done their standup:_\n" +
+                                    notDoneUsersString,
                                 ),
                         );
                     });
                 }
 
                 if (thisTeamStandups.length == 0) {
-                    const embed = new MessageEmbed()
+                    const embed = new EmbedBuilder()
                         .setTitle("Standups (" + role.name + ")")
                         .setDescription(
                             "No standups recorded\n\n" +
-                                "_These users have not done their standup:_\n" +
-                                notDoneUsersString,
+                            "_These users have not done their standup:_\n" +
+                            notDoneUsersString,
                         );
                     return await interaction.reply({ embeds: [embed] });
                 }
 
                 const buttonList = [
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId("previousbtn")
                         .setLabel("Previous")
-                        .setStyle("DANGER"),
-                    new MessageButton().setCustomId("nextbtn").setLabel("Next").setStyle("SUCCESS"),
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
                 ];
 
+                // depdendency on v13 helper functions - DEPRECATED
                 paginationEmbed(interaction, embedList, buttonList);
 
                 // sendmsg += "\n" + "These users have not done their standup:\n" + notDoneUsersString;
