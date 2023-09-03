@@ -45,13 +45,13 @@ module.exports = {
                 UOC,
                 // level,
                 description,
-                study_level,
-                school,
-                campus,
+                // study_level,
+                // school,
+                // campus,
                 equivalents,
                 raw_requirements,
                 exclusions,
-                handbook_note,
+                // handbook_note,
                 terms,
             } = data;
 
