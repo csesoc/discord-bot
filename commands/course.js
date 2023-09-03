@@ -1,6 +1,7 @@
-const { GuildBasedChannel, ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+// @ts-check
+const { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require("discord.js");
 
-const MODERATION_REQUEST_CHANNEL = 824506830641561600;
+const MODERATION_REQUEST_CHANNEL = 824506830641561600n;
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
 
@@ -98,9 +99,11 @@ module.exports = {
      * @returns
      */
     async execute(interaction) {
+        if (!interaction.inCachedGuild()) return;
+
         try {
             if (interaction.options.getSubcommand() === COMMAND_JOIN) {
-                const input_course = interaction.options.getString("course").toLowerCase();
+                const input_course = interaction.options.getString("course", true).toLowerCase();
                 const course = get_real_course_name(input_course);
 
                 const other_courses = /^[a-zA-Z]{4}\d{4}$/;
@@ -156,7 +159,7 @@ module.exports = {
                         content: `❌ | The course chat for \`${course}\` does not exist. If you'd like for it to be created, please raise a ticket in <#${MODERATION_REQUEST_CHANNEL}>.`,
                         ephemeral: true,
                     });
-                } else if (channel.type !== "GUILD_TEXT") {
+                } else if (channel.type !== ChannelType.GuildText) {
                     return await interaction.reply({
                         content: `❌ | The course chat for \`${course}\` is not a text channel.`,
                         ephemeral: true,
@@ -164,10 +167,9 @@ module.exports = {
                 }
                 
                 // channel has type GuildBasedChannel
-
-                const permissions = new PermissionsBitField(
-                    channel.permissionsFor(interaction.user.id).bitfield,
-                );
+                const permissionsFor = channel.permissionsFor(interaction.user.id);
+                if (!permissionsFor) return;
+                const permissions = new PermissionsBitField(permissionsFor.bitfield);
 
                 // Check if the member already has an entry in the channel's permission overwrites, and update
                 // the entry if they do just to make sure that they have the correct permissions
@@ -192,7 +194,7 @@ module.exports = {
                     ephemeral: true,
                 });
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
-                const input_course = interaction.options.getString("course");
+                const input_course = interaction.options.getString("course", true);
                 const course = get_real_course_name(input_course);
 
                 if (!is_valid_course(course)) {
@@ -235,23 +237,22 @@ module.exports = {
                         content: `❌ | The course chat for \`${course}\` does not exist.`,
                         ephemeral: true,
                     });
-                } else if (channel.type !== "GUILD_TEXT") {
+                } else if (channel.type !== ChannelType.GuildText) {
                     return await interaction.reply({
                         content: `❌ | The course chat for \`${course}\` is not a text channel.`,
                         ephemeral: true,
                     });
                 }
 
-                const permissions = new PermissionsBitField(
-                    channel.permissionsFor(interaction.user.id).bitfield,
-                );
+                const permissionsFor = channel.permissionsFor(interaction.user.id);
+                if (!permissionsFor) return;
+                const permissions = new PermissionsBitField(permissionsFor.bitfield);
 
                 // Check if the member already has an entry in the channel's permission overwrites
                 if (
                     !permissions.has([
                         PermissionFlagsBits.ViewChannel,
-                        PermissionsBitField.Flags.ViewChannel,
-                        Permissions.FLAGS.SEND_MESSAGES,
+                        PermissionFlagsBits.SendMessages
                     ])
                 ) {
                     return await interaction.reply({
