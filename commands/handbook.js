@@ -1,4 +1,5 @@
-const axios = require("axios");
+// @ts-check
+const axios = require("axios").default;
 const textVersion = require("textversionjs");
 const { EmbedBuilder, SlashCommandBuilder, CommandInteraction, BaseInteraction, ChatInputCommandInteraction } = require("discord.js");
 const { apiURL, handbookURL } = require("../config/handbook.json");
@@ -28,7 +29,7 @@ module.exports = {
      */
     async execute(interaction) {
         if (interaction.options.getSubcommand() === "courseinfo") {
-            const courseCode = interaction.options.getString("coursecode").toUpperCase();
+            const courseCode = interaction.options.getString("coursecode", true).toUpperCase();
 
             /** 
              * @typedef {Object} CourseData
@@ -50,8 +51,8 @@ module.exports = {
              *  
              */
 
-            /** @type {CourseData} */
-            let data = {};
+            /** @type {CourseData | null} */
+            let data = null;
             try {
                 // Documented at:
                 // https://circlesapi.csesoc.app/docs#/courses/get_course_courses_getCourse__courseCode__get
@@ -64,7 +65,8 @@ module.exports = {
                     ephemeral: true,
                 });
             }
-
+            
+            if (data == null) return;
             const {
                 title,
                 code,
