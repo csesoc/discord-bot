@@ -1,6 +1,6 @@
+// @ts-check
 const {
     SlashCommandBuilder,
-    InteractionResponse,
     EmbedBuilder,
     ChatInputCommandInteraction
 } = require("discord.js");
@@ -80,7 +80,7 @@ module.exports = {
                 break;
             case "get":
                 /** @type {number} */
-                const comic_id = interaction.options.getInteger("comic-id");
+                const comic_id = interaction.options.getInteger("comic-id", true);
 
                 xkcd.get(
                     comic_id,
