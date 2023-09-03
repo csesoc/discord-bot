@@ -27,7 +27,7 @@ module.exports = {
      * @returns
      */
     async execute(interaction) {
-        const datetime = interaction.options.getString("datetime");
+        const datetime = interaction.options.getString("datetime", true);
 
         const re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
 
@@ -50,7 +50,7 @@ module.exports = {
             0,
         );
 
-        const time_send_in = send_time - now_time;
+        const time_send_in = send_time.valueOf() - now_time.valueOf();
 
         if (time_send_in <= 0) {
             return await interaction.reply({
@@ -75,21 +75,26 @@ module.exports = {
                 },
             )
             .setTimestamp();
-
+        
         const reminderEmbed = new EmbedBuilder()
             .setColor(0xffe5b4)
             .setTitle("⌛ Reminder ⌛")
             .setAuthor({ name: botName, iconURL: iconUrl })
-            .addFields({
-                name: "❗ Reminding you to ❗",
-                value: interaction.options.getString("content"),
-            })
+            .addFields([{
+                name: `❗ Reminding you to ❗`,
+                value: interaction.options.getString("content", true)
+            }])
             .setTimestamp();
 
         await interaction.reply({ embeds: [reminderRequestEmbed], ephemeral: true });
 
         const { user } = interaction;
 
+        /**
+         * 
+         * @param {number} ms 
+         * @returns 
+         */
         const sleep = async (ms) => await new Promise((r) => setTimeout(r, ms));
         await sleep(time_send_in);
 
