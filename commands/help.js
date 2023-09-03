@@ -1,3 +1,4 @@
+// @ts-check
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -5,7 +6,8 @@ const {
     ButtonStyle,
     ChatInputCommandInteraction,
     ButtonInteraction,
-    SlashCommandBuilder
+    SlashCommandBuilder,
+    ComponentType,
 } = require("discord.js");
 
 // Fetches commands from the help data
@@ -99,19 +101,13 @@ module.exports = {
         const helpEmbed = generateEmbed(currentIndex);
         const authorId = interaction.user.id;
 
-        await interaction.reply({
-            embeds: [helpEmbed],
-            components: [
-                new ActionRowBuilder({
-                    components: [
-                        // previous button if it isn't the start
-                        ...(currentIndex ? [prevButton] : []),
-                        // next button if it isn't the end
-                        ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
-                    ],
-                }),
-            ],
-        });
+        const components = [
+            ...(currentIndex ? [prevButton] : []),
+            ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : [])
+        ];
+
+        const row = new ActionRowBuilder().addComponents(components);
+        await interaction.reply({ embeds: [helpEmbed], components: [row] });
 
         // Creates a collector for button interaction events, setting a 120s maximum
         // timeout and a 30s inactivity timeout
@@ -120,6 +116,7 @@ module.exports = {
          * @param {ButtonInteraction} resInteraction
          * @returns {boolean}
          */
+
         const filter = (resInteraction) => {
             return (
                 (resInteraction.customId === prevId || resInteraction.customId === nextId) &&
@@ -127,6 +124,7 @@ module.exports = {
             );
         };
 
+        if (!interaction.channel) return;
         const collector = interaction.channel.createMessageComponentCollector({
             filter,
             time: 120000,
@@ -136,19 +134,15 @@ module.exports = {
         collector.on("collect", async (i) => {
             // Adjusts the currentIndex based on the id of the button pressed
             i.customId === prevId ? (currentIndex -= PAGE_SIZE) : (currentIndex += PAGE_SIZE);
-
+            const components = [
+                ...(currentIndex ? [prevButton] : []),
+                ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : [])
+            ];
+    
+            const row = new ActionRowBuilder().addComponents(components);
             await i.update({
                 embeds: [generateEmbed(currentIndex)],
-                components: [
-                    new ActionRowBuilder({
-                        components: [
-                            // previous button if it isn't the start
-                            ...(currentIndex ? [prevButton] : []),
-                            // next button if it isn't the end
-                            ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
-                        ],
-                    }),
-                ],
+                components: [row],
             });
         });
 
