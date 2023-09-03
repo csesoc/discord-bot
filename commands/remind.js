@@ -1,3 +1,4 @@
+// @ts-check
 const { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } = require("discord.js");
 
 const baseCommand = new SlashCommandBuilder()

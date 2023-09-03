@@ -101,12 +101,14 @@ module.exports = {
         const helpEmbed = generateEmbed(currentIndex);
         const authorId = interaction.user.id;
 
-        const components = [
-            ...(currentIndex ? [prevButton] : []),
-            ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : [])
-        ];
-
-        const row = new ActionRowBuilder().addComponents(components);
+        /** @type {ActionRowBuilder<ButtonBuilder>} */
+        const row = new ActionRowBuilder();
+        if (currentIndex) {
+            row.addComponents(prevButton);
+        }
+        if (currentIndex + PAGE_SIZE < commands.length) {
+            row.addComponents(nextButton);
+        }
         await interaction.reply({ embeds: [helpEmbed], components: [row] });
 
         // Creates a collector for button interaction events, setting a 120s maximum
@@ -127,6 +129,7 @@ module.exports = {
         if (!interaction.channel) return;
         const collector = interaction.channel.createMessageComponentCollector({
             filter,
+            componentType: ComponentType.Button,
             time: 120000,
             idle: 30000,
         });
@@ -134,16 +137,17 @@ module.exports = {
         collector.on("collect", async (i) => {
             // Adjusts the currentIndex based on the id of the button pressed
             i.customId === prevId ? (currentIndex -= PAGE_SIZE) : (currentIndex += PAGE_SIZE);
-            const components = [
-                ...(currentIndex ? [prevButton] : []),
-                ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : [])
-            ];
-    
-            const row = new ActionRowBuilder().addComponents(components);
-            await i.update({
-                embeds: [generateEmbed(currentIndex)],
-                components: [row],
-            });
+            
+            /** @type {ActionRowBuilder<ButtonBuilder>} */
+            const row = new ActionRowBuilder();
+            if (currentIndex) {
+                row.addComponents(prevButton);
+            }
+            if (currentIndex + PAGE_SIZE < commands.length) {
+                row.addComponents(nextButton);
+            }
+
+            await i.update({ embeds: [generateEmbed(currentIndex)], components: [row] });
         });
 
         // Clears buttons from embed page after timeout on collector
