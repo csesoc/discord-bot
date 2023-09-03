@@ -1,3 +1,4 @@
+//@ts-check
 const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 const math = require("mathjs");
 
@@ -104,7 +105,7 @@ module.exports = {
      * @returns
      */
     async execute(interaction) {
-        const equationStr = interaction.options.getString("equation");
+        const equationStr = interaction.options.getString("equation", true);
         const target = interaction.options.getNumber("target") || 24;
 
         const { success, message, ephemeral } = evaluate(equationStr, target);

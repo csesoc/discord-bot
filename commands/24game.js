@@ -1,3 +1,4 @@
+//@ts-check
 const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 
 const MAX = 9;

@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, EmbedBuilder, ChatInputCommandInteraction, ChannelType, ButtonStyle } = require("discord.js");
+//@ts-check
+const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, EmbedBuilder, ChatInputCommandInteraction, ChannelType, ButtonStyle, MessageFlags } = require("discord.js");
 const paginationEmbed = require("discordjs-button-pagination");
 const fs = require("fs");
 
@@ -79,6 +80,7 @@ module.exports = {
      * @returns
      */
     async execute(interaction) {
+        if (!interaction.inCachedGuild()) return;
         const user = interaction.user.username;
         const u_id = interaction.user.id;
 
@@ -100,9 +102,11 @@ module.exports = {
 
             logDB.message_create(interaction.id, u_id, user, msg, interaction.channelId);
 
-            interaction.reply({ content: "Done!", ephemeral: true });
-            await interaction.channel.send({ 
-                body: `${msg} \n\n(The above message was anonymously posted by a user)`, 
+            await interaction.reply({ content: "Done!", ephemeral: true });
+            if (!interaction.channel) return;
+
+            await interaction.channel.send({
+                content: `${msg} \n\n(The above message was anonymously posted by a user)`,
                 allowedMentions: {} 
             });
             // interaction.guild.channels.cache
@@ -110,7 +114,7 @@ module.exports = {
             //     .send(msg + "\n\n(The above message was anonymously posted by a user)");
             return;
         } else if (interaction.options.getSubcommand() === "channel") {
-            const channel = interaction.options.getChannel("channel");
+            const channel = interaction.options.getChannel("channel", true);
             const c_name = channel.name;
             const c_id = channel.id;
 
@@ -132,14 +136,20 @@ module.exports = {
 
             logDB.message_create(interaction.id, u_id, user, msg, c_id);
 
-            interaction.reply({ content: "Done!", ephemeral: true });
-            return await (interaction.guild.channels.cache.get(c_id)).send({
-                body: `${msg} \n\n(The above message was anonymously posted by a user)`, 
-                allowedMentions: {} 
+            await interaction.reply({ content: "Done!", ephemeral: true });
+            const guild = interaction.guild;
+            if (!guild) return;
+
+            const channel_send = guild.channels.cache.get(c_id);
+            if (!channel_send || !channel_send.isTextBased()) return;
+
+            return await channel_send.send({
+                content: `${msg} \n\n(The above message was anonymously posted by a user)`, 
+                allowedMentions: {}
             });
-            return await interaction.guild.channels.cache
-                .get(c_id)
-                .send(msg + "\n\n(The above message was anonymously posted by a user)");
+            // return await interaction.guild.channels.cache
+            //     .get(c_id)
+            //     .send(msg + "\n\n(The above message was anonymously posted by a user)");
         }
 
         // Admin permission check
@@ -151,7 +161,7 @@ module.exports = {
         }
 
         if (interaction.options.getSubcommand() === "allow") {
-            const channel = interaction.options.getChannel("channel");
+            const channel = interaction.options.getChannel("channel", true);
 
             if (allowedChannels.some((c) => c === channel.id)) {
                 return await interaction.reply({
@@ -195,7 +205,7 @@ module.exports = {
                 ephemeral: true,
             });
         } else if (interaction.options.getSubcommand() === "disallow") {
-            const channel = await interaction.options.getChannel("channel");
+            const channel = interaction.options.getChannel("channel", true);
 
             if (!allowedChannels.some((c) => c === channel.id)) {
                 return await interaction.reply({
@@ -281,7 +291,7 @@ module.exports = {
                 new ButtonBuilder()
                     .setCustomId("previousbtn")
                     .setLabel("Previous")
-                    .setStyle("DANGER"),
+                    .setStyle(ButtonStyle.Danger),
                 new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
             ];
 
