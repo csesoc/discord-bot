@@ -1,3 +1,4 @@
+// @ts-check
 const { SlashCommandBuilder } = require("discord.js");
 const { createConnect4 } = require("../lib/connect4/connect4Runner");
 
