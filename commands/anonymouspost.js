@@ -1,8 +1,10 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { allowedChannels } = require("../config/anon_channel.json");
+const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, EmbedBuilder, ChatInputCommandInteraction, ChannelType, ButtonStyle } = require("discord.js");
 const paginationEmbed = require("discordjs-button-pagination");
 const fs = require("fs");
-const { Util, MessageEmbed, MessageButton, Permissions } = require("discord.js");
+
+/** @type {string[]} */
+const allowedChannels = require("../config/anon_channel.json").allowedChannels;
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("anonymouspost")
@@ -72,6 +74,10 @@ module.exports = {
                 .setDescription("[ADMIN] Displays the list of allowed channels."),
         ),
 
+    /**
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns
+     */
     async execute(interaction) {
         const user = interaction.user.username;
         const u_id = interaction.user.id;
@@ -87,21 +93,28 @@ module.exports = {
                 });
             }
             const text = interaction.options.getString("message");
-            const msg = Util.removeMentions(text);
+
+            // removeMentions is deprecated from discordjs v14+ onwards
+            // const msg = Util.removeMentions(text);
+            const msg = text;
 
             logDB.message_create(interaction.id, u_id, user, msg, interaction.channelId);
 
             interaction.reply({ content: "Done!", ephemeral: true });
-            interaction.guild.channels.cache
-                .get(interaction.channelId)
-                .send(msg + "\n\n(The above message was anonymously posted by a user)");
+            await interaction.channel.send({ 
+                body: `${msg} \n\n(The above message was anonymously posted by a user)`, 
+                allowedMentions: {} 
+            });
+            // interaction.guild.channels.cache
+            //     .get(interaction.channelId)
+            //     .send(msg + "\n\n(The above message was anonymously posted by a user)");
             return;
         } else if (interaction.options.getSubcommand() === "channel") {
-            const channel = await interaction.options.getChannel("channel");
+            const channel = interaction.options.getChannel("channel");
             const c_name = channel.name;
             const c_id = channel.id;
 
-            if (channel.type != "GUILD_TEXT") {
+            if (channel.type != ChannelType.GuildText) {
                 return await interaction.reply({
                     content: `Channel \`${c_name}\` not a text channel!`,
                     ephemeral: true,
@@ -114,18 +127,23 @@ module.exports = {
             }
 
             const text = interaction.options.getString("message");
-            const msg = Util.removeMentions(text);
+            // const msg = Util.removeMentions(text);
+            const msg = text;
 
             logDB.message_create(interaction.id, u_id, user, msg, c_id);
 
             interaction.reply({ content: "Done!", ephemeral: true });
+            return await (interaction.guild.channels.cache.get(c_id)).send({
+                body: `${msg} \n\n(The above message was anonymously posted by a user)`, 
+                allowedMentions: {} 
+            });
             return await interaction.guild.channels.cache
                 .get(c_id)
                 .send(msg + "\n\n(The above message was anonymously posted by a user)");
         }
 
         // Admin permission check
-        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return await interaction.reply({
                 content: "You do not have permission to execute this command.",
                 ephemeral: true,
@@ -133,7 +151,7 @@ module.exports = {
         }
 
         if (interaction.options.getSubcommand() === "allow") {
-            const channel = await interaction.options.getChannel("channel");
+            const channel = interaction.options.getChannel("channel");
 
             if (allowedChannels.some((c) => c === channel.id)) {
                 return await interaction.reply({
@@ -223,15 +241,18 @@ module.exports = {
         } else if (interaction.options.getSubcommand() === "whitelist") {
             // No allowed roles
             if (allowedChannels.length == 0) {
-                const embed = new MessageEmbed()
+                const embed = new EmbedBuilder()
                     .setTitle("Allowed Channels")
                     .setDescription("No allowed channels");
                 return await interaction.reply({ embeds: [embed] });
             }
 
             // TODO: Convert to scroller?
+            
+            /** @type {string[]} */
             const channels = [];
             for (let i = 0; i < allowedChannels.length; i += 1) {
+                // c_name is an array of objects that contains channel_name and guild_id as properties
                 const c_name = await logDB.channelname_get(allowedChannels[i]);
                 if (c_name[0].guild_id === interaction.guildId) {
                     channels[i] = c_name[0].channel_name;
@@ -239,7 +260,7 @@ module.exports = {
             }
 
             if (channels.length == 0) {
-                const embed = new MessageEmbed()
+                const embed = new EmbedBuilder()
                     .setTitle("Allowed Channels")
                     .setDescription("No allowed channels");
                 return await interaction.reply({ embeds: [embed] });
@@ -250,21 +271,21 @@ module.exports = {
             const embedList = [];
             for (let i = 0; i < channels.length; i += channelsPerPage) {
                 embedList.push(
-                    new MessageEmbed()
+                    new EmbedBuilder()
                         .setTitle("Allowed Channels")
                         .setDescription(channels.slice(i, i + channelsPerPage).join("\n")),
                 );
             }
 
             const buttonList = [
-                new MessageButton()
+                new ButtonBuilder()
                     .setCustomId("previousbtn")
                     .setLabel("Previous")
                     .setStyle("DANGER"),
-                new MessageButton().setCustomId("nextbtn").setLabel("Next").setStyle("SUCCESS"),
+                new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
             ];
 
-            paginationEmbed(interaction, embedList, buttonList);
+            return paginationEmbed(interaction, embedList, buttonList);
         }
     },
 };
