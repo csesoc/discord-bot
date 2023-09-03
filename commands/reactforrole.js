@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { EmbedBuilder, PermissionFlagsBits, ChatInputCommandInteraction, GuildMember, MessagePayload } = require("discord.js");
+// @ts-check
+const { EmbedBuilder, PermissionFlagsBits, ChatInputCommandInteraction, GuildMember, SlashCommandBuilder, InteractionType, InteractionResponseType } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,6 +32,8 @@ module.exports = {
      * @returns
      */
     async execute(interaction) {
+        if (!interaction.inCachedGuild()) return;
+
         // Only admin users should be able to execute this command
         if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return await interaction.reply({
@@ -40,10 +42,10 @@ module.exports = {
             });
         }
 
-        const emojis = interaction.options.getString("emojis");
-        const roleNames = interaction.options.getString("rolenames");
+        const emojis = interaction.options.getString("emojis", true);
+        const roleNames = interaction.options.getString("rolenames", true);
 
-        let message = interaction.options.getString("message");
+        let message = interaction.options.getString("message", true);
 
         const emojiList = emojis.split(",").map((item) => item.trim());
         const roleList = roleNames.split(",").map((item) => item.trim());
@@ -78,6 +80,7 @@ module.exports = {
             });
         }
 
+        /** @type {any} */
         const { reactRoles } = global;
 
         /** @type {Record<string, number>} */
@@ -144,15 +147,15 @@ module.exports = {
 
         try {
             // Send message
-            /** @type {import("discord.js").TextBasedChannel} */
-            const channel = interaction.channel;
+            // /** @type {import("discord.js").TextBasedChannel} */
+            const { channel } = interaction;
+            if (!channel) return;
             // const sentMessage = await interaction.guild.channels.cache
             //     .get(interaction.channelId)
             //     .send({
             //         content: message,
             //         fetchReply: true,
             //     });
-
 
             const sentMessage = await channel.send(message);
 
@@ -161,7 +164,7 @@ module.exports = {
             const notification = new EmbedBuilder()
                 .setColor("#7cd699")
                 .setTitle("React For Role Command Used!")
-                .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
+                .setAuthor({ name: botName, iconURL: "https://avatars.githubusercontent.com/u/164179?s=200&v=4" })
                 .setDescription(
                     `You used the 'reactforrole' command in "${interaction.member.guild.name} \n\n` +
                     notificationContent +
