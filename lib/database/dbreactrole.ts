@@ -1,8 +1,9 @@
-const { Pool } = require("pg");
+import { Pool } from "pg";
 const yaml = require("js-yaml");
-const fs = require("fs");
+import fs from "fs";
 
-class DBReactRole {
+export class DBReactRole {
+    private pool: Pool;
     constructor() {
         // Loads the db configuration
         const details = this.load_db_login();
@@ -40,7 +41,7 @@ class DBReactRole {
     }
 
     // Checks if the table exists in the db
-    async check_table(table_name) {
+    async check_table(table_name: String) {
         const client = await this.pool.connect();
         try {
             // console.log("Running check_table command")
@@ -59,6 +60,7 @@ class DBReactRole {
             }
         } catch (ex) {
             console.log(`Something wrong happend in react role ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -113,7 +115,7 @@ class DBReactRole {
     }
 
     // Add new react role message
-    async add_react_role_msg(msg_id, sender_id) {
+    async add_react_role_msg(msg_id: Number, sender_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -132,7 +134,7 @@ class DBReactRole {
     }
 
     // Add new react role role
-    async add_react_role_role(role_id, emoji, msg_id) {
+    async add_react_role_role(role_id: Number, emoji: Number, msg_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -151,7 +153,7 @@ class DBReactRole {
     }
 
     // Get role
-    async get_roles(msg_id, emoji) {
+    async get_roles(msg_id: Number, emoji: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -165,6 +167,7 @@ class DBReactRole {
             return result.rows;
         } catch (ex) {
             console.log(`Something wrong happend in react role ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -173,7 +176,7 @@ class DBReactRole {
     }
 
     // Get sender
-    async get_sender(msg_id) {
+    async get_sender(msg_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");

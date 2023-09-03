@@ -1,0 +1,93 @@
+// import { Partials } from "discord.js";
+
+const fs = require("fs");
+const { Client, Collection, Intents, Partials } = require("discord.js");
+require("dotenv").config();
+
+const { GatewayIntentBits } = require("discord.js");
+
+// Create a new client instance
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions,
+        // GatewayIntentBits.GuideVoiceStates,
+        // GatewayIntentBits.GuidePresences,
+    ],
+    partials: [
+        Partials.Message,
+        Partials.Channel,
+        Partials.Reaction,
+        Partials.GuildMembers,
+        Partials.User,
+    ],
+});
+// Create a new client instance
+// const client = new Client({
+//     intents: [
+//         Intents.FLAGS.GUILDS,
+//         Intents.FLAGS.GUILD_MEMBERS,
+//         Intents.FLAGS.GUILD_MESSAGES,
+//         Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+//         Intents.FLAGS.GUILD_VOICE_STATES,
+//         Intents.FLAGS.GUILD_PRESENCES,
+//     ],
+//     partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"],
+// });
+// Add commands to the client
+client.commands = new Collection();
+const commandFiles = fs.readdirSync("./commands").filter((file: string) => file.endsWith(".js"));
+
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    client.commands.set(command.data.name, command);
+}
+
+require("events").EventEmitter.defaultMaxListeners = 0;
+
+// Add events to the client
+const eventFiles = fs.readdirSync("./events").filter((file: string) => file.endsWith(".js"));
+
+for (const file of eventFiles) {
+    const event = require(`./events/${file}`);
+    if (event.once) {
+        client.once(event.name, (...args: any) => event.execute(...args));
+    } else {
+        client.on(event.name, (...args: any) => event.execute(...args));
+    }
+}
+
+// Handle commands
+client.on(
+    "interactionCreate",
+    async (interaction: {
+        isCommand: () => any;
+        commandName: any;
+        reply: (arg0: { content: string; ephemeral: boolean }) => any;
+    }) => {
+        if (!interaction.isCommand()) return;
+
+        const command = client.commands.get(interaction.commandName);
+
+        if (!command) return;
+
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({
+                content: "There was an error while executing this command!",
+                ephemeral: true,
+            });
+        }
+    },
+);
+
+client.on("shardError", (error: any) => {
+    console.error("A websocket connection encountered an error:", error);
+});
+
+client.login(process.env.DISCORD_TOKEN);

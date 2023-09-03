@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+const { PermissionFlagsBits } = require("discord.js");
 
 const COMMAND_KICKUNVERIFIED = "kickunverified";
 const COMMAND_MIGRATE = "migratecourses";
@@ -52,7 +52,7 @@ module.exports = {
         ),
     async execute(interaction) {
         try {
-            if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            if (!interaction.member.permissions.has(PermissionFlagsBits.ADMINISTRATOR)) {
                 return await interaction.reply({
                     content: "You do not have permission to execute this command.",
                     ephemeral: true,

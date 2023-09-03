@@ -1,8 +1,9 @@
-const { Pool } = require("pg");
+import { Pool } from "pg";
 const yaml = require("js-yaml");
-const fs = require("fs");
+import fs from "fs";
 
-class DBlog {
+export class DBlog {
+    private pool: Pool;
     constructor() {
         // Loads the db configuration
         const details = this.load_db_login();
@@ -27,7 +28,7 @@ class DBlog {
     }
 
     // Checks if the table exists in the db
-    async check_table(table_name) {
+    async check_table(table_name: String) {
         const client = await this.pool.connect();
         try {
             // console.log("Running check_table command")
@@ -46,6 +47,7 @@ class DBlog {
             }
         } catch (ex) {
             console.log(`Something wrong happend ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -122,7 +124,7 @@ class DBlog {
         }
     }
 
-    async channel_add(channel_id, channel_name, guild_id) {
+    async channel_add(channel_id: Number, channel_name: any, guild_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -147,7 +149,7 @@ class DBlog {
         }
     }
 
-    async channel_delete(channel_id) {
+    async channel_delete(channel_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -176,7 +178,7 @@ class DBlog {
         }
     }
 
-    async channelname_get(channel_id) {
+    async channelname_get(channel_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -194,6 +196,7 @@ class DBlog {
             }
         } catch (ex) {
             console.log(`Something wrong happend ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -201,7 +204,7 @@ class DBlog {
         }
     }
 
-    async channelname_update(channel_name, channel_id) {
+    async channelname_update(channel_name: String, channel_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -218,17 +221,23 @@ class DBlog {
         }
     }
 
-    async message_create(messageid, userid, user, message, channelid) {
+    async message_create(
+        messageid: Number,
+        userid: Number,
+        user: String,
+        message: String,
+        channelid: Number,
+    ) {
         let time = new Date();
         time.setMilliseconds(0);
-        time = time.toLocaleString("sv", { timeZoneName: "short" });
+        const timeString = time.toLocaleString("sv", { timeZoneName: "short" });
 
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
 
             const query = "INSERT INTO message_logs VALUES ($1,$2,$3,$4,$5,$6,$7,$8)";
-            const values = [messageid, userid, user, message, message, 0, time, channelid];
+            const values = [messageid, userid, user, message, message, 0, timeString, channelid];
             await client.query(query, values);
 
             await client.query("COMMIT");
@@ -241,7 +250,7 @@ class DBlog {
         }
     }
 
-    async message_delete(messageid) {
+    async message_delete(messageid: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -269,7 +278,7 @@ class DBlog {
         }
     }
 
-    async message_update(oldMessage_id, newMessage_id, newMessage) {
+    async message_update(oldMessage_id: Number, newMessage_id: Number, newMessage: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -293,7 +302,7 @@ class DBlog {
         }
     }
 
-    async collect_messages(start, end) {
+    async collect_messages(start: any, end: any) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -310,6 +319,7 @@ class DBlog {
             return result.rows;
         } catch (ex) {
             console.log(`Something wrong happend ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();

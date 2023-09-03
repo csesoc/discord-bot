@@ -1,6 +1,7 @@
 const help = require("../config/help.json");
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+// const { SlashCommandBuilder } = require("@discordjs/builders");
+const { ActionRowBuilder } = require("discord.js");
+const { ButtonBuilder, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 // Fetches commands from the help data
 const commands = help.commands;
@@ -9,18 +10,27 @@ const commands = help.commands;
 const prevId = "helpPrevButtonId";
 const nextId = "helpNextButtonId";
 
-const prevButton = new MessageButton({
-    style: "SECONDARY",
-    label: "Previous",
-    emoji: "⬅️",
-    customId: prevId,
-});
-const nextButton = new MessageButton({
-    style: "SECONDARY",
-    label: "Next",
-    emoji: "➡️",
-    customId: nextId,
-});
+const prevButton = new ButtonBuilder()
+    .setCustomId(prevId)
+    .setLabel("Previous")
+    .setStyle("Secondary")
+    .setEmoji("⬅️");
+//     style: "SECONDARY",
+//     label: "Previous",
+//     emoji: "⬅️",
+//     customId: prevId,
+// });
+const nextButton = new ButtonBuilder()
+    .setCustomId(nextId)
+    .setLabel("Next")
+    .setStyle("Secondary")
+    .setEmoji("➡️");
+// const nextButton = new MessageButton({
+//     style: "SECONDARY",
+//     label: "Next",
+//     emoji: "➡️",
+//     customId: nextId,
+// });
 
 const PAGE_SIZE = 10;
 
@@ -33,18 +43,31 @@ const generateEmbed = (start) => {
     const current = commands.slice(start, start + PAGE_SIZE);
     const pageNum = Math.floor(start / PAGE_SIZE) + 1;
 
-    return new MessageEmbed({
-        title: `Help Command - Page ${pageNum}`,
-        color: 0x3a76f8,
-        author: {
+    return new EmbedBuilder()
+        .setTitle(`Help Command - Page ${pageNum}`)
+        .setColor(0x3a76f8)
+        .setAuthor({
             name: "CSESoc Bot",
             icon_url: "https://i.imgur.com/EE3Q40V.png",
-        },
-        fields: current.map((command, index) => ({
-            name: `${start + index + 1}. ${command.name}`,
-            value: `${command.description}\nUsage: ${command.usage}`,
-        })),
-    });
+        })
+        .setFields(
+            current.map((command, index) => ({
+                name: `${start + index + 1}. ${command.name}`,
+                value: `${command.description}\nUsage: ${command.usage}`,
+            })),
+        );
+    // ({
+    //     title: `Help Command - Page ${pageNum}`,
+    //     color: 0x3a76f8,
+    //     author: {
+    //         name: "CSESoc Bot",
+    //         icon_url: "https://i.imgur.com/EE3Q40V.png",
+    //     },
+    //     fields: current.map((command, index) => ({
+    //         name: `${start + index + 1}. ${command.name}`,
+    //         value: `${command.description}\nUsage: ${command.usage}`,
+    //     })),
+    // });
 };
 
 module.exports = {
@@ -86,16 +109,27 @@ module.exports = {
         await interaction.reply({
             embeds: [helpEmbed],
             components: [
-                new MessageActionRow({
-                    components: [
-                        // previous button if it isn't the start
-                        ...(currentIndex ? [prevButton] : []),
-                        // next button if it isn't the end
+                new ActionRowBuilder()
+                    .addComponents(...(currentIndex ? [prevButton] : []))
+                    .addComponents(
                         ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
-                    ],
-                }),
+                    ),
             ],
         });
+
+        // await interaction.reply({
+        //     embeds: [helpEmbed],
+        //     components: [
+        //         new ActionRowBuilder({
+        //             components: [
+        //                 // previous button if it isn't the start
+        //                 ...(currentIndex ? [prevButton] : []),
+        //                 // next button if it isn't the end
+        //                 ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
+        //             ],
+        //         }),
+        //     ],
+        // });
 
         // Creates a collector for button interaction events, setting a 120s maximum
         // timeout and a 30s inactivity timeout
@@ -114,20 +148,33 @@ module.exports = {
         collector.on("collect", async (i) => {
             // Adjusts the currentIndex based on the id of the button pressed
             i.customId === prevId ? (currentIndex -= PAGE_SIZE) : (currentIndex += PAGE_SIZE);
-
             await i.update({
                 embeds: [generateEmbed(currentIndex)],
                 components: [
-                    new MessageActionRow({
-                        components: [
+                    new ActionRowBuilder()
+                        .addComponents(
                             // previous button if it isn't the start
                             ...(currentIndex ? [prevButton] : []),
-                            // next button if it isn't the end
+                        )
+                        .addComponents(
                             ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
-                        ],
-                    }),
+                        ),
                 ],
             });
+
+            // await i.update({
+            //     embeds: [generateEmbed(currentIndex)],
+            //     components: [
+            //         new ActionRowBuilder({
+            //             components: [
+            //                 // previous button if it isn't the start
+            //                 ...(currentIndex ? [prevButton] : []),
+            //                 // next button if it isn't the end
+            //                 ...(currentIndex + PAGE_SIZE < commands.length ? [nextButton] : []),
+            //             ],
+            //         }),
+            //     ],
+            // });
         });
 
         // Clears buttons from embed page after timeout on collector

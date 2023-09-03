@@ -1,8 +1,9 @@
-const { Pool } = require("pg");
+import { Pool } from "pg";
 const yaml = require("js-yaml");
-const fs = require("fs");
+import fs from "fs";
 
 class DBSchedulePost {
+    private pool: Pool;
     constructor() {
         // Loads the db configuration
         const details = this.load_db_login();
@@ -35,7 +36,7 @@ class DBSchedulePost {
     }
 
     // Checks if the table exists in the db
-    async check_table(table_name) {
+    async check_table(table_name: String) {
         const client = await this.pool.connect();
         try {
             // console.log("Running check_table command")
@@ -54,6 +55,7 @@ class DBSchedulePost {
             }
         } catch (ex) {
             console.log(`Something wrong happend in schedule post ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -90,12 +92,12 @@ class DBSchedulePost {
 
     // Add new scheduled post
     async add_react_role_msg(
-        guild_id,
-        msg_id,
-        init_channel_id,
-        send_channel_id,
-        datetime,
-        reminder,
+        guild_id: Number,
+        msg_id: Number,
+        init_channel_id: Number,
+        send_channel_id: Number,
+        datetime: any,
+        reminder: any,
     ) {
         const client = await this.pool.connect();
         try {
@@ -115,7 +117,7 @@ class DBSchedulePost {
     }
 
     // Add reminder
-    async add_reminder(sent_msg_id, scheduled_post_id) {
+    async add_reminder(sent_msg_id: Number, scheduled_post_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -133,7 +135,7 @@ class DBSchedulePost {
     }
 
     // Get all posts scheduled at given time
-    async get_scheduled(datetime) {
+    async get_scheduled(datetime: any) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -147,6 +149,7 @@ class DBSchedulePost {
             return result.rows;
         } catch (ex) {
             console.log(`Something wrong happend in schedule post ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -155,7 +158,7 @@ class DBSchedulePost {
     }
 
     // Get all reminders at given time
-    async get_reminders(reminder) {
+    async get_reminders(reminder: any) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -169,6 +172,7 @@ class DBSchedulePost {
             return result.rows;
         } catch (ex) {
             console.log(`Something wrong happend in schedule post ${ex}`);
+            return null;
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -176,7 +180,7 @@ class DBSchedulePost {
         }
     }
 
-    async remove_scheduled(scheduled_post_id) {
+    async remove_scheduled(scheduled_post_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -192,7 +196,7 @@ class DBSchedulePost {
         }
     }
 
-    async get_scheduled_post_id(msg_id, send_channel_id, datetime) {
+    async get_scheduled_post_id(msg_id: Number, send_channel_id: Number, datetime: any) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
