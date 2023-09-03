@@ -1,6 +1,6 @@
 // @ts-check
-const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+const { PermissionFlagsBits, SlashCommandBuilder, SlashCommandSubcommandBuilder, ChatInputCommandInteraction } = require("discord.js");
+const { DBFaq } = require("../lib/database/faq");
 
 // ////////////////////////////////////////////
 // //////// SETTING UP THE COMMANDS ///////////
@@ -40,13 +40,15 @@ const baseCommand = new SlashCommandBuilder()
 // ////////////////////////////////////////////
 
 // handle the command
-/** @param {CommandInteraction} interaction */
+/** @param {ChatInputCommandInteraction} interaction */
 async function handleInteraction(interaction) {
     /** @type {DBFaq} */
     const faqStorage = global.faqStorage;
 
+    if (!interaction.inCachedGuild()) return; 
+
     // Admin permission check (this may not work uhm)
-    if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+    if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
         await interaction.reply({
             content: "You do not have permission to execute this command.",
             ephemeral: true,
@@ -56,14 +58,29 @@ async function handleInteraction(interaction) {
 
     // figure out which command was called
     const subcommand = interaction.options.getSubcommand(false);
+    /** @type {string | null} */
     let keyword = null;
+    
+    /** @type {string | null} */
     let answer = null;
+
+    /** @type {string | null} */
     let tags = null;
+
+    /** @type {boolean | undefined} */
     let success = false;
+
+    /** @type {import("discord.js").CommandInteractionOption<"cached"> | null} */
+    let get_keyword = null;
+    
     switch (subcommand) {
         case "create":
-            keyword = String(interaction.options.get("keyword").value).toLowerCase();
-            answer = String(interaction.options.get("answer").value);
+            get_keyword = interaction.options.get("keyword");
+            const get_answer = interaction.options.get("answer");
+            if (get_keyword == null || get_answer == null) return;
+
+            keyword = String(get_keyword.value).toLowerCase();
+            answer = String(get_answer.value);
             if (answer.length >= 1024) {
                 await interaction.reply({
                     content: "The answer must be < 1024 characters...",
@@ -72,8 +89,9 @@ async function handleInteraction(interaction) {
             }
 
             console.log("gets here");
-            if (interaction.options.get("tags") != null) {
-                tags = String(interaction.options.get("tags").value);
+            const get_tags = interaction.options.get("tags");
+            if (get_tags != null) {
+                tags = String(get_tags.value);
                 // validate "tags" string
                 if (tags) {
                     tags = tags.trim();
@@ -102,7 +120,10 @@ async function handleInteraction(interaction) {
             }
             break;
         case "delete":
-            keyword = String(interaction.options.get("keyword").value).toLowerCase();
+            get_keyword = interaction.options.get("keyword");
+            if (get_keyword == null) return;
+
+            keyword = String(get_keyword.value).toLowerCase();
             success = await faqStorage.del_faq(keyword);
             if (success) {
                 await interaction.reply({
