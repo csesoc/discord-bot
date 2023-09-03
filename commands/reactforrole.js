@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions, MessageEmbed } = require("discord.js");
+const { EmbedBuilder, PermissionFlagsBits, ChatInputCommandInteraction, GuildMember, MessagePayload } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,9 +25,15 @@ module.exports = {
             option.setName("message").setDescription("Enter your message"),
         ),
 
+    /**
+     *
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns
+     */
     async execute(interaction) {
         // Only admin users should be able to execute this command
-        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return await interaction.reply({
                 content: "You do not have permission to execute this command.",
                 ephemeral: true,
@@ -72,8 +78,9 @@ module.exports = {
             });
         }
 
-        const reactRoles = global.reactRoles;
+        const { reactRoles } = global;
 
+        /** @type {Record<string, number>} */
         const roles = {};
 
         let notificationContent = "This command: \n";
@@ -87,27 +94,29 @@ module.exports = {
             }
 
             // Check if role exist
-            const role = interaction.member.guild.roles.cache.find((r) => r.name === roleName);
+            /** @type {GuildMember} */
+            const member = interaction.member;
+            const role = member.guild.roles.cache.find(r => r.name === roleName);
             let roleID = 0;
 
             if (role) {
-                const roleIsAdmin = role.permissions.has("ADMINISTRATOR");
+                const roleIsAdmin = role.permissions.has(PermissionFlagsBits.Administrator);
                 if (roleIsAdmin) {
                     return await interaction.reply({
                         content: `The existing role '${roleName}' has admin permissions so this command cannot be used to give users this role`,
                         ephemeral: true,
                     });
                 }
-                roleID = role.id;
+                roleID = Number(role.id);
                 notificationContent += `\t'${emoji}' Used the existing role '${roleName}'\n`;
             } else {
                 // Role does not exist so create one
                 try {
-                    const newRole = await interaction.member.guild.roles.create({
+                    const newRole = await member.guild.roles.create({
                         name: roleName,
                         reason: `new role required for react role feature "${roleName}"`,
                     });
-                    roleID = newRole.id;
+                    roleID = Number(newRole.id);
                     notificationContent += `\t'${emoji}' Created the new role '${roleName}'\n`;
                 } catch (err) {
                     console.log(err);
@@ -135,33 +144,36 @@ module.exports = {
 
         try {
             // Send message
-            const sentMessage = await interaction.guild.channels.cache
-                .get(interaction.channelId)
-                .send({
-                    content: message,
-                    fetchReply: true,
-                });
+            /** @type {import("discord.js").TextBasedChannel} */
+            const channel = interaction.channel;
+            // const sentMessage = await interaction.guild.channels.cache
+            //     .get(interaction.channelId)
+            //     .send({
+            //         content: message,
+            //         fetchReply: true,
+            //     });
+
+
+            const sentMessage = await channel.send(message);
 
             // Notify user that they used the command
             const botName = sentMessage.author.username;
-            const notification = new MessageEmbed()
+            const notification = new EmbedBuilder()
                 .setColor("#7cd699")
                 .setTitle("React For Role Command Used!")
                 .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
                 .setDescription(
                     `You used the 'reactforrole' command in "${interaction.member.guild.name} \n\n` +
-                        notificationContent +
-                        "\nReact ⛔ on the reaction message to stop users from getting the roles",
+                    notificationContent +
+                    "\nReact ⛔ on the reaction message to stop users from getting the roles",
                 );
-            interaction.reply({
+            await interaction.reply({
                 embeds: [notification],
                 ephemeral: true,
             });
 
             // Add react
-            emojiList.forEach((e) => {
-                sentMessage.react(e);
-            });
+            emojiList.forEach(e => sentMessage.react(e));
 
             // Add to database
             await reactRoles.add_react_role_msg(sentMessage.id, interaction.user.id);
