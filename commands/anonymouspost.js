@@ -1,6 +1,6 @@
 //@ts-check
-const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, EmbedBuilder, ChatInputCommandInteraction, ChannelType, ButtonStyle, MessageFlags } = require("discord.js");
-const paginationEmbed = require("discordjs-button-pagination");
+const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, EmbedBuilder, ChatInputCommandInteraction, ChannelType, ButtonStyle } = require("discord.js");
+const { Pagination } = require("pagination.djs");
 const fs = require("fs");
 
 /** @type {string[]} */
@@ -295,7 +295,24 @@ module.exports = {
                 new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
             ];
 
-            return paginationEmbed(interaction, embedList, buttonList);
+            // may need to tweak this as necessary
+            const pagination = new Pagination(interaction, {
+                firstEmoji: '⏮', // First button emoji
+                prevEmoji: '◀️', // Previous button emoji
+                nextEmoji: '▶️', // Next button emoji
+                lastEmoji: '⏭', // Last button emoji
+                prevLabel: "Previous",
+                nextLabel: "Next",
+            });
+
+            /** @type {Record<string, ButtonBuilder>} */
+            const buttons = buttonList.reduce((_, button, i) => Object.assign(String(i), button), {});
+            pagination.addEmbeds(embedList);
+            pagination.setButtons(buttons);
+            await pagination.reply();
+
+            // use of deprecated libary
+            // return paginationEmbed(interaction, embedList, buttonList);
         }
     },
 };

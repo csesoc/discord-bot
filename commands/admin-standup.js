@@ -1,6 +1,7 @@
 // @ts-check
 const { EmbedBuilder, ButtonBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction, InteractionResponse, ButtonStyle } = require("discord.js");
 const paginationEmbed = require("discordjs-button-pagination");
+const { Pagination } = require("pagination.djs");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -58,7 +59,7 @@ module.exports = {
 
                 const ON_BREAK_ID = "1036905668352942090";
                 roleMembers = roleMembers.filter((rm) => !rm.roles.cache.has(ON_BREAK_ID));
-                
+
                 if (!interaction.channel) return;
                 const thisTeamId = interaction.channel.parentId;
                 const numDaysToRetrieve = (interaction.options.getInteger("days")) ?? 7;
@@ -86,7 +87,7 @@ module.exports = {
 
                 /** @type {string[]} */
                 const standupEmbeded = [];
-                
+
                 // add all standups
                 thisTeamStandups.forEach((standUp) => {
                     standupDone.push(standUp.user_id);
@@ -165,8 +166,24 @@ module.exports = {
                     new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
                 ];
 
+                // may need to tweak this as necessary
+                const pagination = new Pagination(interaction, {
+                    firstEmoji: '⏮', // First button emoji
+                    prevEmoji: '◀️', // Previous button emoji
+                    nextEmoji: '▶️', // Next button emoji
+                    lastEmoji: '⏭', // Last button emoji
+                    prevLabel: "Previous",
+                    nextLabel: "Next",
+                });
+
+                /** @type {Record<string, ButtonBuilder>} */
+                const buttons = buttonList.reduce((_, button, i) => Object.assign(String(i), button), {});
+                pagination.addEmbeds(embedList);
+                pagination.setButtons(buttons);
+                await pagination.reply();
+                
                 // depdendency on v13 helper functions - DEPRECATED
-                paginationEmbed(interaction, embedList, buttonList);
+                // paginationEmbed(interaction, embedList, buttonList);
 
                 // sendmsg += "\n" + "These users have not done their standup:\n" + notDoneUsersString;
                 // await interaction.reply(sendmsg);

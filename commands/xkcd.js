@@ -76,7 +76,7 @@ module.exports = {
     async execute(interaction) {
         switch (interaction.options.getSubcommand()) {
             case "latest":
-                xkcd.latest(async (err, res) => xkcd_response(err, res, interaction));
+                xkcd.latest(async (/** @type {any} */ err, /** @type {xkcdJSON} */ res) => xkcd_response(err, res, interaction));
                 break;
             case "get":
                 /** @type {number} */
@@ -84,11 +84,11 @@ module.exports = {
 
                 xkcd.get(
                     comic_id,
-                    async (err, res) => xkcd_response(err, res, interaction)
+                    async (/** @type {any} */ err, /** @type {xkcdJSON} */ res) => xkcd_response(err, res, interaction)
                 );
                 break;
             case "random":
-                xkcd.random(async (err, res) => xkcd_response(err, res, interaction));
+                xkcd.random(async (/** @type {any} */ err, /** @type {xkcdJSON} */ res) => xkcd_response(err, res, interaction));
                 break;
             default:
                 break;
