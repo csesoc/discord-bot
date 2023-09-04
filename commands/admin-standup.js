@@ -1,6 +1,5 @@
 // @ts-check
 const { EmbedBuilder, ButtonBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction, InteractionResponse, ButtonStyle } = require("discord.js");
-const paginationEmbed = require("discordjs-button-pagination");
 const { Pagination } = require("pagination.djs");
 
 module.exports = {
