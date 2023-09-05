@@ -1,3 +1,3 @@
 #!/bin/sh
-node deploy-commands.js
-node index.js
+node deploy-commands.ts
+node index.ts

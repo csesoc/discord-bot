@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-const yaml = require("js-yaml");
+import { load } from "js-yaml";
 import fs from "fs";
 
 export class DBlog {
@@ -20,7 +20,7 @@ export class DBlog {
     load_db_login() {
         // Get document, or throw exception on error
         try {
-            const doc = yaml.load(fs.readFileSync("./config/database.yml"));
+            const doc:any = load(fs.readFileSync("./config/database.yml","utf-8"));
             return doc;
         } catch (e) {
             console.log(e);
@@ -328,6 +328,6 @@ export class DBlog {
     }
 }
 
-module.exports = {
+export const dblog = {
     DBlog,
 };

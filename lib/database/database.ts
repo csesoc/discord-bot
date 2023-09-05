@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-const yaml = require("js-yaml");
+import { load } from "js-yaml";
 import fs from "fs";
 // const { count, table } = require('console');
 
@@ -28,7 +28,7 @@ class DBuser {
     load_db_login() {
         // Get document, or throw exception on error
         try {
-            const doc = yaml.load(fs.readFileSync("../../config/database.yml"));
+            const doc:any = load(fs.readFileSync("../../config/database.yml","utf-8"));
             return doc;
         } catch (e) {
             console.log(e);
@@ -456,6 +456,6 @@ class DBuser {
     }
 }
 
-module.exports = {
+export const database = {
     DBuser,
 };

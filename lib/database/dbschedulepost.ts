@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-const yaml = require("js-yaml");
+import { load } from "js-yaml";
 import fs from "fs";
 
 class DBSchedulePost {
@@ -28,7 +28,7 @@ class DBSchedulePost {
     // Get document, or throw exception on error
     load_db_login() {
         try {
-            const doc = yaml.load(fs.readFileSync("./config/database.yml"));
+            const doc:any = load(fs.readFileSync("./config/database.yml","utf-8"));
             return doc;
         } catch (e) {
             console.log(e);
@@ -222,6 +222,6 @@ class DBSchedulePost {
     }
 }
 
-module.exports = {
+export const dbSchedulePost= {
     DBSchedulePost,
 };

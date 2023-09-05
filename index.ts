@@ -16,8 +16,8 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessageReactions,
-        // GatewayIntentBits.GuideVoiceStates,
-        // GatewayIntentBits.GuidePresences,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildPresences,
     ],
     partials: [
         Partials.Message,
@@ -46,8 +46,12 @@ const initaliseBot = async () => {
     for (const file of eventFiles) {
         const event = await import(`./events/${file}`);
         if (event.once) {
+            console.log(event);
+            console.log("hello");
             client.once(event.name, (...args) => event.execute(...args));
         } else {
+            console.log(event);
+            console.log("hello11");
             client.on(event.name, (...args) => event.execute(...args));
         }
     }
