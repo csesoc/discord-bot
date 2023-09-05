@@ -124,7 +124,7 @@ export class DBlog {
         }
     }
 
-    async channel_add(channel_id: Number, channel_name: any, guild_id: Number) {
+    async channel_add(channel_id: String, channel_name: any, guild_id: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -149,7 +149,7 @@ export class DBlog {
         }
     }
 
-    async channel_delete(channel_id: Number) {
+    async channel_delete(channel_id: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -178,7 +178,7 @@ export class DBlog {
         }
     }
 
-    async channelname_get(channel_id: Number) {
+    async channelname_get(channel_id: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -204,7 +204,7 @@ export class DBlog {
         }
     }
 
-    async channelname_update(channel_name: String, channel_id: Number) {
+    async channelname_update(channel_name: String, channel_id: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -223,10 +223,10 @@ export class DBlog {
 
     async message_create(
         messageid: Number,
-        userid: Number,
+        userid: String,
         user: String,
         message: String,
-        channelid: Number,
+        channelid: String,
     ) {
         let time = new Date();
         time.setMilliseconds(0);
@@ -278,7 +278,7 @@ export class DBlog {
         }
     }
 
-    async message_update(oldMessage_id: Number, newMessage_id: Number, newMessage: Number) {
+    async message_update(oldMessage_id: String, newMessage_id: String, newMessage: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");

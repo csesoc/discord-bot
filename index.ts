@@ -3,13 +3,10 @@ import { Client, Collection, Partials, GatewayIntentBits } from 'discord.js';
 import { config as dotenvConfig } from 'dotenv';
 import { EventEmitter } from 'events';
 
+
 dotenvConfig();
 
-interface ExtendedClient extends Client {
-    commands: Collection<string, any>; 
-}
-
-const client = new Client({
+const client: Client & { commands?: Collection<string, any> } = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
@@ -26,12 +23,10 @@ const client = new Client({
         Partials.GuildMember,
         Partials.User,
     ],
-}) as ExtendedClient;
-
-const initaliseBot = async () => {
-    // Add commands to the client
+});
+const initaliseBot = async (): Promise<void> => {
     client.commands = new Collection();
-    const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
+    const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.ts'));
 
     for (const file of commandFiles) {
         const command = await import(`./commands/${file}`);
@@ -40,27 +35,21 @@ const initaliseBot = async () => {
 
     EventEmitter.defaultMaxListeners = 0;
 
-    // Add events to the client
     const eventFiles = fs.readdirSync('./events').filter((file) => file.endsWith('.ts'));
-
     for (const file of eventFiles) {
-        const event = await import(`./events/${file}`);
+        const event = (await import(`./events/${file}`)).default;
+        if (!event) continue;
         if (event.once) {
-            console.log(event);
-            console.log("hello");
             client.once(event.name, (...args) => event.execute(...args));
         } else {
-            console.log(event);
-            console.log("hello11");
             client.on(event.name, (...args) => event.execute(...args));
         }
     }
 
-    // Handle commands
     client.on('interactionCreate', async (interaction) => {
         if (!interaction.isCommand()) return;
 
-        const command = client.commands.get(interaction.commandName);
+        const command = client.commands?.get(interaction.commandName);
 
         if (!command) return;
 
@@ -75,9 +64,11 @@ const initaliseBot = async () => {
         }
     });
 
-    client.on('shardError', (error) => {
+    client.on('shardError', (error: Error) => {
         console.error('A websocket connection encountered an error:', error);
     });
+
     client.login(process.env.DISCORD_TOKEN);
 }
+
 initaliseBot().catch(error => console.error("Failed to initialize bot:", error));

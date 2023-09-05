@@ -1,4 +1,4 @@
-import { Events  } from "discord.js";
+import { Events } from "discord.js";
 
 function messagelog(message: any): void {
     // ignore messages sent from bot
@@ -16,20 +16,19 @@ function messagelog(message: any): void {
     );
 }
 
-export const messageCreate = {
+export default {
     name: Events.MessageCreate,
     async execute(message: any): Promise<void> {
-        // const standupDB = (global as any).standupDBGlobal;
+        const standupDB = (global as any).standupDBGlobal;
         messagelog(message);
-        console.log(message);
-        // if (message.content.startsWith("$standup")) {
-        //     // Get standup content
-        //     const messages: string = String(message.content);
-        //     const messageContent: string = messages.slice(8).trim();
-        //     const teamId: string = message.channel.parentId;
-        //     const standupAuthorId: string = message.author.id;
+        if (message.content.startsWith("$standup")) {
+            // Get standup content
+            const messages: string = String(message.content);
+            const messageContent: string = messages.slice(8).trim();
+            const teamId: string = message.channel.parentId;
+            const standupAuthorId: string = message.author.id;
 
-        //     await standupDB.addStandup(teamId, standupAuthorId, message.id, messageContent);
-        // }
+            await standupDB.addStandup(teamId, standupAuthorId, message.id, messageContent);
+        }
     },
 };
