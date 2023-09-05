@@ -6,7 +6,7 @@ module.exports = {
     execute(client: any) {
         const guilds = client.guilds.cache.map((guild: any) => guild.id);
         const logDB = new DBlog();
-        global.logDB = logDB;
+        (global as any).logDB = logDB;
 
         (async () => {
             await logDB.create_tables();

@@ -6,6 +6,6 @@ export const ready = {
 	once: true,
   	execute(client: Client) {
     	const cbStorage = new CarrotboardStorage(client);
-    	global.cbStorage = cbStorage;
+    	(global as any).cbStorage = cbStorage;
   	},
 };

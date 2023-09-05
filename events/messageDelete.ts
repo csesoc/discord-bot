@@ -7,7 +7,7 @@ export const messageDelete = {
             return;
         }
   
-        const logDB = global.logDB;
+        const logDB = (global as any).logDB;
         logDB.message_delete(message.id);
     },
 };

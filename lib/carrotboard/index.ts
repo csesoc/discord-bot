@@ -53,6 +53,7 @@ export class CarrotboardStorage {
         // create the embed
         /** @type {MessageEmbedOptions} */
         const embedOptions = {
+            title: "",
             description: `**${messageContent}**`,
             color: message.member.displayHexColor,
             footer: { text: `ID: ${CBID}` },
@@ -65,7 +66,7 @@ export class CarrotboardStorage {
         // set title
         switch (emoji) {
             case this.pin:
-                embedOptions.title = "Wow! A new community Pin! :pushpin: :tada:";
+                embedOptions .title = "Wow! A new community Pin! :pushpin: :tada:";
                 break;
             case this.config.carrot:
                 embedOptions.title = "A new message has been Carrotted! :partying_face: :tada:";
@@ -216,20 +217,19 @@ export class CarrotboardStorage {
 }
 
 class CarrotboardEntryType {
-    /** @readonly @type {Number} */
-    carrot_id;
+    readonly carrot_id:Number | undefined;
     /** @readonly @type {String} */
-    emoji;
+    emoji:any;
     /** @readonly @type {String} */
-    count;
+    count:any;
     /** @readonly @type {String} */
-    user_id;
+    user_id:any;
     /** @readonly @type {String} */
-    message_id;
+    message_id:any;
     /** @readonly @type {String} */
-    channel_id;
+    channel_id:any;
     /** @readonly @type {String} */
-    message_contents;
+    message_contents:any;
 
     static keys = [
         "carrot_id",
@@ -251,25 +251,25 @@ class CarrotboardEntryType {
 
 class CarrotboardConfig {
     /** @protected @type {String} */
-    _leaderboardID;
+    _leaderboardID:any;
     /** @protected @type {String} */
-    _permaChannelID;
+    _permaChannelID:any;
     /** @protected @type {String} */
-    _alertChannelID;
+    _alertChannelID:any;
     /** @protected @type {String} */
-    _guildID;
+    _guildID:any;
     /** @protected @type {String} */
-    _carrot;
+    _carrot:any;
     /** @protected @type {Number} */
-    _minimum;
+    _minimum:any;
     /** @protected @type {Number} */
-    _pinMinimum;
-
+    _pinMinimum:any;
+    
     constructor() {
         // read the file
         const file = fs.readFileSync("./config/carrotboard.yaml", "utf8");
         const parsed = YAML.parse(file, { intAsBigInt: true });
-        const expectedKeys = {
+        const expectedKeys: ExpectedKeys = {
             leaderboard_message_id: "leaderboardID",
             leaderboard_channel_id: "permaChannelID",
             carrotboard_alert_channel_id: "alertChannelID",
@@ -278,15 +278,18 @@ class CarrotboardConfig {
             minimum_carrot_count: "minimum",
             minimum_pin_count: "pinMinimum",
         };
+        
 
         // check the config keys
         for (const key in expectedKeys) {
             const value = parsed[key];
+            console.log(`Key: ${key}, Value: ${value}`);
             if (value == null) {
                 throw new TypeError(`Carrotboard: Missing config option: ${key}`);
             }
-            this[expectedKeys[key]] = value;
+            this[expectedKeys[key] as keyof CarrotboardConfig] = value;
         }
+        
     }
 
     saveToFile() {
@@ -439,3 +442,7 @@ module.exports = {
     CarrotboardEntryType,
     extractOneEmoji,
 };
+
+interface ExpectedKeys {
+    [key: string]: string;
+}

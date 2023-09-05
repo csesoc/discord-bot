@@ -13,7 +13,8 @@ export const messageDelete = {
             message = await message.fetch();
         }
 
-        const cbStorage: CarrotboardStorage = global.cbStorage;
+        const cbStorage: CarrotboardStorage = (global as any).cbStorage;
+
 
         // remove it from storage, and update leaderboard
         await cbStorage.db.del_entry(message.id, message.channelId);

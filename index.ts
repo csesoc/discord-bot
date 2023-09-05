@@ -1,12 +1,14 @@
-// import { Partials } from "discord.js";
+import fs from 'fs';
+import { Client, Collection, Partials, GatewayIntentBits } from 'discord.js';
+import { config as dotenvConfig } from 'dotenv';
+import { EventEmitter } from 'events';
 
-const fs = require("fs");
-const { Client, Collection, Intents, Partials } = require("discord.js");
-require("dotenv").config();
+dotenvConfig();
 
-const { GatewayIntentBits } = require("discord.js");
+interface ExtendedClient extends Client {
+    commands: Collection<string, any>; 
+}
 
-// Create a new client instance
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -21,53 +23,37 @@ const client = new Client({
         Partials.Message,
         Partials.Channel,
         Partials.Reaction,
-        Partials.GuildMembers,
+        Partials.GuildMember,
         Partials.User,
     ],
-});
-// Create a new client instance
-// const client = new Client({
-//     intents: [
-//         Intents.FLAGS.GUILDS,
-//         Intents.FLAGS.GUILD_MEMBERS,
-//         Intents.FLAGS.GUILD_MESSAGES,
-//         Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-//         Intents.FLAGS.GUILD_VOICE_STATES,
-//         Intents.FLAGS.GUILD_PRESENCES,
-//     ],
-//     partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"],
-// });
-// Add commands to the client
-client.commands = new Collection();
-const commandFiles = fs.readdirSync("./commands").filter((file: string) => file.endsWith(".js"));
+}) as ExtendedClient;
 
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    client.commands.set(command.data.name, command);
-}
+const initaliseBot = async () => {
+    // Add commands to the client
+    client.commands = new Collection();
+    const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
 
-require("events").EventEmitter.defaultMaxListeners = 0;
-
-// Add events to the client
-const eventFiles = fs.readdirSync("./events").filter((file: string) => file.endsWith(".js"));
-
-for (const file of eventFiles) {
-    const event = require(`./events/${file}`);
-    if (event.once) {
-        client.once(event.name, (...args: any) => event.execute(...args));
-    } else {
-        client.on(event.name, (...args: any) => event.execute(...args));
+    for (const file of commandFiles) {
+        const command = await import(`./commands/${file}`);
+        client.commands.set(command.data.name, command);
     }
-}
 
-// Handle commands
-client.on(
-    "interactionCreate",
-    async (interaction: {
-        isCommand: () => any;
-        commandName: any;
-        reply: (arg0: { content: string; ephemeral: boolean }) => any;
-    }) => {
+    EventEmitter.defaultMaxListeners = 0;
+
+    // Add events to the client
+    const eventFiles = fs.readdirSync('./events').filter((file) => file.endsWith('.ts'));
+
+    for (const file of eventFiles) {
+        const event = await import(`./events/${file}`);
+        if (event.once) {
+            client.once(event.name, (...args) => event.execute(...args));
+        } else {
+            client.on(event.name, (...args) => event.execute(...args));
+        }
+    }
+
+    // Handle commands
+    client.on('interactionCreate', async (interaction) => {
         if (!interaction.isCommand()) return;
 
         const command = client.commands.get(interaction.commandName);
@@ -79,15 +65,15 @@ client.on(
         } catch (error) {
             console.error(error);
             await interaction.reply({
-                content: "There was an error while executing this command!",
+                content: 'There was an error while executing this command!',
                 ephemeral: true,
             });
         }
-    },
-);
+    });
 
-client.on("shardError", (error: any) => {
-    console.error("A websocket connection encountered an error:", error);
-});
-
-client.login(process.env.DISCORD_TOKEN);
+    client.on('shardError', (error) => {
+        console.error('A websocket connection encountered an error:', error);
+    });
+    client.login(process.env.DISCORD_TOKEN);
+}
+initaliseBot().catch(error => console.error("Failed to initialize bot:", error));

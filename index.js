@@ -34,7 +34,7 @@ for (const file of commandFiles) {
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 // Add events to the client
-const eventFiles = fs.readdirSync("./events").filter((file) => file.endsWith(".js"));
+const eventFiles = fs.readdirSync("./events").filter((file) => file.endsWith(".ts"));
 
 for (const file of eventFiles) {
     const event = require(`./events/${file}`);

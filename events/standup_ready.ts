@@ -5,6 +5,6 @@ export const ready = {
     once: true,
     execute(): void {
         const standupDBGlobal = new DBstandup();
-        global.standupDBGlobal = standupDBGlobal;
+        (global as any).standupDBGlobal = standupDBGlobal;
     },
 };

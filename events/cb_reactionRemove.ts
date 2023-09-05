@@ -5,14 +5,14 @@ module.exports = {
      * @param {import("discord.js").MessageReaction} reaction
      * @param {import("discord.js").User} user
      */
-    async execute(reaction, user) {
+    async execute(reaction:any) {
         // check if partial
         if (reaction.partial) {
             reaction = await reaction.fetch();
         }
   
         /** @type {CarrotboardStorage} */
-        const cbStorage = global.cbStorage;
+        const cbStorage = (global as any).cbStorage;
         const message = reaction.message;
   
         // make sure not bot and not the current client

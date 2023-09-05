@@ -16,7 +16,7 @@ export const messageReactionRemove = {
         }
 
         const messageId: string = reaction.message.id;
-        const reactRoles = global.reactRoles;
+        const reactRoles = (global as any).reactRoles;
         const data = await reactRoles.get_roles(messageId, reaction.emoji.name);
 
         // Return if message id and emoji don't match anything in the database

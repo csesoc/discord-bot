@@ -5,6 +5,6 @@ export const ready = {
     once: true,
     async execute(): Promise<void> {
         const reactRoles = new DBReactRole();
-        global.reactRoles = reactRoles;
+        (global as any).reactRoles = reactRoles;
     },
 };

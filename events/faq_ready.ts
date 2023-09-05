@@ -7,7 +7,7 @@ export const ready = {
     once: true,
     async execute() {
         const faqStorage = new DBFaq();
-        global.faqStorage = faqStorage;
+        (global as any).faqStorage = faqStorage;
     },
 };
 

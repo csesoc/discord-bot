@@ -19,7 +19,7 @@ export const ready = {
             const minute: string = String(today.getMinutes()).padStart(2, "0");
             const now_time: string = `${year}-${month}-${day} ${hour}:${minute}`;
 
-            const schedulePost = global.schedulePost;
+            const schedulePost = (global as any).schedulePost;
             const reminders = await schedulePost.get_reminders(now_time);
 
             for (const reminder of reminders) {

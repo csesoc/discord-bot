@@ -1,5 +1,4 @@
 import axios from "axios";
-import { Utils } from "discord.js";
 
 module.exports = {
     name: "messageCreate",

@@ -4,7 +4,7 @@ function messagelog(message: any): void {
         return;
     }
 
-    const logDB = global.logDB;
+    const logDB = (global as any).logDB;
     logDB.message_create(
         message.id,
         message.author.id,
@@ -17,7 +17,7 @@ function messagelog(message: any): void {
 module.exports = {
     name: "messageCreate",
     async execute(message: any): Promise<void> {
-        const standupDB = global.standupDBGlobal;
+        const standupDB = (global as any).standupDBGlobal;
         messagelog(message);
 
         if (message.content.startsWith("$standup")) {

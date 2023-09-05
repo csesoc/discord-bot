@@ -16,7 +16,7 @@ export const ready = {
             const minute: string = String(today.getMinutes()).padStart(2, "0");
             const now_time: string = `${year}-${month}-${day} ${hour}:${minute}`;
 
-            const schedulePost = global.schedulePost;
+            const schedulePost = (global as any).schedulePost;
             const scheduled = await schedulePost.get_scheduled(now_time);
 
             for (const post of scheduled) {

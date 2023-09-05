@@ -36,7 +36,7 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": ["ESNext"],
-        "target": "es6",
+        "target": "es2022",
         "useDefineForClassFields": true
     }
 }
