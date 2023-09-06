@@ -1,4 +1,4 @@
-export const ready = {
+export default {
     name: "ready",
     once: true,
     execute(): void {

@@ -116,7 +116,7 @@ export class DBlog {
                 await client.query("COMMIT");
             }
         } catch (ex) {
-            console.log(`Something wrong happend 11 ${ex}`);
+            console.log(`Something wrong happend ${ex}`);
         } finally {
             await client.query("ROLLBACK");
             client.release();
@@ -242,7 +242,7 @@ export class DBlog {
 
             await client.query("COMMIT");
         } catch (ex) {
-            console.log(`Something wrong happend czt ${ex}`);
+            console.log(`Something wrong happend ${ex}`);
         } finally {
             await client.query("ROLLBACK");
             client.release();

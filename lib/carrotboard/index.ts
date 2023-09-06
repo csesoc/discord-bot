@@ -1,9 +1,9 @@
 /* eslint-disable */
 // const { Embed } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
-const { DBcarrotboard } = require("../database/dbcarrotboard");
+import { EmbedBuilder } from "discord.js";
+import { DBcarrotboard } from"../database/dbcarrotboard";
 import fs from "fs";
-const YAML = require("yaml");
+import YAML = require("yaml");
 
 export class CarrotboardStorage {
     pin = "📌";
@@ -76,7 +76,7 @@ export class CarrotboardStorage {
         }
 
         // send it
-        const embed = new MessageEmbed(embedOptions);
+        const embed = new EmbedBuilder(embedOptions);
         await alertChannel.send({ embeds: [embed] });
     }
 
@@ -139,7 +139,7 @@ export class CarrotboardStorage {
 
             // check if new page need to be made
             if ((entryIndex - 1) % this.rowsPerPage == 0) {
-                const newPage = new MessageEmbed({
+                const newPage = new EmbedBuilder({
                     title: "Top carroted messages :trophy: :medal:",
                     color: 0xf1c40f,
                     timestamp: new Date().getTime(),
@@ -163,16 +163,16 @@ export class CarrotboardStorage {
                 userCache.set(entry["user_id"], messageAuthor);
             }
             /** @type {User} */
-            const messageAuthor = userCache.get(entry["user_id"]);
+            // const messageAuthor = userCache.get(entry["user_id"]);
 
-            // get the url
-            const guildID = this.config.guildID;
-            const channelID = entry["channel_id"];
-            const messageID = entry["message_id"];
-            const count = entry["count"];
-            const emoji = entry["emoji"];
-            const cbID = entry["carrot_id"];
-            const url = `https://discord.com/channels/${guildID}/${channelID}/${messageID}`;
+            // // get the url
+            // const guildID = this.config.guildID;
+            // const channelID = entry["channel_id"];
+            // const messageID = entry["message_id"];
+            // const count = entry["count"];
+            // const emoji = entry["emoji"];
+            // const cbID = entry["carrot_id"];
+            // const url = `https://discord.com/channels/${guildID}/${channelID}/${messageID}`;
 
             // get the message contents
             let content = entry["message_contents"].trimEnd();
@@ -180,32 +180,37 @@ export class CarrotboardStorage {
                 content = content.slice(0, this.maxMsgLen) + "...";
             }
 
-            // add the row to the embed
-            embedPages[pageNum].addFields([
-                {
-                    name: `${entryIndex}: ${messageAuthor.username}`,
-                    value: `[ID: ${cbID}](${url})\n` + "\u2800".repeat(6),
-                    inline: true,
-                },
-                {
-                    // 20 for full but messed up on thin display
-                    name: "Message" + "\u2800".repeat(6),
-                    value: `${content}\n\u200b`,
-                    inline: true,
-                },
-                {
-                    name: `Number of ${emoji}`,
-                    value: `${count}\n\n\n\u200b`,
-                    inline: true,
-                },
-            ]);
+            // // add the row to the embed
+            // if (embedPages && embedPages[pageNum]) {
+            //     embedPages[pageNum].addFields([
+            //         {
+            //             name: `${entryIndex}: ${messageAuthor.username}`,
+            //             value: `[ID: ${cbID}](${url})\n` + "\u2800".repeat(6),
+            //             inline: true,
+            //         },
+            //         {
+            //             // 20 for full but messed up on thin display
+            //             name: "Message" + "\u2800".repeat(6),
+            //             value: `${content}\n\u200b`,
+            //             inline: true,
+            //         },
+            //         {
+            //             name: `Number of ${emoji}`,
+            //             value: `${count}\n\n\n\u200b`,
+            //             inline: true,
+            //         },
+            //     ]);
+            // } else {
+            //     console.error('embedPages 或 embedPages[pageNum] 未定义。');
+            // }
+            
 
             entryIndex += 1;
         }
 
         // there werent any results, add the empty embed
         if (embedPages.length == 0) {
-            const sadEmbed = new MessageEmbed({
+            const sadEmbed = new EmbedBuilder({
                 title: "There are no Carroted Messages :( :sob: :smiling_face_with_tear:",
                 description: " ",
             });

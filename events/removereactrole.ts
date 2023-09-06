@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 
-export const messageReactionRemove = {
+export default {
     name: "messageReactionRemove",
     once: false,
     async execute(reaction: any, user: any): Promise<void> {

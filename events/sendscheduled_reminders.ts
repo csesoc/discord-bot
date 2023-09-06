@@ -5,7 +5,7 @@ import { EmbedBuilder } from "discord.js";
 // scheduled post. Reminders are direct messages to the user containing the content
 // of the original message.
 
-export const ready = {
+export default {
     name: "ready",
     once: true,
     execute(client: any): void {

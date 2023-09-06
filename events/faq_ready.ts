@@ -2,7 +2,7 @@
 import { DBFaq } from "../lib/database/faq";
 /* eslint-disable */
 
-export const ready = {
+export default {
     name: "ready",
     once: true,
     async execute() {

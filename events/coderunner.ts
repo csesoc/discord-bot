@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const coderunner = {
+export default {
     name: "messageCreate",
     async execute(message: any) {
         if (message.content.startsWith("/run")) {

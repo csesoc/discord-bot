@@ -4,7 +4,7 @@ import { CarrotboardStorage } from "../lib/carrotboard";
 /**
  * @param {Message} message
  */
-export const messageReactionRemoveAll = {
+export default {
     name: "messageReactionRemoveAll",
     once: false,
     async execute(message: Message) {

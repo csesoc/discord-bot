@@ -115,7 +115,7 @@ export class DBReactRole {
     }
 
     // Add new react role message
-    async add_react_role_msg(msg_id: Number, sender_id: Number) {
+    async add_react_role_msg(msg_id: Number, sender_id: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -134,7 +134,7 @@ export class DBReactRole {
     }
 
     // Add new react role role
-    async add_react_role_role(role_id: Number, emoji: Number, msg_id: Number) {
+    async add_react_role_role(role_id: String, emoji: String, msg_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -153,7 +153,7 @@ export class DBReactRole {
     }
 
     // Get role
-    async get_roles(msg_id: Number, emoji: Number) {
+    async get_roles(msg_id: Number, emoji: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");

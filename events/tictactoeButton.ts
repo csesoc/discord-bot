@@ -1,6 +1,6 @@
 // import { handleGameButton } from "../lib/tictactoe/tttHelper";
 
-// export const interactionCreate = {
+// export default {
 //     once: false,
 //     name: "interactionCreate",
 //     execute(interaction: any) {

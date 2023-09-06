@@ -98,7 +98,7 @@ export class DBstandup {
         }
     }
 
-    async getStandups(channelParentId: Number, numDays: Number) {
+    async getStandups(channelParentId: String, numDays: String) {
         const timeInterval = `${numDays} DAYS`;
 
         const client = await this.pool.connect();
@@ -133,8 +133,8 @@ export class DBstandup {
     }
 
     async addStandup(
-        channelParentId: Number,
-        userId: Number,
+        channelParentId: String,
+        userId: String,
         messageId: Number,
         messageContent: String,
     ) {

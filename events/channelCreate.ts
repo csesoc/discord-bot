@@ -1,6 +1,6 @@
 import { Channel } from "discord.js";
 
-export const channelCreate = {
+export default {
     name: "channelCreate",
     once: false,
     async execute(channel: Channel) {

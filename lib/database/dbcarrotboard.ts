@@ -4,7 +4,7 @@ import fs from "fs";
 
 // This is for CarrotBoard
 interface CarrotBoard {
-    carrot_id: number;
+    carrot_id: String;
     emoji: string;
     message_id: string;
     user_id: string;
@@ -13,7 +13,7 @@ interface CarrotBoard {
     message_contents: string;
 }
 // Class for the carrotboard db
-class DBcarrotboard {
+export class DBcarrotboard {
     private pool: Pool;
     constructor() {
         // Loads the db configuration
@@ -100,7 +100,7 @@ class DBcarrotboard {
         }
     }
 
-    async count_values(emoji: any, message_id: Number, user_id: Number, channel_id: Number) {
+    async count_values(emoji: any, message_id: Number, user_id: String, channel_id: String) {
         const client = await this.pool.connect();
         try {
             // console.log("Connected successfully.")
@@ -124,7 +124,7 @@ class DBcarrotboard {
         }
     }
 
-    async get_count(emoji: any, message_id: Number, user_id: Number, channel_id: Number) {
+    async get_count(emoji: any, message_id: Number, user_id: String, channel_id: String) {
         const client = await this.pool.connect();
         try {
             // console.log("Connected successfully.")
@@ -151,8 +151,8 @@ class DBcarrotboard {
     async add_value(
         emoji: any,
         message_id: Number,
-        user_id: Number,
-        channel_id: Number,
+        user_id: String,
+        channel_id: String,
         message_contents: String,
     ) {
         const client = await this.pool.connect();
@@ -187,7 +187,7 @@ class DBcarrotboard {
         }
     }
 
-    async get_by_cb_id(cb_id: number): Promise<CarrotBoard | null> {
+    async get_by_cb_id(cb_id: String): Promise<CarrotBoard | null> {
         const client = await this.pool.connect();
         try {
             // console.log("Connected successfully.")
@@ -279,7 +279,7 @@ class DBcarrotboard {
         }
     }
 
-    async del_entry(message_id: Number, channel_id: Number) {
+    async del_entry(message_id: Number, channel_id: String) {
         const client = await this.pool.connect();
         try {
             // console.log("Connected successfully.")
@@ -299,7 +299,7 @@ class DBcarrotboard {
         }
     }
 
-    async del_entry_emoji(emoji: any, message_id: Number, user_id: Number, channel_id: Number) {
+    async del_entry_emoji(emoji: any, message_id: Number, user_id: String, channel_id: String) {
         const client = await this.pool.connect();
         try {
             // console.log("Connected successfully.")
@@ -320,7 +320,7 @@ class DBcarrotboard {
         }
     }
 
-    async sub_value(emoji: any, message_id: Number, user_id: Number, channel_id: Number) {
+    async sub_value(emoji: any, message_id: Number, user_id: String, channel_id: String) {
         const client = await this.pool.connect();
         try {
             let count = await this.get_count(emoji, message_id, user_id, channel_id);

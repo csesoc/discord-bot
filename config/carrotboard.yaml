@@ -3,5 +3,5 @@ leaderboard_channel_id: 979516523335016509
 carrotboard_alert_channel_id: 894267846106963998
 guild_id: 884747109935497236
 carrot_emoji: 🥳
-minimum_carrot_count: 999999
-minimum_pin_count: 999999999999
+minimum_carrot_count: 1
+minimum_pin_count: 1

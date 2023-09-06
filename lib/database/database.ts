@@ -4,7 +4,7 @@ import fs from "fs";
 // const { count, table } = require('console');
 
 // Class for the user database
-class DBuser {
+export class DBuser {
     private pool: Pool;
     constructor() {
         // Loads the db configuration file
@@ -187,7 +187,7 @@ class DBuser {
     }
 
     // When a user leaves the server
-    async user_leave(userid: Number) {
+    async user_leave(userid: String) {
         let time = new Date();
         time.setMilliseconds(0);
         const timeString = time.toISOString();
@@ -210,7 +210,7 @@ class DBuser {
     }
 
     // When a user joins the server
-    async user_join(userid: Number) {
+    async user_join(userid: String) {
         let time = new Date();
         time.setMilliseconds(0);
         const timeString = time.toISOString();
@@ -244,7 +244,7 @@ class DBuser {
     }
 
     // Adding a user role
-    async add_user_role(userid: Number, role: String) {
+    async add_user_role(userid: String, role: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -268,7 +268,7 @@ class DBuser {
     }
 
     // Removing a user role
-    async remove_user_role(userid: Number, role: String) {
+    async remove_user_role(userid: String, role: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -287,7 +287,7 @@ class DBuser {
     }
 
     // Counting the number of unique roles of user with userid
-    async count_user_roles(userid: Number) {
+    async count_user_roles(userid: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -307,7 +307,7 @@ class DBuser {
     }
 
     // Counting the number of unique permissions of the user with userid
-    async count_user_permissions(userid: Number) {
+    async count_user_permissions(userid: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -329,7 +329,7 @@ class DBuser {
     }
 
     // Adding a permission
-    async add_user_permission(userid: Number, permission: String) {
+    async add_user_permission(userid: String, permission: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -352,7 +352,7 @@ class DBuser {
     }
 
     // Removing a permission
-    async remove_user_permission(userid: Number, permission: String) {
+    async remove_user_permission(userid: String, permission: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -373,7 +373,7 @@ class DBuser {
     }
 
     // When a user joins a channel
-    async user_join_channel(userid: Number, channel: String) {
+    async user_join_channel(userid: String, channel: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -397,7 +397,7 @@ class DBuser {
     }
 
     // When a user leaves the channel
-    async user_leave_channel(userid: Number, channel: String) {
+    async user_leave_channel(userid: String, channel: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -436,7 +436,7 @@ class DBuser {
     }
 
     // Number of channels the user with userid is in
-    async count_user_channels(userid: Number) {
+    async count_user_channels(userid: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");

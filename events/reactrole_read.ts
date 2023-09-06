@@ -1,6 +1,6 @@
 import { DBReactRole } from "../lib/database/dbreactrole";
 
-export const ready = {
+export default {
     name: "ready",
     once: true,
     async execute(): Promise<void> {

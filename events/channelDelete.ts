@@ -1,6 +1,6 @@
 import { Channel } from "discord.js";
 
-export const channelDelete = {
+export default {
     name: "channelDelete",
     once: false,
     async execute(channel: Channel) {

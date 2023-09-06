@@ -1,6 +1,6 @@
 const COURSE_CHATS_CHANNEL_ID = "860388285511630868";
 
-export const messageCreate = {
+export default {
     name: "messageCreate",
     async execute(message: any) {
         try {

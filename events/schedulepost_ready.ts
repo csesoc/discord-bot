@@ -1,10 +1,11 @@
-import { DBReactRole } from "../lib/database/dbreactrole";
+import { DBSchedulePost } from "../lib/database/dbschedulepost";
+import { Events  } from "discord.js";
 
 export const ready = {
-    name: "ready",
+    name: Events.ClientReady,
     once: true,
     async execute(): Promise<void> {
-        const reactRoles = new DBReactRole();
-        (global as any).reactRoles = reactRoles;
+        const schedulePost = new DBSchedulePost();
+        (global as any).schedulePost = schedulePost;
     },
 };

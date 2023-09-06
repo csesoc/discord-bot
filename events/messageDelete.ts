@@ -1,4 +1,4 @@
-export const messageDelete = {
+export default {
     name: "messageDelete",
     once: false,
     async execute(message: any): Promise<void> {

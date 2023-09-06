@@ -2,7 +2,7 @@ import { AttachmentBuilder } from "discord.js";
 
 // Checks database every minute to see if there is a message to be sent
 
-export const ready = {
+export default {
     name: "ready",
     once: true,
     execute(client: any): void {

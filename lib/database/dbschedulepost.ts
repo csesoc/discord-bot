@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { load } from "js-yaml";
 import fs from "fs";
 
-class DBSchedulePost {
+export class DBSchedulePost {
     private pool: Pool;
     constructor() {
         // Loads the db configuration
@@ -92,10 +92,10 @@ class DBSchedulePost {
 
     // Add new scheduled post
     async add_react_role_msg(
-        guild_id: Number,
-        msg_id: Number,
-        init_channel_id: Number,
-        send_channel_id: Number,
+        guild_id: String,
+        msg_id: String,
+        init_channel_id: String,
+        send_channel_id: String,
         datetime: any,
         reminder: any,
     ) {
@@ -117,7 +117,7 @@ class DBSchedulePost {
     }
 
     // Add reminder
-    async add_reminder(sent_msg_id: Number, scheduled_post_id: Number) {
+    async add_reminder(sent_msg_id: String, scheduled_post_id: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -180,7 +180,7 @@ class DBSchedulePost {
         }
     }
 
-    async remove_scheduled(scheduled_post_id: Number) {
+    async remove_scheduled(scheduled_post_id: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -196,7 +196,7 @@ class DBSchedulePost {
         }
     }
 
-    async get_scheduled_post_id(msg_id: Number, send_channel_id: Number, datetime: any) {
+    async get_scheduled_post_id(msg_id: String, send_channel_id: String, datetime: any) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
