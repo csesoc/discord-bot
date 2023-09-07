@@ -200,9 +200,6 @@ export class CarrotboardStorage {
             //             inline: true,
             //         },
             //     ]);
-            // } else {
-            //     console.error('embedPages 或 embedPages[pageNum] 未定义。');
-            // }
             
 
             entryIndex += 1;
@@ -288,7 +285,7 @@ class CarrotboardConfig {
         // check the config keys
         for (const key in expectedKeys) {
             const value = parsed[key];
-            console.log(`Key: ${key}, Value: ${value}`);
+            // console.log(`Key: ${key}, Value: ${value}`);
             if (value == null) {
                 throw new TypeError(`Carrotboard: Missing config option: ${key}`);
             }

@@ -135,7 +135,7 @@ export class DBSchedulePost {
     }
 
     // Get all posts scheduled at given time
-    async get_scheduled(datetime: any) {
+    async get_scheduled(datetime: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -158,7 +158,7 @@ export class DBSchedulePost {
     }
 
     // Get all reminders at given time
-    async get_reminders(reminder: any) {
+    async get_reminders(reminder: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");
@@ -196,7 +196,7 @@ export class DBSchedulePost {
         }
     }
 
-    async get_scheduled_post_id(msg_id: String, send_channel_id: String, datetime: any) {
+    async get_scheduled_post_id(msg_id: String, send_channel_id: String, datetime: String) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");

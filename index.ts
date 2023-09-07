@@ -26,7 +26,7 @@ const client: Client & { commands?: Collection<string, any> } = new Client({
 });
 const initaliseBot = async (): Promise<void> => {
     client.commands = new Collection();
-    const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.ts'));
+    const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
 
     for (const file of commandFiles) {
         const command = await import(`./commands/${file}`);

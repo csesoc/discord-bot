@@ -1,3 +1,5 @@
+import { User } from "discord.js";
+
 export default {
     name: "messageReactionAdd",
     once: false,
@@ -5,7 +7,7 @@ export default {
      * @param {import("discord.js").MessageReaction} reaction
      * @param {import("discord.js").User} user
      */
-    async execute(reaction:any, user:any) {
+    async execute(reaction:any, user:User) {
         // check if partial
         if (reaction.partial) {
             reaction = await reaction.fetch();
@@ -16,7 +18,7 @@ export default {
         const message = reaction.message;
   
         // make sure not a bot and not this client
-        if (!message.author.bot && user.id !== cbStorage.client.user.id) {
+        if (!message.author.bot && user.id !== cbStorage.client.user_id) {
             const emoji = reaction.emoji.toString();
             const messageID = message.id;
             const channelID = message.channelId;
