@@ -1,4 +1,5 @@
-import { User } from "discord.js";
+import { MessageReaction, User, TextChannel } from "discord.js";
+import { CarrotboardStorage } from "../lib/carrotboard";
 
 export default {
     name: "messageReactionAdd",
@@ -7,23 +8,23 @@ export default {
      * @param {import("discord.js").MessageReaction} reaction
      * @param {import("discord.js").User} user
      */
-    async execute(reaction:any, user:User) {
+    async execute(reaction:MessageReaction, user:User) {
         // check if partial
         if (reaction.partial) {
             reaction = await reaction.fetch();
         }
   
         /** @type {CarrotboardStorage} */
-        const cbStorage = (global as any).cbStorage;
+        const cbStorage: CarrotboardStorage = (global as any).cbStorage;
         const message = reaction.message;
   
         // make sure not a bot and not this client
-        if (!message.author.bot && user.id !== cbStorage.client.user_id) {
+        if (!message.author?.bot && user.id !== cbStorage._client.user?.id) {
             const emoji = reaction.emoji.toString();
             const messageID = message.id;
-            const channelID = message.channelId;
-            const authorID = message.author.id;
-            const messageContent = message.cleanContent.slice(0, cbStorage.maxMsgLen);
+            const channelID = (message.channel as TextChannel).id;
+            const authorID = (message.author as any).id;
+            const messageContent = (message.cleanContent as any).slice(0, cbStorage.maxMsgLen);
   
             // add to storage
             await cbStorage.db.add_value(emoji, messageID, authorID, channelID, messageContent);
