@@ -52,10 +52,19 @@ const locations = [
         ],
     },
     {
-        value: "Quadrangle Food Court (under renovation)",
+        value: "Quadrangle Food Court",
         sub: [
             {
-                name: "Plume Cafe (Open)",
+                name: "Soul Origin",
+            },
+            {
+                name: "PappaRich",
+            },
+            {
+                name: "Nene Chicken",
+            },
+            {
+                name: "Plume Cafe",
             },
         ],
     },
@@ -82,6 +91,9 @@ const locations = [
             },
             {
                 name: "Campus Village Cafe",
+            },
+            {
+                name: "Home Ground Kiosk",
             },
         ],
     },
