@@ -212,6 +212,8 @@ export class DBlog {
             const query = "UPDATE channels SET channel_name=$1 where channel_id=$2";
             const values = [channel_name, channel_id];
             await client.query(query, values);
+            
+            await client.query("COMMIT");
         } catch (ex) {
             console.log(`Something wrong happend ${ex}`);
         } finally {

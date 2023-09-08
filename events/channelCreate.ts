@@ -1,10 +1,13 @@
-import { Channel } from "discord.js";
+import { Channel, GuildChannel } from 'discord.js';
 
 export default {
     name: "channelCreate",
     once: false,
     async execute(channel: Channel) {
         const logDB = (global as any).logDB;
-        logDB.channel_add(channel.id, channel.toString());
+        if (!(channel instanceof GuildChannel)) return;
+        const guildId = channel.guild.id;
+
+        logDB.channel_add(channel.id, channel.name, guildId);
     },
 };

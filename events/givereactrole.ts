@@ -70,7 +70,7 @@ async function giveRole(reaction:any, user:any, roleId:any) {
         const notification = new EmbedBuilder()
             .setColor("#7cd699")
             .setTitle("Roles updated!")
-            .setAuthor(botName)
+            .setAuthor({ name: botName})
             .setDescription(`You reacted to a message in "${reaction.message.guild.name}" and were assigned the "${roleName}" role`);
         
         user.send({

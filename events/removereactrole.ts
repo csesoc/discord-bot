@@ -58,7 +58,7 @@ async function removeRole(reaction: any, user: any, roleId: string): Promise<voi
         const notification = new EmbedBuilder()
             .setColor("#7cd699")
             .setTitle("Roles updated!")
-            .setAuthor(botName)
+            .setAuthor({ name: botName})
             .setDescription(
                 `You unreacted to a message in "${reaction.message.guild.name}" and were unassigned the "${roleName}" role`,
             );
