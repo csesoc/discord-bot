@@ -1,5 +1,5 @@
 // @ts-check
-const { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction, GuildMember } = require("discord.js");
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 // Tools to help manage meetings
 
@@ -64,7 +64,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns 
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         if (!interaction.inCachedGuild()) return;
         const { member } = interaction;
         const voice_channel = member.voice.channel;
@@ -78,7 +78,7 @@ module.exports = {
         }
 
         /** @type {string[]} */
-        const participants = [];
+        const participants: string[] = [];
 
         // Gets all participants of the voice channel
         voice_channel.members.each((member) => {
@@ -134,7 +134,7 @@ module.exports = {
             });
         } else if (command === "random") {
             // Selects user at random
-            ret_val = participants[Math.floor(Math.random() * participants.length)];
+            ret_val = participants[Math.floor(Math.random() * participants.length)]!;
         } else if (command === "groups") {
             // Groups users into a given number of groups
             shuffleArray(participants);
@@ -178,7 +178,7 @@ module.exports = {
  * 
  * @param {any[]} array 
  */
-function shuffleArray(array) {
+function shuffleArray(array: any[]) {
     for (let i = array.length - 1; i > 0; i--) {
         // Generate random number
         const j = Math.floor(Math.random() * (i + 1));

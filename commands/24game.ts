@@ -1,5 +1,5 @@
 //@ts-check
-const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 const MAX = 9;
 
@@ -8,14 +8,9 @@ module.exports = {
         .setName("24")
         .setDescription("Generates 4 random numbers from 0 to 9!"),
 
-    /**
-     * @async
-     * @param {ChatInputCommandInteraction} interaction
-     * @returns
-     */
-    async execute(interaction) {
-        /** @type {number[]} */
-        const resultNums = [];
+    
+    async execute(interaction: ChatInputCommandInteraction) {
+        const resultNums: number[] = [];
 
         for (let i = 0; i < 4; i++) {
             const random = Math.round(Math.random() * MAX);

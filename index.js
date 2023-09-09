@@ -1,11 +1,25 @@
 // @ts-check
 const fs = require("fs");
-const { Client, Collection, GatewayIntentBits, InteractionType, Partials, CommandInteraction, SlashCommandBuilder } = require("discord.js");
+const { Client, Collection, GatewayIntentBits, InteractionType, Partials, SlashCommandBuilder, CommandInteraction } = require("discord.js");
 require("dotenv").config();
 const { env } = require("node:process");
 
+/** 
+ * @typedef {{data: SlashCommandBuilder, execute: (interaction: CommandInteraction) => Promise<void>}} commandExport
+ */
+
+class CseClient extends Client {
+    /** @param {import("discord.js").ClientOptions} options */
+    constructor(options) {
+        super(options);
+
+        /** @type {Collection<string, commandExport>} */
+        this.commands = new Collection();
+    }
+}
+
 // Create a new client instance
-const client = new Client({
+const client = new CseClient({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
@@ -24,15 +38,10 @@ const client = new Client({
 });
 
 // Add commands to the client
-/** 
- */
-client.commands = new Collection();
 const commandFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
 
 for (const file of commandFiles) {
-    /**
-     * @type {{data: SlashCommandBuilder, interaction: CommandInteraction}}
-     */
+    /** @type {commandExport} */
     const command = require(`./commands/${file}`);
     client.commands.set(command.data.name, command);
 }
@@ -73,9 +82,5 @@ client.on("interactionCreate", async (interaction) => {
 client.on("shardError", (error) => {
     console.error("A websocket connection encountered an error:", error);
 });
-
-// client.once("ready", () => {
-//     console.log(`Bot ${client.user.username} is ready!`);
-// })
 
 client.login(env.DISCORD_TOKEN);

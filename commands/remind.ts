@@ -1,5 +1,5 @@
 // @ts-check
-const { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } = require("discord.js");
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 
 const baseCommand = new SlashCommandBuilder()
     .setName("remind")
@@ -26,7 +26,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const datetime = interaction.options.getString("datetime", true);
 
         const re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
@@ -95,10 +95,10 @@ module.exports = {
          * @param {number} ms 
          * @returns 
          */
-        const sleep = async (ms) => await new Promise((r) => setTimeout(r, ms));
+        const sleep = async (ms: number) => await new Promise((r) => setTimeout(r, ms));
         await sleep(time_send_in);
 
         console.log("Finished sleeping after " + time_send_in / 1000 + " seconds");
-        await user.send({ embeds: [reminderEmbed] });
+        return await user.send({ embeds: [reminderEmbed] });
     },
 };

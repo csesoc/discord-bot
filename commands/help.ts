@@ -1,17 +1,8 @@
 // @ts-check
-const {
-    EmbedBuilder,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    ChatInputCommandInteraction,
-    ButtonInteraction,
-    SlashCommandBuilder,
-    ComponentType,
-} = require("discord.js");
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ButtonInteraction, SlashCommandBuilder, ComponentType } from "discord.js";
 
 // Fetches commands from the help data
-const { commands } = require("../config/help.json");
+import { commands } from "../config/help.json";
 
 // Creates general object and id constants for function use
 const prevId = "helpPrevButtonId";
@@ -38,7 +29,7 @@ const PAGE_SIZE = 10;
  * @param {number} start The index to start from.
  * @returns {EmbedBuilder}
  */
-const generateEmbed = (start) => {
+const generateEmbed = (start: number): EmbedBuilder => {
     const current = commands.slice(start, start + PAGE_SIZE);
     const pageNum = Math.floor(start / PAGE_SIZE) + 1;
 
@@ -75,7 +66,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         // Calculates required command page index if inputted
         const page = interaction.options.getNumber("page");
         let currentIndex = 0;
@@ -102,7 +93,7 @@ module.exports = {
         const authorId = interaction.user.id;
 
         /** @type {ActionRowBuilder<ButtonBuilder>} */
-        const row = new ActionRowBuilder();
+        const row: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder();
         if (currentIndex) {
             row.addComponents(prevButton);
         }
@@ -119,7 +110,7 @@ module.exports = {
          * @returns {boolean}
          */
 
-        const filter = (resInteraction) => {
+        const filter = (resInteraction: ButtonInteraction): boolean => {
             return (
                 (resInteraction.customId === prevId || resInteraction.customId === nextId) &&
                 resInteraction.user.id === authorId
@@ -139,7 +130,7 @@ module.exports = {
             i.customId === prevId ? (currentIndex -= PAGE_SIZE) : (currentIndex += PAGE_SIZE);
             
             /** @type {ActionRowBuilder<ButtonBuilder>} */
-            const row = new ActionRowBuilder();
+            const row: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder();
             if (currentIndex) {
                 row.addComponents(prevButton);
             }
@@ -152,7 +143,7 @@ module.exports = {
 
         // Clears buttons from embed page after timeout on collector
         /*eslint-disable */
-        collector.on("end", (collection) => {
+        collector.on("end", (_) => {
             interaction.editReply({ components: [] });
         });
     },

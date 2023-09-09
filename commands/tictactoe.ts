@@ -1,6 +1,6 @@
 // @ts-check
-const { SlashCommandBuilder } = require("discord.js");
-const { createGame } = require("../lib/tictactoe/tttHelper");
+import { SlashCommandBuilder } from "discord.js";
+import { createGame } from "../lib/tictactoe/tttHelper";
 
 const baseCommand = new SlashCommandBuilder()
     .setName("tictactoe")

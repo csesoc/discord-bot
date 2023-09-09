@@ -1,3 +1,5 @@
+import { Events } from "discord.js";
+
 function messagelog(message: any): void {
     // ignore messages sent from bot
     if (message.author.bot) {
@@ -15,7 +17,7 @@ function messagelog(message: any): void {
 }
 
 module.exports = {
-    name: "messageCreate",
+    name: Events.MessageCreate,
     async execute(message: any): Promise<void> {
         const standupDB = global.standupDBGlobal;
         messagelog(message);

@@ -1,5 +1,5 @@
 //@ts-check
-const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 const math = require("mathjs");
 
 const illegalPhraseRegexes = [/`/g, /@/g];
@@ -9,7 +9,7 @@ const illegalPhraseRegexes = [/`/g, /@/g];
  * @param {string} expression 
  * @returns 
  */
-const isIllegalCharactersPresent = (expression) => {
+const isIllegalCharactersPresent = (expression: string) => {
     return illegalPhraseRegexes.some((regex) => regex.test(expression));
 };
 
@@ -18,7 +18,7 @@ const isIllegalCharactersPresent = (expression) => {
  * @param {string} eqnString 
  * @returns 
  */
-const tryCompileAndEvaluate = (eqnString) => {
+const tryCompileAndEvaluate = (eqnString: string) => {
     try {
         const equationObj = math.compile(eqnString);
         if (!equationObj) {
@@ -26,7 +26,7 @@ const tryCompileAndEvaluate = (eqnString) => {
         }
 
         /** @type {number} */
-        const equationOutcome = equationObj.evaluate();
+        const equationOutcome: number = equationObj.evaluate();
 
         return {
             success: true,
@@ -47,7 +47,7 @@ const tryCompileAndEvaluate = (eqnString) => {
  * @param {number} target 
  * @returns 
  */
-const evaluate = (equationString, target) => {
+const evaluate = (equationString: string, target: number) => {
     if (isIllegalCharactersPresent(equationString)) {
         return {
             success: false,
@@ -104,7 +104,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const equationStr = interaction.options.getString("equation", true);
         const target = interaction.options.getNumber("target") || 24;
 

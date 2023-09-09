@@ -1,6 +1,6 @@
 // @ts-check
-const { PermissionFlagsBits, SlashCommandBuilder, SlashCommandSubcommandBuilder, ChatInputCommandInteraction } = require("discord.js");
-const { DBFaq } = require("../lib/database/faq");
+import { PermissionFlagsBits, SlashCommandBuilder, SlashCommandSubcommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { DBFaq } from "../lib/database/faq";
 
 // ////////////////////////////////////////////
 // //////// SETTING UP THE COMMANDS ///////////
@@ -41,9 +41,9 @@ const baseCommand = new SlashCommandBuilder()
 
 // handle the command
 /** @param {ChatInputCommandInteraction} interaction */
-async function handleInteraction(interaction) {
+async function handleInteraction(interaction: ChatInputCommandInteraction) {
     /** @type {DBFaq} */
-    const faqStorage = global.faqStorage;
+    const faqStorage: DBFaq = (global as any).faqStorage;
 
     if (!interaction.inCachedGuild()) return; 
 
@@ -59,19 +59,19 @@ async function handleInteraction(interaction) {
     // figure out which command was called
     const subcommand = interaction.options.getSubcommand(false);
     /** @type {string | null} */
-    let keyword = null;
+    let keyword: string | null = null;
     
     /** @type {string | null} */
-    let answer = null;
+    let answer: string | null = null;
 
     /** @type {string | null} */
-    let tags = null;
+    let tags: string | null = null;
 
     /** @type {boolean | undefined} */
-    let success = false;
+    let success: boolean | null = false;
 
     /** @type {import("discord.js").CommandInteractionOption<"cached"> | null} */
-    let get_keyword = null;
+    let get_keyword: import("discord.js").CommandInteractionOption<"cached"> | null = null;
     
     switch (subcommand) {
         case "create":
@@ -106,7 +106,7 @@ async function handleInteraction(interaction) {
                 }
             }
 
-            success = await faqStorage.new_faq(keyword, answer, tags);
+            success = await faqStorage.new_faq(keyword, answer, tags!);
             if (success) {
                 await interaction.reply({
                     content: `Successfully created FAQ entry for '${keyword}': ${answer}`,

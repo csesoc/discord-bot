@@ -1,7 +1,7 @@
 // @ts-check
-const { EmbedBuilder, SlashCommandBuilder, SlashCommandSubcommandBuilder, ChatInputCommandInteraction } = require("discord.js");
-const { DiscordScroll } = require("../lib/discordscroll/scroller");
-const { DBFaq } = require("../lib/database/faq");
+import { EmbedBuilder, SlashCommandBuilder, SlashCommandSubcommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { DiscordScroll } from "../lib/discordscroll/scroller";
+import { DBFaq } from "../lib/database/faq";
 
 // ////////////////////////////////////////////
 // //////// SETTING UP THE COMMANDS ///////////
@@ -49,9 +49,9 @@ const baseCommand = new SlashCommandBuilder()
 
 // handle the command
 /** @param {ChatInputCommandInteraction} interaction */
-async function handleInteraction(interaction) {
+async function handleInteraction(interaction: ChatInputCommandInteraction) {
     /** @type {DBFaq} */
-    const faqStorage = global.faqStorage;
+    const faqStorage: DBFaq = (global as any).faqStorage;
 
     // figure out which command was called
     const subcommand = interaction.options.getSubcommand(false);
@@ -84,7 +84,7 @@ async function handleInteraction(interaction) {
  * @param {ChatInputCommandInteraction} interaction
  * @param {DBFaq} faqStorage
  */
-async function handleFAQGet(interaction, faqStorage) {
+async function handleFAQGet(interaction: ChatInputCommandInteraction, faqStorage: DBFaq) {
     const get_keyword = interaction.options.get("keyword");
     if (!get_keyword) return;
 
@@ -110,7 +110,7 @@ async function handleFAQGet(interaction, faqStorage) {
  * @param {ChatInputCommandInteraction} interaction
  * @param {DBFaq} faqStorage
  */
-async function handleFAQGetAll(interaction, faqStorage) {
+async function handleFAQGetAll(interaction: ChatInputCommandInteraction, faqStorage: DBFaq) {
     // @TODO: create "tags" system to support fectching multiple FAQs
     // get the keyword
     const get_tag = interaction.options.get("tag");
@@ -123,28 +123,20 @@ async function handleFAQGetAll(interaction, faqStorage) {
     if (!rows) return;
 
     if (rows.length > 0) {
-        /**
-         * @type {EmbedBuilder[]}
-         */
-        const answers = [];
-        let currentPage = 0;
+        const answers: EmbedBuilder[] = [];
         for (const row of rows) {
             const newPage = new EmbedBuilder({
                 title: `FAQS for the tag: ${tag}`,
                 color: 0xf1c40f,
                 timestamp: new Date().getTime(),
-            });
-            answers.push(newPage);
-
-            answers[currentPage].addFields([
+            }).addFields([
                 {
                     name: row.keyword,
                     value: row.answer,
                     inline: true,
                 },
             ]);
-
-            currentPage++;
+            answers.push(newPage);
         }
         const scroller = new DiscordScroll(answers);
         await scroller.send(interaction);
@@ -159,7 +151,7 @@ async function handleFAQGetAll(interaction, faqStorage) {
 /**
  * @param {ChatInputCommandInteraction} interaction
  */
-async function handleFAQHelp(interaction) {
+async function handleFAQHelp(interaction: ChatInputCommandInteraction) {
     // @TODO: expand this function
     let description = "Welcome to the help command! You can search for a specific faq";
     description += " by keyword using 'faq get [keyword]', or for everything on a given ";
@@ -174,7 +166,7 @@ async function handleFAQHelp(interaction) {
  * @param {ChatInputCommandInteraction} interaction
  * @param {DBFaq} faqStorage
  */
-async function handleFAQKeywords(interaction, faqStorage) {
+async function handleFAQKeywords(interaction: ChatInputCommandInteraction, faqStorage: DBFaq) {
     // get db entry
     const keywords = await faqStorage.get_keywords();
     if (keywords) {
@@ -191,7 +183,7 @@ async function handleFAQKeywords(interaction, faqStorage) {
  * @param {ChatInputCommandInteraction} interaction
  * @param {DBFaq} faqStorage
  */
-async function handleFAQTags(interaction, faqStorage) {
+async function handleFAQTags(interaction: ChatInputCommandInteraction, faqStorage: DBFaq) {
     // get db entry
     const tags = await faqStorage.get_tags();
     if (tags) {

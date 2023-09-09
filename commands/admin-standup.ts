@@ -1,6 +1,6 @@
 // @ts-check
-const { EmbedBuilder, ButtonBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction, InteractionResponse, ButtonStyle } = require("discord.js");
-const { Pagination } = require("pagination.djs");
+import { EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } from "discord.js";
+import { Pagination } from "pagination.djs";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,13 +24,9 @@ module.exports = {
                 ),
         ),
 
-    /**
-     * 
-     * @param {ChatInputCommandInteraction} interaction 
-     * @returns {Promise<InteractionResponse<boolean> | undefined>}
-     */
-    async execute(interaction) {
-        const standupDB = global.standupDBGlobal;
+    
+    async execute(interaction: ChatInputCommandInteraction) {
+        const standupDB = (global as any).standupDBGlobal;
         const TEAM_DIRECTOR_ROLE_ID = "921348676692107274";
         if (!interaction.inCachedGuild()) return;
 
@@ -64,10 +60,10 @@ module.exports = {
                 const numDaysToRetrieve = (interaction.options.getInteger("days")) ?? 7;
 
                 /** @type {{ user_id: string; standup_content: string; }[]} */
-                let thisTeamStandups = await standupDB.getStandups(thisTeamId, numDaysToRetrieve);
+                let thisTeamStandups: { user_id: string; standup_content: string; }[] = await standupDB.getStandups(thisTeamId, numDaysToRetrieve);
 
                 /** @type {Record<string, string>} */
-                const roleNames = {};
+                const roleNames: Record<string, string> = {};
                 roleMembers.forEach((el) => {
                     const author = el.user.username;
                     /* let author = el.nickname;
@@ -82,10 +78,10 @@ module.exports = {
                 );
 
                 /** @type {string[]} */
-                const standupDone = [];
+                const standupDone: string[] = [];
 
                 /** @type {string[]} */
-                const standupEmbeded = [];
+                const standupEmbeded: string[] = [];
 
                 // add all standups
                 thisTeamStandups.forEach((standUp) => {
@@ -107,7 +103,7 @@ module.exports = {
                 });
 
                 /** @type {string[]} */
-                const notDone = [];
+                const notDone: string[] = [];
 
                 roleMembers.forEach((el) => {
                     const id = el.user.id;
@@ -120,7 +116,7 @@ module.exports = {
                 notDoneUsersString = notDone.map((el) => `<@${el}>`).join(", ");
 
                 /** @type {EmbedBuilder[]} */
-                const embedList = [];
+                const embedList: EmbedBuilder[] = [];
                 if (notDone.length == 0) {
                     standupEmbeded.forEach((el) => {
                         embedList.push(
@@ -157,13 +153,13 @@ module.exports = {
                     return await interaction.reply({ embeds: [embed] });
                 }
 
-                const buttonList = [
-                    new ButtonBuilder()
-                        .setCustomId("previousbtn")
-                        .setLabel("Previous")
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
-                ];
+                // const buttonList = [
+                //     new ButtonBuilder()
+                //         .setCustomId("previousbtn")
+                //         .setLabel("Previous")
+                //         .setStyle(ButtonStyle.Danger),
+                //     new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
+                // ];
 
                 // may need to tweak this as necessary
                 const pagination = new Pagination(interaction, {
@@ -175,10 +171,10 @@ module.exports = {
                     nextLabel: "Next",
                 });
 
-                /** @type {Record<string, ButtonBuilder>} */
-                const buttons = buttonList.reduce((_, button, i) => Object.assign(String(i), button), {});
+                // /** @type {Record<string, ButtonBuilder>} */
+                // const buttons: Record<string, ButtonBuilder> = buttonList.reduce((_, button, i) => Object.assign(String(i), button), {});
                 pagination.addEmbeds(embedList);
-                pagination.setButtons(buttons);
+                // pagination.setButtons(buttons);
                 await pagination.reply();
                 
                 // depdendency on v13 helper functions - DEPRECATED
@@ -191,6 +187,8 @@ module.exports = {
                 await interaction.reply({ content: sendmsg, ephemeral: true });
             }
         }
+
+        return Promise.resolve();
         /* else if (interaction.options.getSubcommand() === "resetstandups") {
             try {
                 await standupDB.deleteAllStandups();

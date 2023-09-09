@@ -1,30 +1,19 @@
 // @ts-check
-const {
-    EmbedBuilder,
-    SlashCommandBuilder,
-    ChatInputCommandInteraction
-} = require("discord.js");
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction, APIEmbedField } from "discord.js";
 
-/**
- * @typedef {Object} voteData
- * @property {string} string
- * @property {string} authorid
- * @property {string} channelid
- * @property {string} messageid
- */
+interface voteData {
+    string: string;
+    authorid: string;
+    channelid: string;
+    messageid: string;
+}
 
-/**
- * @type {voteData[]}
- */
-let data = require("../config/votes.json").data;
-const fs = require("fs");
 
-/**
- * @async
- * @param {ChatInputCommandInteraction} interaction
- * @returns
- */
-const vote_vote = async (interaction) => {
+let data: voteData[] = require("../config/votes.json").data;
+import fs from "fs";
+
+
+const vote_vote = async (interaction: ChatInputCommandInteraction) => {
     // Getting the required string and data from the input
     const voteauthorid = interaction.user.id;
     const voteauthorname = interaction.user.username;
@@ -63,7 +52,7 @@ const vote_vote = async (interaction) => {
  * @param {ChatInputCommandInteraction} interaction
  * @returns
  */
-const vote_voteresult = async (interaction) => {
+const vote_voteresult = async (interaction: ChatInputCommandInteraction) => {
     // Get the last messageid of the vote done on this channel
     const channelid = interaction.channelId;
 
@@ -92,7 +81,7 @@ const vote_voteresult = async (interaction) => {
                 /**
                  * @type {[{name: string, value: string}] | any}
                 */
-                const responses = Array();
+                const responses: [{ name: string; value: string; }] | any = Array();
                 reactionMessage.reactions.cache.forEach((value, key) => {
                     if (key == "👍" || key == "👎") {
                         responses.push({
@@ -132,7 +121,7 @@ const vote_voteresult = async (interaction) => {
  * @returns
  */
 
-const vote_voteresultfull = async (interaction) => {
+const vote_voteresultfull = async (interaction: ChatInputCommandInteraction) => {
     // Returns the list of all users who voted
     // Get the last messageid of the vote done on this channel
     const channelid = interaction.channelId;
@@ -155,11 +144,12 @@ const vote_voteresultfull = async (interaction) => {
 
         if (cacheChannel && cacheChannel.isTextBased()) {
             cacheChannel.messages.fetch(messageID).then((reactionMessage) => {
-                const responses = [];
+                const responses: APIEmbedField[] = [];
                 reactionMessage.reactions.cache.forEach((value, key) => {
-                    const temp = {};
-                    temp["name"] = String(key);
-                    temp["value"] = "";
+                    const temp: APIEmbedField = {
+                        name: key,
+                        value: ""
+                    };
                     value.users.cache.forEach((value_) => {
                         if (value_.bot == false) {
                             temp["value"] = temp["value"] + "\n" + String(value_.username);
@@ -222,7 +212,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         // Starting a vote
         if (interaction.options.getSubcommand() === "vote") {
             await vote_vote(interaction);

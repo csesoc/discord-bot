@@ -1,8 +1,8 @@
 // @ts-check
 const axios = require("axios").default;
-const textVersion = require("textversionjs");
-const { EmbedBuilder, SlashCommandBuilder, CommandInteraction, BaseInteraction, ChatInputCommandInteraction } = require("discord.js");
-const { apiURL, handbookURL } = require("../config/handbook.json");
+import textVersion from "textversionjs";
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { apiURL, handbookURL } from "../config/handbook.json";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -27,32 +27,29 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns 
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         if (interaction.options.getSubcommand() === "courseinfo") {
             const courseCode = interaction.options.getString("coursecode", true).toUpperCase();
 
-            /** 
-             * @typedef {Object} CourseData
-             * @property {string} title
-             * @property {string} code
-             * @property {number} UOC
-             * @property {number} level
-             * @property {string} description
-             * @property {string} study_level
-             * @property {string} handbook_note
-             * @property {string} school
-             * @property {string} faculty
-             * @property {string} campus
-             * @property {Record<string, number>} equivalents
-             * @property {Record<string, number>} exclusions
-             * @property {string[]} terms
-             * @property {string} raw_requirements
-             * @property {boolean} gen_ed
-             *  
-             */
+            interface CourseData {
+                title: string;
+                code: string;
+                UOC: number;
+                level: number;
+                description: string;
+                study_level: string;
+                handbook_note: string;
+                school: string;
+                faculty: string;
+                campus: string;
+                equivalents: Record<string, number>;
+                exclusions: Record<string, number>;
+                terms: string[];
+                raw_requirements: string;
+                gen_ed: boolean;
+            }
 
-            /** @type {CourseData | null} */
-            let data = null;
+            let data: CourseData | null = null;
             try {
                 // Documented at:
                 // https://circlesapi.csesoc.app/docs#/courses/get_course_courses_getCourse__courseCode__get
@@ -137,5 +134,7 @@ module.exports = {
                 .setFooter({ text: "Data fetched from Circles' Api" })
             await interaction.reply({ embeds: [courseInfo] });
         }
+
+        return Promise.resolve();
     },
 };

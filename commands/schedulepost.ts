@@ -1,5 +1,5 @@
 // @ts-check
-const { EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction, Message } = require("discord.js");
+import { EmbedBuilder, SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction, Message, GuildBasedChannel } from "discord.js";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -71,7 +71,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         if (!interaction.inCachedGuild()) return;
 
         // Check if user has admin permission
@@ -88,27 +88,18 @@ module.exports = {
         const datetime = interaction.options.getString("datetime", true);
 
         if (command === "create") {
-            create_scheduled_post(interaction, msg_id, channel, datetime);
+            return await create_scheduled_post(interaction, msg_id, channel, datetime);
         } else if (command === "cancel") {
-            cancel_scheduled_post(interaction, msg_id, channel, datetime);
+            return await cancel_scheduled_post(interaction, msg_id, channel, datetime);
         }
     },
 };
 
 
-/**
- * Schedules a new post
- * @async
- * @param {ChatInputCommandInteraction} interaction
- * @param {string} msg_id
- * @param {import("discord.js").GuildBasedChannel} channel
- * @param {string} datetime
- * @returns
- */
-async function create_scheduled_post(interaction, msg_id, channel, datetime) {
+async function create_scheduled_post(interaction: ChatInputCommandInteraction, msg_id: string, channel: GuildBasedChannel, datetime: string) {
     // Check if message id is valid
     /** @type {Message | undefined} */
-    let message;
+    let message: Message | undefined;
     try {
         const { channel } = interaction;
         if (!channel) return;
@@ -120,7 +111,7 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
         });
     }
     if (!message) return;
- 
+
     const re = /^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) ([01]\d|2[0-3]):([0-5]\d)$/;
 
     // Check if datetime is valid
@@ -192,11 +183,11 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
             message.content.length === 0
                 ? " "
                 : message.content +
-                      (user_reminder ? "\n \n react ⏰ to be notified about this event!" : ""),
+                (user_reminder ? "\n \n react ⏰ to be notified about this event!" : ""),
         );
 
     // Add scheduled post to database
-    const schedulePost = global.schedulePost;
+    const schedulePost = (global as any).schedulePost;
     await schedulePost.add_react_role_msg(
         interaction.guildId,
         msg_id,
@@ -211,9 +202,8 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
     const num_msg_attachments = message.attachments.size;
 
     if (num_msg_attachments) {
-        reply_msg += `\nThis message has ${num_msg_attachments} attachment${
-            num_msg_attachments === 1 ? "" : "s"
-        }.`;
+        reply_msg += `\nThis message has ${num_msg_attachments} attachment${num_msg_attachments === 1 ? "" : "s"
+            }.`;
     }
 
     if (user_reminder) {
@@ -222,7 +212,7 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
 
     reply_msg += `\nUse \`\\schedulepost cancel\` to cancel this.`;
 
-    await interaction.reply({
+    return await interaction.reply({
         content: reply_msg,
         ephemeral: false,
         embeds: [preview],
@@ -238,10 +228,10 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
  * @param {string | null} datetime
  * @returns
  */
-async function cancel_scheduled_post(interaction, msg_id, channel, datetime) {
+async function cancel_scheduled_post(interaction: ChatInputCommandInteraction, msg_id: string | null, channel: import("discord.js").GuildBasedChannel, datetime: string | null) {
     const channel_name = channel.name;
     const channel_id = channel.id;
-    const schedulePost = global.schedulePost;
+    const schedulePost = (global as any).schedulePost;
     const schedule_post_id = await schedulePost.get_scheduled_post_id(msg_id, channel_id, datetime);
 
     if (schedule_post_id) {

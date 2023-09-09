@@ -1,5 +1,5 @@
 // @ts-check
-const { PermissionFlagsBits, SlashCommandBuilder, ChatInputCommandInteraction, ChannelType } = require("discord.js");
+import { PermissionFlagsBits, SlashCommandBuilder, ChatInputCommandInteraction, ChannelType } from "discord.js";
 
 const COMMAND_KICKUNVERIFIED = "kickunverified";
 const COMMAND_MIGRATE = "migratecourses";
@@ -12,7 +12,7 @@ const COMMAND_REMOVECOURSEROLES = "nukeremovecourseroles";
  * @param {string} course 
  * @returns {boolean}
  */
-const is_valid_course = (course) => {
+const is_valid_course = (course: string): boolean => {
     const reg_comp_course = /^comp\d{4}$/;
     const reg_math_course = /^math\d{4}$/;
     const reg_binf_course = /^binf\d{4}$/;
@@ -63,9 +63,9 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction 
      * @returns 
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         try {
-            if (!interaction.inCachedGuild()) return;
+            if (!interaction.inCachedGuild()) return Promise.resolve();
 
             if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
                 return await interaction.reply({
@@ -156,5 +156,7 @@ module.exports = {
         } catch (error) {
             await interaction.reply("Error: " + error);
         }
+
+        return Promise.resolve();
     },
 };

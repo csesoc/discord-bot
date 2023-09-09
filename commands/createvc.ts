@@ -1,6 +1,6 @@
 // @ts-check
-const { SlashCommandBuilder, ChatInputCommandInteraction, ChannelType, CategoryChannel } = require("discord.js");
-const fs = require("fs");
+import { SlashCommandBuilder, ChatInputCommandInteraction, ChannelType, CategoryChannel } from "discord.js";
+import fs from "fs";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,21 +11,19 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         try {
             // Limit on concurrent temporary channels
             const CHANNEL_LIMIT = 10;
             // Name of the category under which the temporary channels are
             const CATEGORY_NAME = "TEMPORARY VCS";
 
-            /**
-             * @typedef {Object} VCData
-             * @property {{ authorid: string, count: number }[]} users 
-             * @property {{ channel_id: string, delete: boolean }[]} channels 
-             */
+            interface VCData {
+                users: { authorid: string; count: number; }[];
+                channels: { channel_id: string; delete: boolean; }[];
+            }
 
-            /** @type {VCData} */
-            const data = JSON.parse(fs.readFileSync("./data/createvc.json", "utf8"));
+            const data: VCData = JSON.parse(fs.readFileSync("./data/createvc.json", "utf8"));
             // console.log(data);
             // const authorid = interaction.user.id;
 
@@ -37,7 +35,7 @@ module.exports = {
                 if (!interaction.guild) return;
                 const channelmanager = interaction.guild.channels;
                 /** @type {CategoryChannel | null} */
-                let parentChannel = null;
+                let parentChannel: CategoryChannel | null = null;
                 const allchannels = await channelmanager.fetch();
 
                 // See if there is a category channel with name - TEMPORARY VCs

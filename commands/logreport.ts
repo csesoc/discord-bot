@@ -1,7 +1,7 @@
 // @ts-check
-const { PermissionFlagsBits, SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
-const path = require("path");
-const nodemailer = require("nodemailer");
+import { PermissionFlagsBits, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import path from "path";
+import nodemailer from "nodemailer";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -47,7 +47,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction 
      * @returns 
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         try {
             if (!interaction.inCachedGuild()) return;
 
@@ -118,7 +118,7 @@ module.exports = {
                 }
             }
 
-            const logDB = global.logDB;
+            const logDB = (global as any).logDB;
             const logs = await logDB.collect_messages(start, end);
 
             for (let i = 0; i < logs.length; i++) {

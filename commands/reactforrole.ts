@@ -1,5 +1,5 @@
 // @ts-check
-const { EmbedBuilder, PermissionFlagsBits, ChatInputCommandInteraction, GuildMember, SlashCommandBuilder, InteractionType, InteractionResponseType } = require("discord.js");
+import { EmbedBuilder, PermissionFlagsBits, ChatInputCommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -31,7 +31,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         if (!interaction.inCachedGuild()) return;
 
         // Only admin users should be able to execute this command
@@ -80,11 +80,9 @@ module.exports = {
             });
         }
 
-        /** @type {any} */
-        const { reactRoles } = global;
+        const reactRoles = (global as any).reactRoles;
 
-        /** @type {Record<string, number>} */
-        const roles = {};
+        const roles: Record<string, number> = {};
 
         let notificationContent = "This command: \n";
 
@@ -92,13 +90,13 @@ module.exports = {
             const roleName = roleList[i];
             let emoji = emojiList[i];
 
-            if (custom_emoji_regex.test(emoji)) {
-                emoji = emoji.split(":")[1];
+            if (custom_emoji_regex.test(emoji!)) {
+                emoji = emoji?.split(":")[1];
             }
 
             // Check if role exist
             /** @type {GuildMember} */
-            const member = interaction.member;
+            const member: GuildMember = interaction.member;
             const role = member.guild.roles.cache.find(r => r.name === roleName);
             let roleID = 0;
 
@@ -116,8 +114,8 @@ module.exports = {
                 // Role does not exist so create one
                 try {
                     const newRole = await member.guild.roles.create({
-                        name: roleName,
-                        reason: `new role required for react role feature "${roleName}"`,
+                        name: roleName!,
+                        reason: `new role required for react role feature "${roleName!}"`,
                     });
                     roleID = Number(newRole.id);
                     notificationContent += `\t'${emoji}' Created the new role '${roleName}'\n`;
@@ -130,7 +128,7 @@ module.exports = {
                 }
             }
 
-            roles[emoji] = roleID;
+            roles[emoji!] = roleID;
         }
 
         if (!message) {
@@ -190,5 +188,7 @@ module.exports = {
                 ephemeral: true,
             });
         }
+
+        return Promise.resolve();
     },
 };

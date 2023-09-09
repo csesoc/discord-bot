@@ -1,20 +1,10 @@
 // @ts-check
-const {
-    EmbedBuilder, 
-    SlashCommandBuilder,
-    ChatInputCommandInteraction
-} = require("discord.js");
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 module.exports = {
     data: new SlashCommandBuilder().setName("coinflip").setDescription("Tosses a coin 💰"),
 
-    /**
-     *
-     * @async
-     * @param {ChatInputCommandInteraction} interaction
-     * @returns
-     */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const coinNum = Math.floor(Math.random() * 2);
         const coin = coinNum === 0 ? "heads" : "tails";
         

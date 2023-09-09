@@ -1,24 +1,19 @@
 // @ts-check
-const {
-    SlashCommandBuilder,
-    EmbedBuilder,
-    ChatInputCommandInteraction
-} = require("discord.js");
-const xkcd = require("xkcd-api");
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import xkcd from "xkcd-api";
 
 
-/**
- * @typedef {Object} xkcdJSON
- * @property {string} month
- * @property {string} link
- * @property {string} year
- * @property {string} safe_title
- * @property {string} transcript
- * @property {string} alt
- * @property {string} img
- * @property {string} title
- * @property {string} day
- */
+interface xkcdJSON {
+    month: string;
+    link: string;
+    year: string;
+    safe_title: string;
+    transcript: string;
+    alt: string;
+    img: string;
+    title: string;
+    day: string;
+}
 
 /**
  * @description helper function used to minimise repetitive code 
@@ -29,7 +24,7 @@ const xkcd = require("xkcd-api");
  * @param {ChatInputCommandInteraction} interaction
  * @returns 
  */
-const xkcd_response = async (err, res, interaction) => {
+const xkcd_response = async (err: any, res: xkcdJSON, interaction: ChatInputCommandInteraction) => {
     if (err) {
         console.log(err);
         await interaction.reply({
@@ -73,22 +68,22 @@ module.exports = {
      * @returns
      */
 
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         switch (interaction.options.getSubcommand()) {
             case "latest":
-                xkcd.latest(async (/** @type {any} */ err, /** @type {xkcdJSON} */ res) => xkcd_response(err, res, interaction));
+                xkcd.latest(async (/** @type {any} */ err: any, /** @type {xkcdJSON} */ res: xkcdJSON) => xkcd_response(err, res, interaction));
                 break;
             case "get":
                 /** @type {number} */
-                const comic_id = interaction.options.getInteger("comic-id", true);
+                const comic_id: number = interaction.options.getInteger("comic-id", true);
 
                 xkcd.get(
                     comic_id,
-                    async (/** @type {any} */ err, /** @type {xkcdJSON} */ res) => xkcd_response(err, res, interaction)
+                    async (/** @type {any} */ err: any, /** @type {xkcdJSON} */ res: xkcdJSON) => xkcd_response(err, res, interaction)
                 );
                 break;
             case "random":
-                xkcd.random(async (/** @type {any} */ err, /** @type {xkcdJSON} */ res) => xkcd_response(err, res, interaction));
+                xkcd.random(async (/** @type {any} */ err: any, /** @type {xkcdJSON} */ res: xkcdJSON) => xkcd_response(err, res, interaction));
                 break;
             default:
                 break;

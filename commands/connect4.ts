@@ -1,6 +1,6 @@
 // @ts-check
-const { SlashCommandBuilder } = require("discord.js");
-const { createConnect4 } = require("../lib/connect4/connect4Runner");
+import { SlashCommandBuilder } from "discord.js";
+import { createConnect4 } from "../lib/connect4/connect4Runner";
 
 const baseCommand = new SlashCommandBuilder()
     .setName("connect4")

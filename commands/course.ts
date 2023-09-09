@@ -1,12 +1,12 @@
 // @ts-check
-const { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require("discord.js");
+import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder, PermissionFlagsBits, ChannelType } from "discord.js";
 
-const MODERATION_REQUEST_CHANNEL = 824506830641561600n;
+const MODERATION_REQUEST_CHANNEL = BigInt("824506830641561600");
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
 
 // map of course aliases to their actual names
-const course_aliases = {
+const course_aliases: Record<string, string> = {
     comp6841: "comp6441",
     comp9044: "comp2041",
     comp3891: "comp3231",
@@ -34,11 +34,13 @@ const course_aliases = {
  * @param {string} course 
  * @returns {string}
  */
-const get_real_course_name = (course) => {
-    if (course_aliases[course.toLowerCase()]) {
-        return course_aliases[course.toLowerCase()];
+const get_real_course_name = (course: string): string => {
+    course = course.toLowerCase();
+    if (course_aliases[course]) {
+        const alias = course_aliases[course];
+        return alias!;
     }
-    return course.toLowerCase();
+    return course;
 };
 
 /**
@@ -46,7 +48,7 @@ const get_real_course_name = (course) => {
  * @param {string} course 
  * @returns {boolean}
  */
-const is_valid_course = (course) => {
+const is_valid_course = (course: string): boolean => {
     const reg_comp_course = /^comp\d{4}$/;
     const reg_math_course = /^math\d{4}$/;
     const reg_binf_course = /^binf\d{4}$/;
@@ -98,8 +100,8 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
-        if (!interaction.inCachedGuild()) return;
+    async execute(interaction: ChatInputCommandInteraction) {
+        if (!interaction.inCachedGuild()) return Promise.resolve();
 
         try {
             if (interaction.options.getSubcommand() === COMMAND_JOIN) {

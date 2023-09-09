@@ -17,10 +17,10 @@
 // tutorial:
 // https://www.freecodecamp.org/news/how-to-scrape-websites-with-node-js-and-cheerio/
 
-const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 const axios = require("axios").default;
-const cheerio = require("cheerio");
+import cheerio from "cheerio";
 
 /**
  * 
@@ -29,13 +29,13 @@ const cheerio = require("cheerio");
  * @param {string[]} months 
  * @returns {boolean}
  */
-function checkInBetween(date_string, c_date, months) {
+function checkInBetween(date_string: string[], c_date: Date, months: string[]): boolean {
     const beginning_date = date_string[0];
-    const beginning_month = months.indexOf(date_string[1]);
+    const beginning_month = months.indexOf(date_string[1]!);
     let ending_date = date_string[3];
-    let ending_month = months.indexOf(date_string[4]);
+    let ending_month = months.indexOf(date_string[4]!);
     if (date_string.length > 5) {
-        ending_month = months.indexOf(date_string[5]);
+        ending_month = months.indexOf(date_string[5]!);
         ending_date = date_string[4];
 
         if (c_date.getFullYear().toString() == date_string[2]) {
@@ -71,9 +71,9 @@ function checkInBetween(date_string, c_date, months) {
  * @param {string[]} months 
  * @returns {number}
  */
-function whatweek(date_string, c_date, months) {
+function whatweek(date_string: string[], c_date: Date, months: string[]): number {
     const beginning_date = date_string[0];
-    const beginning_month = months.indexOf(date_string[1]);
+    const beginning_month = months.indexOf(date_string[1]!);
 
     const date_begin = new Date(c_date.getFullYear(), beginning_month, Number(beginning_date), 0, 0, 0);
 
@@ -98,7 +98,7 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         // Statically coded stuff:
         const months = [
             "Jan",
@@ -132,25 +132,20 @@ module.exports = {
             // Select all the list items in plainlist class
             const listItems = $(".table-striped tbody tr");
 
-            /**
-             * @typedef {Object} TermInfo
-             * @property {string} period
-             * @property {string} term
-             */
+            interface TermInfo {
+                period: string;
+                term: string;
+            }
 
-            // Stores data for all datas
-            /**
-             * @type {TermInfo[]}
-             */
-            const datas = [];
+            const datas: TermInfo[] = [];
 
             // Use .each method to loop through the li we selected
-            listItems.each((idx, el) => {
+            listItems.each((_, el) => {
                 // Object holding data for each data_const/jurisdiction
                 /**
                  * @type {TermInfo}
                  */
-                const data_const = { period: "", term: "" };
+                const data_const: TermInfo = { period: "", term: "" };
                 // Select the text content of a and span elements
                 // Store the textcontent in the above object
                 data_const.period = $(el).children("td:nth-child(2)").text();
@@ -164,21 +159,21 @@ module.exports = {
             // console.log(datas)
 
             for (let index = 0; match_c_date != 1 && index < datas.length; index++) {
-                const date_string = datas[index].period.split(/\s/g);
+                const date_string = datas[index]!.period.split(/\s/g);
                 // console.log(date_string)
 
-                if (datas[index].term == "UNSW Shutdown") {
+                if (datas[index]!.term == "UNSW Shutdown") {
                     if (checkInBetween(date_string, c_date, months)) {
                         console.log("UNSW Shutdown Period");
                     }
-                } else if (datas[index].term == "Teaching period U1") {
+                } else if (datas[index]!.term == "Teaching period U1") {
                     if (checkInBetween(date_string, c_date, months)) {
                         week = whatweek(date_string, c_date, months);
                         interaction.reply(`It is Summer Term, Week ${week}`);
                         match_c_date = 1;
                         return;
                     }
-                } else if (datas[index].term == "Teaching period T1") {
+                } else if (datas[index]!.term == "Teaching period T1") {
                     if (checkInBetween(date_string, c_date, months)) {
                         week = whatweek(date_string, c_date, months);
                         if (week == 6) {
@@ -188,7 +183,7 @@ module.exports = {
                         match_c_date = 1;
                         return;
                     }
-                } else if (datas[index].term == "Teaching period T2") {
+                } else if (datas[index]!.term == "Teaching period T2") {
                     if (checkInBetween(date_string, c_date, months)) {
                         week = whatweek(date_string, c_date, months);
                         if (week == 6) {
@@ -198,7 +193,7 @@ module.exports = {
                         match_c_date = 1;
                         return;
                     }
-                } else if (datas[index].term == "Teaching period T3") {
+                } else if (datas[index]!.term == "Teaching period T3") {
                     if (checkInBetween(date_string, c_date, months)) {
                         week = whatweek(date_string, c_date, months);
                         if (week == 6) {
@@ -208,23 +203,23 @@ module.exports = {
                         match_c_date = 1;
                         return;
                     }
-                } else if (datas[index].term.includes("Study period")) {
+                } else if (datas[index]!.term.includes("Study period")) {
                     if (checkInBetween(date_string, c_date, months)) {
-                        const data_p = datas[index].term;
+                        const data_p = datas[index]!.term;
                         const t = data_p.replace("Study period", "");
                         interaction.reply(`It is Study Period${t}`);
                         match_c_date = 1;
                         return;
                     }
-                } else if (datas[index].term.includes("Exams")) {
+                } else if (datas[index]!.term.includes("Exams")) {
                     if (checkInBetween(date_string, c_date, months)) {
-                        const data_p = datas[index].term;
+                        const data_p = datas[index]!.term;
                         const t = data_p.replace("Exams", "");
                         interaction.reply(`It is Exam Period${t}`);
                         match_c_date = 1;
                         return;
                     }
-                } else if (datas[index].term.includes("Term break")) {
+                } else if (datas[index]!.term.includes("Term break")) {
                     if (checkInBetween(date_string, c_date, months)) {
                         interaction.reply("It is Term Break.");
                         match_c_date = 1;

@@ -1,10 +1,10 @@
 //@ts-check
-const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, EmbedBuilder, ChatInputCommandInteraction, ChannelType, ButtonStyle } = require("discord.js");
-const { Pagination } = require("pagination.djs");
-const fs = require("fs");
+import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChatInputCommandInteraction, ChannelType } from "discord.js";
+import { Pagination } from "pagination.djs";
+import fs from "fs";
 
 /** @type {string[]} */
-const allowedChannels = require("../config/anon_channel.json").allowedChannels;
+const allowedChannels: string[] = require("../config/anon_channel.json").allowedChannels;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -79,12 +79,12 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      * @returns
      */
-    async execute(interaction) {
-        if (!interaction.inCachedGuild()) return;
+    async execute(interaction: ChatInputCommandInteraction) {
+        if (!interaction.inCachedGuild()) return Promise.resolve();
         const user = interaction.user.username;
         const u_id = interaction.user.id;
 
-        const logDB = global.logDB;
+        const logDB = (global as any).logDB;
 
         if (interaction.options.getSubcommand() === "current") {
             if (!allowedChannels.some((c) => c === interaction.channelId)) {
@@ -260,7 +260,7 @@ module.exports = {
             // TODO: Convert to scroller?
             
             /** @type {string[]} */
-            const channels = [];
+            const channels: string[] = [];
             for (let i = 0; i < allowedChannels.length; i += 1) {
                 // c_name is an array of objects that contains channel_name and guild_id as properties
                 const c_name = await logDB.channelname_get(allowedChannels[i]);
@@ -287,13 +287,13 @@ module.exports = {
                 );
             }
 
-            const buttonList = [
-                new ButtonBuilder()
-                    .setCustomId("previousbtn")
-                    .setLabel("Previous")
-                    .setStyle(ButtonStyle.Danger),
-                new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
-            ];
+            // const buttonList = [
+            //     new ButtonBuilder()
+            //         .setCustomId("previousbtn")
+            //         .setLabel("Previous")
+            //         .setStyle(ButtonStyle.Danger),
+            //     new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
+            // ];
 
             // may need to tweak this as necessary
             const pagination = new Pagination(interaction, {
@@ -305,10 +305,10 @@ module.exports = {
                 nextLabel: "Next",
             });
 
-            /** @type {Record<string, ButtonBuilder>} */
-            const buttons = buttonList.reduce((_, button, i) => Object.assign(String(i), button), {});
+            // /** @type {Record<string, ButtonBuilder>} */
+            // const buttons: Record<string, ButtonBuilder> = buttonList.reduce((_, button, i) => Object.assign(String(i), button), {});
             pagination.addEmbeds(embedList);
-            pagination.setButtons(buttons);
+            // pagination.setButtons(buttons);
             await pagination.reply();
 
             // use of deprecated libary
