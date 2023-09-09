@@ -1,10 +1,18 @@
 // @ts-check
 const fs = require("fs");
-const { Client, Collection, GatewayIntentBits, InteractionType, Partials, SlashCommandBuilder, CommandInteraction } = require("discord.js");
+const {
+    Client,
+    Collection,
+    GatewayIntentBits,
+    InteractionType,
+    Partials,
+    SlashCommandBuilder,
+    CommandInteraction,
+} = require("discord.js");
 require("dotenv").config();
 const { env } = require("node:process");
 
-/** 
+/**
  * @typedef {{data: SlashCommandBuilder, execute: (interaction: CommandInteraction) => Promise<void>}} commandExport
  */
 
@@ -29,11 +37,11 @@ const client = new CseClient({
         GatewayIntentBits.GuildPresences,
     ],
     partials: [
-        Partials.Message, 
-        Partials.Channel, 
-        Partials.Reaction, 
-        Partials.GuildMember, 
-        Partials.User
+        Partials.Message,
+        Partials.Channel,
+        Partials.Reaction,
+        Partials.GuildMember,
+        Partials.User,
     ],
 });
 
