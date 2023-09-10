@@ -1,8 +1,8 @@
-const axios = require("axios");
-const textVersion = require("textversionjs");
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
-const { apiURL, handbookURL } = require("../config/handbook.json");
+// @ts-check
+const axios = require("axios").default;
+import textVersion from "textversionjs";
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { apiURL, handbookURL } from "../config/handbook.json";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,11 +21,35 @@ module.exports = {
                         .setRequired(true),
                 ),
         ),
-    async execute(interaction) {
-        if (interaction.options.getSubcommand() === "courseinfo") {
-            const courseCode = await interaction.options.getString("coursecode").toUpperCase();
 
-            let data;
+    /**
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns 
+     */
+    async execute(interaction: ChatInputCommandInteraction) {
+        if (interaction.options.getSubcommand() === "courseinfo") {
+            const courseCode = interaction.options.getString("coursecode", true).toUpperCase();
+
+            interface CourseData {
+                title: string;
+                code: string;
+                UOC: number;
+                level: number;
+                description: string;
+                study_level: string;
+                handbook_note: string;
+                school: string;
+                faculty: string;
+                campus: string;
+                equivalents: Record<string, number>;
+                exclusions: Record<string, number>;
+                terms: string[];
+                raw_requirements: string;
+                gen_ed: boolean;
+            }
+
+            let data: CourseData | null = null;
             try {
                 // Documented at:
                 // https://circlesapi.csesoc.app/docs#/courses/get_course_courses_getCourse__courseCode__get
@@ -38,7 +62,8 @@ module.exports = {
                     ephemeral: true,
                 });
             }
-
+            
+            if (data == null) return;
             const {
                 title,
                 code,
@@ -55,11 +80,11 @@ module.exports = {
                 terms,
             } = data;
 
-            const courseInfo = new MessageEmbed()
+            const courseInfo = new EmbedBuilder()
                 .setTitle(title)
                 .setURL(`${handbookURL}/${code}`)
                 .setColor(0x3a76f8)
-                .setAuthor(`Course Info: ${code} (${UOC} UOC)`, "https://i.imgur.com/EE3Q40V.png")
+                .setAuthor({ name: `Course Info: ${code} (${UOC} UOC)`, iconURL: "https://i.imgur.com/EE3Q40V.png" })
                 .addFields(
                     {
                         name: "Overview",
@@ -106,8 +131,10 @@ module.exports = {
                     /* }, */
                 )
                 .setTimestamp()
-                .setFooter("Data fetched from Circles' Api");
+                .setFooter({ text: "Data fetched from Circles' Api" })
             await interaction.reply({ embeds: [courseInfo] });
         }
+
+        return Promise.resolve();
     },
 };

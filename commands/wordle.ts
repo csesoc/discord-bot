@@ -1,19 +1,23 @@
+// @ts-check
 /* eslint-disable no-unused-vars */
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { wordOfTheDay, timeChanged, words } = require("../config/words.json");
-const { players } = require("../config/wordle.json");
-const fs = require("fs");
-const Canvas = require("canvas");
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { words } from "../config/words.json";
+import fs from "fs";
+import Canvas from "canvas";
 
-// Letter class
-// Because OOP is always a good idea
-class Letter {
-    constructor(letter, pos, color = 1) {
-        this.letter = letter;
-        this.pos = pos;
-        this.color = color;
-    }
+interface Player {
+    id: string;
+    name: string;
+    wordOfTheDay: string;
+    timeChanged: number;
+    if_finished: boolean;
+    words: string[];
+    guesses: string[];
+    score: number;
+    total_games: number;
 }
+
+const players: Player[] = require("../config/wordle.json").players;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,13 +36,15 @@ module.exports = {
                     option.setName("word").setDescription("The word to guess.").setRequired(true),
                 ),
         ),
-    async execute(interaction) {
+
+
+    async execute(interaction: ChatInputCommandInteraction) {
         const userID = interaction.user.id;
         // check if userID exists in players value
-        let player = undefined;
+        let player: Player | undefined = undefined;
 
         for (let i = 0; i < players.length; i++) {
-            if (players[i].id === userID) {
+            if (players[i]!.id === userID) {
                 player = players[i];
             }
         }
@@ -48,13 +54,17 @@ module.exports = {
             // add user to players
             console.log("New user");
             const word = words[Math.floor(Math.random() * words.length)];
-            const NewPlayer = {
+
+            /**
+             * @type {Player}
+             */
+            const NewPlayer: Player = {
                 id: userID,
                 name: interaction.user.username,
-                wordOfTheDay: word,
+                wordOfTheDay: word!,
                 timeChanged: Date.now(),
                 if_finished: false,
-                words: [word],
+                words: [word!],
                 guesses: [],
                 score: 0,
                 total_games: 0,
@@ -66,7 +76,7 @@ module.exports = {
         } else {
             // user exists
             console.log("user exists");
-            const timeDiff = Math.abs(new Date() - new Date(player.timeChanged));
+            const timeDiff = Math.abs(new Date().valueOf() - new Date(player.timeChanged).valueOf());
             // If day has changed, select new word and reset game state
             if (
                 timeDiff > 86400000 ||
@@ -74,7 +84,7 @@ module.exports = {
                 player.wordOfTheDay === undefined
             ) {
                 console.log("Picking a new word");
-                player.wordOfTheDay = words[Math.floor(Math.random() * words.length)];
+                player.wordOfTheDay = words[Math.floor(Math.random() * words.length)]!;
                 player.timeChanged = Date.now();
                 player.if_finished = false;
                 player.words.push(player.wordOfTheDay);
@@ -87,6 +97,7 @@ module.exports = {
         // if timeChanged is more than a day ago, pick a new word
         console.log("Selected Word: " + selectedWord);
         const setWin = () => {
+            if (!player) return;
             player.if_finished = true;
             player.total_games++;
             player.score++;
@@ -97,6 +108,7 @@ module.exports = {
             );
         };
         const setLoss = () => {
+            if (!player) return;
             player.if_finished = true;
             player.total_games++;
             const editedPlayers = players;
@@ -106,9 +118,10 @@ module.exports = {
             );
         };
         // function to returns every unique letter in a string with count of each letter
-        const eachLetterCount = (answer) => {
+        const eachLetterCount = (answer: string) => {
             const letters = answer.split("");
-            const letterCount = {};
+            const letterCount: Record<string, number> = {};
+            
             letters.forEach((letter) => {
                 if (letterCount[letter]) {
                     letterCount[letter]++;
@@ -118,10 +131,20 @@ module.exports = {
             });
             return letterCount;
         };
-        const getAnswer = (answer, guess) => {
+
+        /**
+         * @param {string} answer 
+         * @param {string} guess 
+         * @returns 
+         */
+        const getAnswer = (answer: string, guess: string) => {
             const max_match = eachLetterCount(answer);
-            const match = {};
-            const colors = Array(5).fill(0);
+            const match: Record<string, number> = {};
+
+            /**
+             * @type {number[]}
+             */
+            const colors: number[] = Array(5).fill(0);
             if (guess === undefined) {
                 return colors;
             }
@@ -153,7 +176,7 @@ module.exports = {
                     colors[i] = 1;
                 }
                 if (colors[i] === 3) {
-                    const diff = match[guess.charAt(i)] - max_match[guess.charAt(i)];
+                    const diff = match[guess.charAt(i)]! - max_match[guess.charAt(i)]!;
                     // console.log("diff for " + guess.charAt(i) + ": " + diff);
                     if (diff > 0) {
                         colors[i] = 1;
@@ -164,7 +187,15 @@ module.exports = {
             return colors;
         };
 
-        async function LoadGame(msg, guesses, answer) {
+        /**
+         * 
+         * @param {ChatInputCommandInteraction} msg 
+         * @param {string[]} guesses 
+         * @param {string} answer
+         * @returns
+         */
+        async function LoadGame(msg: ChatInputCommandInteraction, guesses: string[], answer: string) {
+            if (!player || !msg.channel) return;
             // make a blank canvas
             const canvas = Canvas.createCanvas(330, 397);
             const context = canvas.getContext("2d");
@@ -188,11 +219,11 @@ module.exports = {
             let buffer = 0;
 
             for (let j = 0; j < 6; j++) {
-                const imageNums = getAnswer(answer, guesses[j]);
+                const imageNums = getAnswer(answer, guesses[j]!);
                 for (let i = 0; i < 5; i++) {
                     // eslint-disable-next-line no-undef
                     const imageNumber = imageNums[i];
-                    square = square_arr[imageNumber];
+                    square = square_arr[imageNumber!]!;
 
                     context.drawImage(
                         square,
@@ -203,7 +234,7 @@ module.exports = {
                     );
                     if (guesses[j] != undefined) {
                         context.fillText(
-                            guesses[j].charAt(i),
+                            guesses[j]!.charAt(i),
                             squareSize / 2 + buffer + squareSize * i,
                             rowOffset + 42,
                         );
@@ -237,9 +268,11 @@ module.exports = {
             });
             // msg.message.author.send({ files: [{ attachment: canvas.toBuffer(), name: "wordle.png" }] });
         }
+        
+        if (!interaction.channel) return;
 
-        if (interaction.options.length === 0) {
-            interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
+        if (interaction.options.data.length === 0) {    
+            await interaction.channel.send("Invalid Usage!\nUsage: `/wordle play`");
             return;
         } else if (interaction.options.getSubcommand() === "play") {
             this.guesses = player.guesses;
@@ -251,16 +284,16 @@ module.exports = {
             // Guess a word
             // console.log("Guess: " + interaction.options.getString("word"));
             if (interaction.options.getString("word") === undefined) {
-                interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
+                await interaction.channel.send("Invalid Usage!\nUsage: `/wordle guess <word>`");
                 throw new Error("Invalid Usage");
             } else {
                 if (this.guesses === undefined) {
                     this.guesses = player.guesses;
                 }
 
-                const guess = interaction.options.getString("word").toLowerCase();
+                const guess = interaction.options.getString("word", true).toLowerCase();
                 if (guess.length !== 5) {
-                    interaction.channel.send(
+                    await interaction.channel.send(
                         "Invalid Usage! Use a 5 lettered word \nUsage: `/wordle guess <word>`",
                     );
                     throw new Error("Invalid Usage");

@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+// @ts-check
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 // Tools to help manage meetings
 
@@ -59,8 +59,15 @@ module.exports = {
                 ),
         ),
 
-    async execute(interaction) {
-        const voice_channel = interaction.member.voice.channel;
+    /**
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns 
+     */
+    async execute(interaction: ChatInputCommandInteraction) {
+        if (!interaction.inCachedGuild()) return;
+        const { member } = interaction;
+        const voice_channel = member.voice.channel;
 
         // Check if connected to voice channel
         if (!voice_channel) {
@@ -70,7 +77,8 @@ module.exports = {
             });
         }
 
-        const participants = [];
+        /** @type {string[]} */
+        const participants: string[] = [];
 
         // Gets all participants of the voice channel
         voice_channel.members.each((member) => {
@@ -87,9 +95,9 @@ module.exports = {
                 .split(/\s+/)
                 .forEach((user) => {
                     const user_id = user.substr(3, 18);
-                    const member = interaction.member.guild.members.cache.get(user_id);
-                    if (member) {
-                        participants.push(member.user.tag);
+                    const m = interaction.member.guild.members.cache.get(user_id);
+                    if (m) {
+                        participants.push(m.user.tag);
                     }
                 });
         }
@@ -126,12 +134,12 @@ module.exports = {
             });
         } else if (command === "random") {
             // Selects user at random
-            ret_val = participants[Math.floor(Math.random() * participants.length)];
+            ret_val = participants[Math.floor(Math.random() * participants.length)]!;
         } else if (command === "groups") {
             // Groups users into a given number of groups
             shuffleArray(participants);
 
-            const num_groups = interaction.options.getInteger("num_groups");
+            const num_groups = interaction.options.getInteger("num_groups", true);
             const members_per_group = Math.round(participants.length / num_groups);
 
             let group_num = 1;
@@ -153,9 +161,9 @@ module.exports = {
             });
         }
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(command)
-            .setColor("#0099ff")
+            .setColor(0x0099ff)
             .setDescription(ret_val);
 
         return await interaction.reply({
@@ -166,8 +174,11 @@ module.exports = {
 
 // shuffleArray function from
 // https://www.geeksforgeeks.org/how-to-shuffle-an-array-using-javascript/
-
-function shuffleArray(array) {
+/**
+ * 
+ * @param {any[]} array 
+ */
+function shuffleArray(array: any[]) {
     for (let i = array.length - 1; i > 0; i--) {
         // Generate random number
         const j = Math.floor(Math.random() * (i + 1));

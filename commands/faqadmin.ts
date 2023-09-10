@@ -1,6 +1,6 @@
 // @ts-check
-const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+import { PermissionFlagsBits, SlashCommandBuilder, SlashCommandSubcommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { DBFaq } from "../lib/database/faq";
 
 // ////////////////////////////////////////////
 // //////// SETTING UP THE COMMANDS ///////////
@@ -40,13 +40,15 @@ const baseCommand = new SlashCommandBuilder()
 // ////////////////////////////////////////////
 
 // handle the command
-/** @param {CommandInteraction} interaction */
-async function handleInteraction(interaction) {
+/** @param {ChatInputCommandInteraction} interaction */
+async function handleInteraction(interaction: ChatInputCommandInteraction) {
     /** @type {DBFaq} */
-    const faqStorage = global.faqStorage;
+    const faqStorage: DBFaq = (global as any).faqStorage;
+
+    if (!interaction.inCachedGuild()) return; 
 
     // Admin permission check (this may not work uhm)
-    if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+    if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
         await interaction.reply({
             content: "You do not have permission to execute this command.",
             ephemeral: true,
@@ -56,14 +58,29 @@ async function handleInteraction(interaction) {
 
     // figure out which command was called
     const subcommand = interaction.options.getSubcommand(false);
-    let keyword = null;
-    let answer = null;
-    let tags = null;
-    let success = false;
+    /** @type {string | null} */
+    let keyword: string | null = null;
+    
+    /** @type {string | null} */
+    let answer: string | null = null;
+
+    /** @type {string | null} */
+    let tags: string | null = null;
+
+    /** @type {boolean | undefined} */
+    let success: boolean | null = false;
+
+    /** @type {import("discord.js").CommandInteractionOption<"cached"> | null} */
+    let get_keyword: import("discord.js").CommandInteractionOption<"cached"> | null = null;
+    
     switch (subcommand) {
         case "create":
-            keyword = String(interaction.options.get("keyword").value).toLowerCase();
-            answer = String(interaction.options.get("answer").value);
+            get_keyword = interaction.options.get("keyword");
+            const get_answer = interaction.options.get("answer");
+            if (get_keyword == null || get_answer == null) return;
+
+            keyword = String(get_keyword.value).toLowerCase();
+            answer = String(get_answer.value);
             if (answer.length >= 1024) {
                 await interaction.reply({
                     content: "The answer must be < 1024 characters...",
@@ -72,8 +89,9 @@ async function handleInteraction(interaction) {
             }
 
             console.log("gets here");
-            if (interaction.options.get("tags") != null) {
-                tags = String(interaction.options.get("tags").value);
+            const get_tags = interaction.options.get("tags");
+            if (get_tags != null) {
+                tags = String(get_tags.value);
                 // validate "tags" string
                 if (tags) {
                     tags = tags.trim();
@@ -88,7 +106,7 @@ async function handleInteraction(interaction) {
                 }
             }
 
-            success = await faqStorage.new_faq(keyword, answer, tags);
+            success = await faqStorage.new_faq(keyword, answer, tags!);
             if (success) {
                 await interaction.reply({
                     content: `Successfully created FAQ entry for '${keyword}': ${answer}`,
@@ -102,7 +120,10 @@ async function handleInteraction(interaction) {
             }
             break;
         case "delete":
-            keyword = String(interaction.options.get("keyword").value).toLowerCase();
+            get_keyword = interaction.options.get("keyword");
+            if (get_keyword == null) return;
+
+            keyword = String(get_keyword.value).toLowerCase();
             success = await faqStorage.del_faq(keyword);
             if (success) {
                 await interaction.reply({

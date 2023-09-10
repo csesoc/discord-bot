@@ -1,21 +1,32 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+//@ts-check
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 const math = require("mathjs");
-const { Util } = require("discord.js");
 
 const illegalPhraseRegexes = [/`/g, /@/g];
 
-const isIllegalCharactersPresent = (expression) => {
+/**
+ * 
+ * @param {string} expression 
+ * @returns 
+ */
+const isIllegalCharactersPresent = (expression: string) => {
     return illegalPhraseRegexes.some((regex) => regex.test(expression));
 };
 
-const tryCompileAndEvaluate = (eqnString) => {
+/**
+ * 
+ * @param {string} eqnString 
+ * @returns 
+ */
+const tryCompileAndEvaluate = (eqnString: string) => {
     try {
         const equationObj = math.compile(eqnString);
         if (!equationObj) {
             throw Error;
         }
 
-        const equationOutcome = equationObj.evaluate();
+        /** @type {number} */
+        const equationOutcome: number = equationObj.evaluate();
 
         return {
             success: true,
@@ -30,7 +41,13 @@ const tryCompileAndEvaluate = (eqnString) => {
     }
 };
 
-const evaluate = (equationString, target) => {
+/**
+ * 
+ * @param {string} equationString 
+ * @param {number} target 
+ * @returns 
+ */
+const evaluate = (equationString: string, target: number) => {
     if (isIllegalCharactersPresent(equationString)) {
         return {
             success: false,
@@ -81,8 +98,14 @@ module.exports = {
         .addNumberOption((option) =>
             option.setName("target").setDescription("Target for your equation").setRequired(false),
         ),
-    async execute(interaction) {
-        const equationStr = interaction.options.getString("equation");
+
+    /**
+     * @async
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns
+     */
+    async execute(interaction: ChatInputCommandInteraction) {
+        const equationStr = interaction.options.getString("equation", true);
         const target = interaction.options.getNumber("target") || 24;
 
         const { success, message, ephemeral } = evaluate(equationStr, target);
@@ -91,8 +114,9 @@ module.exports = {
         const output = `${emoji} ${message}`;
 
         await interaction.reply({
-            content: Util.removeMentions(output),
+            content: output,
             ephemeral,
+            allowedMentions: {},
         });
     },
 };
