@@ -1,162 +1,318 @@
-// @ts-check
-import { PermissionFlagsBits, SlashCommandBuilder, ChatInputCommandInteraction, ChannelType } from "discord.js";
+//@ts-check
+import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChatInputCommandInteraction, ChannelType } from "discord.js";
+import { Pagination } from "pagination.djs";
+import fs from "fs";
 
-const COMMAND_KICKUNVERIFIED = "kickunverified";
-const COMMAND_MIGRATE = "migratecourses";
-const COMMAND_REMOVECOURSEROLES = "nukeremovecourseroles";
-
-// yeah i know this code is copy pasted from the other file
-// but whatever, the migration command is temporary!
-/**
- * 
- * @param {string} course 
- * @returns {boolean}
- */
-const is_valid_course = (course: string): boolean => {
-    const reg_comp_course = /^comp\d{4}$/;
-    const reg_math_course = /^math\d{4}$/;
-    const reg_binf_course = /^binf\d{4}$/;
-    const reg_engg_course = /^engg\d{4}$/;
-    const reg_seng_course = /^seng\d{4}$/;
-    const reg_desn_course = /^desn\d{4}$/;
-
-    course = course.toLowerCase();
-
-    return (
-        reg_comp_course.test(course.toLowerCase()) ||
-        reg_math_course.test(course.toLowerCase()) ||
-        reg_binf_course.test(course.toLowerCase()) ||
-        reg_engg_course.test(course.toLowerCase()) ||
-        reg_seng_course.test(course.toLowerCase()) ||
-        reg_desn_course.test(course.toLowerCase())
-    );
-};
+/** @type {string[]} */
+const allowedChannels: string[] = require("../config/anon_channel.json").allowedChannels;
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("admin")
-        .setDescription("Admin-only commands.")
+        .setName("anonymouspost")
+        .setDescription("Make a post anonymously, the bot will send it on your behalf.")
         .addSubcommand((subcommand) =>
             subcommand
-                .setName(COMMAND_KICKUNVERIFIED)
-                .setDescription("Kicks all unverified users from the server."),
-        )
-        .addSubcommand((subcommand) =>
-            subcommand
-                .setName(COMMAND_MIGRATE)
-                .setDescription("Migrates a course role to permission overwrites.")
+                .setName("current")
+                .setDescription("post anonymously in the current channel")
                 .addStringOption((option) =>
                     option
-                        .setName("course")
-                        .setDescription("Course role to remove")
+                        .setName("message")
+                        .setDescription("Enter the text you wish to post anonymously")
                         .setRequired(true),
                 ),
         )
         .addSubcommand((subcommand) =>
             subcommand
-                .setName(COMMAND_REMOVECOURSEROLES)
-                .setDescription("WARNING: Removes course roles from the server."),
+                .setName("channel")
+                .setDescription("post anonymously in another channel")
+                .addStringOption((option) =>
+                    option
+                        .setName("message")
+                        .setDescription("Enter the text you wish to post anonymously")
+                        .setRequired(true),
+                )
+                .addChannelOption((option) =>
+                    option
+                        .setName("channel")
+                        .setDescription("Enter the channel you wish to post anonymously in")
+                        .setRequired(true),
+                ),
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("allow")
+                .setDescription("[ADMIN] Allows a channel to be added.")
+                .addChannelOption((option) =>
+                    option.setName("channel").setDescription("Channel to allow").setRequired(true),
+                ),
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("allowcurrent")
+                .setDescription("[ADMIN] Allows channel which command is executed to be added."),
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("disallow")
+                .setDescription("[ADMIN] Disallows a channel to be added.")
+                .addChannelOption((option) =>
+                    option
+                        .setName("channel")
+                        .setDescription("Channel to disallow")
+                        .setRequired(true),
+                ),
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("disallowcurrent")
+                .setDescription(
+                    "[ADMIN] IDisallows channel which command is executed to be added.",
+                ),
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("whitelist")
+                .setDescription("[ADMIN] Displays the list of allowed channels."),
         ),
 
     /**
-     * 
-     * @param {ChatInputCommandInteraction} interaction 
-     * @returns 
+     * @param {ChatInputCommandInteraction} interaction
+     * @returns
      */
     async execute(interaction: ChatInputCommandInteraction) {
-        try {
-            if (!interaction.inCachedGuild()) return Promise.resolve();
+        if (!interaction.inCachedGuild()) return Promise.resolve();
+        const user = interaction.user.username;
+        const u_id = interaction.user.id;
 
-            if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+        const logDB = (global as any).logDB;
+
+        if (interaction.options.getSubcommand() === "current") {
+            if (!allowedChannels.some((c) => c === interaction.channelId)) {
+                const c_name = await logDB.channelname_get(interaction.channelId);
                 return await interaction.reply({
-                    content: "You do not have permission to execute this command.",
+                    content: `❌ | You are not allowed to post anonymously in the channel \`${c_name[0].channel_name}\`.`,
+                    ephemeral: true,
+                });
+            }
+            const text = interaction.options.getString("message");
+
+            // removeMentions is deprecated from discordjs v14+ onwards
+            // const msg = Util.removeMentions(text);
+            const msg = text;
+
+            logDB.message_create(interaction.id, u_id, user, msg, interaction.channelId);
+
+            await interaction.reply({ content: "Done!", ephemeral: true });
+            if (!interaction.channel) return;
+
+            await interaction.channel.send({
+                content: `${msg} \n\n(The above message was anonymously posted by a user)`,
+                allowedMentions: {} 
+            });
+            // interaction.guild.channels.cache
+            //     .get(interaction.channelId)
+            //     .send(msg + "\n\n(The above message was anonymously posted by a user)");
+            return;
+        } else if (interaction.options.getSubcommand() === "channel") {
+            const channel = interaction.options.getChannel("channel", true);
+            const c_name = channel.name;
+            const c_id = channel.id;
+
+            if (channel.type != ChannelType.GuildText) {
+                return await interaction.reply({
+                    content: `Channel \`${c_name}\` not a text channel!`,
+                    ephemeral: true,
+                });
+            } else if (!allowedChannels.some((c) => c === c_id)) {
+                return await interaction.reply({
+                    content: `❌ | You are not allowed to post anonymously in the channel \`${c_name}\`.`,
                     ephemeral: true,
                 });
             }
 
-            if (interaction.options.getSubcommand() === COMMAND_KICKUNVERIFIED) {
-                const role = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === "unverified");
+            const text = interaction.options.getString("message");
+            // const msg = Util.removeMentions(text);
+            const msg = text;
 
-                // Make sure that the "unverified" role exists
-                if (role === undefined) {
-                    return await interaction.reply('Error: no "unverified" role exists.');
-                }
+            logDB.message_create(interaction.id, u_id, user, msg, c_id);
 
-                const kickMessage =
-                    "You have been removed from the CSESoc Server as you have not verified via the instructions in #welcome.\
-                    If you wish to rejoin, visit https://cseso.cc/discord";
+            await interaction.reply({ content: "Done!", ephemeral: true });
+            const guild = interaction.guild;
+            if (!guild) return;
 
-                // Member list in the role is cached
-                let numRemoved = 0;
-                role.members.each((member) => {
-                    member.createDM().then((DMChannel) => {
-                        // Send direct message to user being kicked
-                        DMChannel.send(kickMessage).then(() => {
-                            // Message sent, time to kick.
-                            member
-                                .kick(kickMessage)
-                                .then(() => {
-                                    ++numRemoved;
-                                    console.log(numRemoved + " people removed.");
-                                })
-                                .catch((e) => {
-                                    console.log(e);
-                                });
-                        });
-                    });
-                });
-                return await interaction.reply("Removed unverified members.");
-            } else if (interaction.options.getSubcommand() === COMMAND_MIGRATE) {
-                const course = interaction.options.getString("course", true);
-                if (!is_valid_course(course)) {
-                    return await interaction.reply("Error: invalid course.");
-                }
+            const channel_send = guild.channels.cache.get(c_id);
+            if (!channel_send || !channel_send.isTextBased()) return;
 
-                const role = interaction.guild.roles.cache.find(
-                    course_role => course_role.name.toLowerCase() === course.toLowerCase()
-                );
-
-                if (role === undefined) {
-                    return await interaction.reply("Error: no role exists for course " + course);
-                }
-
-                const channel = interaction.guild.channels.cache.find(
-                    role_channel => role_channel.name.toLowerCase() === role.name.toLowerCase(),
-                );
-
-                if (channel === undefined) {
-                    return await interaction.reply("Error: no channel exists for course " + course);
-                } else if (channel.type != ChannelType.GuildText) {
-                    return await interaction.reply(`Error: ${channel.name} is not a TextChannel`);
-                }
-
-                await interaction.deferReply();
-                for (const member of role.members.values()) {
-                    await channel.permissionOverwrites.create(member, {
-                        ViewChannel: true,
-                    });
-                }
-                return await interaction.editReply(
-                    "Migrated course role to permission overwrites.",
-                );
-            } else if (interaction.options.getSubcommand() === COMMAND_REMOVECOURSEROLES) {
-                // get all roles, and find courses which match the regex
-                const course_roles = interaction.guild.roles.cache.filter(role => is_valid_course(role.name));
-
-                await interaction.deferReply();
-
-                for (const role of course_roles.values()) {
-                    await role.delete();
-                }
-
-                return await interaction.editReply("Removed all course roles.");
-            }
-
-            return await interaction.reply("Error: unknown subcommand.");
-        } catch (error) {
-            await interaction.reply("Error: " + error);
+            return await channel_send.send({
+                content: `${msg} \n\n(The above message was anonymously posted by a user)`, 
+                allowedMentions: {}
+            });
+            // return await interaction.guild.channels.cache
+            //     .get(c_id)
+            //     .send(msg + "\n\n(The above message was anonymously posted by a user)");
         }
 
-        return Promise.resolve();
+        // Admin permission check
+        if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            return await interaction.reply({
+                content: "You do not have permission to execute this command.",
+                ephemeral: true,
+            });
+        }
+
+        if (interaction.options.getSubcommand() === "allow") {
+            const channel = interaction.options.getChannel("channel", true);
+
+            if (allowedChannels.some((c) => c === channel.id)) {
+                return await interaction.reply({
+                    content: `❌ | The allowed channels list already contains \`${channel.name}\`.`,
+                    ephemeral: true,
+                });
+            }
+
+            allowedChannels.push(channel.id);
+
+            // The path here is different to the require because it's called from index.js (I think)
+            fs.writeFileSync(
+                "./config/anon_channel.json",
+                JSON.stringify({ allowedChannels: allowedChannels }, null, 4),
+            );
+
+            return await interaction.reply({
+                content: `✅ | Allowed the channel \`${channel.name}\`.`,
+                ephemeral: true,
+            });
+        } else if (interaction.options.getSubcommand() === "allowcurrent") {
+            const c_name = await logDB.channelname_get(interaction.channelId);
+
+            if (allowedChannels.some((c) => c === interaction.channelId)) {
+                return await interaction.reply({
+                    content: `❌ | The allowed channels list already contains \`${c_name[0].channel_name}\`. Channel ID - \`${interaction.channelId}\``,
+                    ephemeral: true,
+                });
+            }
+
+            allowedChannels.push(interaction.channelId);
+
+            // The path here is different to the require because it's called from index.js (I think)
+            fs.writeFileSync(
+                "./config/anon_channel.json",
+                JSON.stringify({ allowedChannels: allowedChannels }, null, 4),
+            );
+
+            return await interaction.reply({
+                content: `✅ | Allowed the channel \`${c_name[0].channel_name}\`.`,
+                ephemeral: true,
+            });
+        } else if (interaction.options.getSubcommand() === "disallow") {
+            const channel = interaction.options.getChannel("channel", true);
+
+            if (!allowedChannels.some((c) => c === channel.id)) {
+                return await interaction.reply({
+                    content: `❌ | The allowed channel list does not contain \`${channel.name}\`.`,
+                    ephemeral: true,
+                });
+            }
+
+            allowedChannels.splice(allowedChannels.indexOf(channel.id), 1);
+
+            // The path here is different to the require because it's called from index.js (I think)
+            fs.writeFileSync(
+                "./config/anon_channel.json",
+                JSON.stringify({ allowedChannels: allowedChannels }, null, 4),
+            );
+
+            return await interaction.reply({
+                content: `✅ | Disallowed the channel \`${channel.name}\`.`,
+                ephemeral: true,
+            });
+        } else if (interaction.options.getSubcommand() === "disallowcurrent") {
+            const c_name = await logDB.channelname_get(interaction.channelId);
+
+            if (!allowedChannels.some((c) => c === interaction.channelId)) {
+                return await interaction.reply({
+                    content: `❌ | The allowed channel list does not contain \`${c_name[0].channel_name}\`.`,
+                    ephemeral: true,
+                });
+            }
+
+            allowedChannels.splice(allowedChannels.indexOf(interaction.channelId), 1);
+
+            // The path here is different to the require because it's called from index.js (I think)
+            fs.writeFileSync(
+                "./config/anon_channel.json",
+                JSON.stringify({ allowedChannels: allowedChannels }, null, 4),
+            );
+
+            return await interaction.reply({
+                content: `✅ | Disallowed the channel \`${c_name[0].channel_name}\`.`,
+                ephemeral: true,
+            });
+        } else if (interaction.options.getSubcommand() === "whitelist") {
+            // No allowed roles
+            if (allowedChannels.length == 0) {
+                const embed = new EmbedBuilder()
+                    .setTitle("Allowed Channels")
+                    .setDescription("No allowed channels");
+                return await interaction.reply({ embeds: [embed] });
+            }
+
+            // TODO: Convert to scroller?
+            
+            /** @type {string[]} */
+            const channels: string[] = [];
+            for (let i = 0; i < allowedChannels.length; i += 1) {
+                // c_name is an array of objects that contains channel_name and guild_id as properties
+                const c_name = await logDB.channelname_get(allowedChannels[i]);
+                if (c_name[0].guild_id === interaction.guildId) {
+                    channels[i] = c_name[0].channel_name;
+                }
+            }
+
+            if (channels.length == 0) {
+                const embed = new EmbedBuilder()
+                    .setTitle("Allowed Channels")
+                    .setDescription("No allowed channels");
+                return await interaction.reply({ embeds: [embed] });
+            }
+
+            const channelsPerPage = 10;
+
+            const embedList = [];
+            for (let i = 0; i < channels.length; i += channelsPerPage) {
+                embedList.push(
+                    new EmbedBuilder()
+                        .setTitle("Allowed Channels")
+                        .setDescription(channels.slice(i, i + channelsPerPage).join("\n")),
+                );
+            }
+
+            // const buttonList = [
+            //     new ButtonBuilder()
+            //         .setCustomId("previousbtn")
+            //         .setLabel("Previous")
+            //         .setStyle(ButtonStyle.Danger),
+            //     new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle(ButtonStyle.Success),
+            // ];
+
+            // may need to tweak this as necessary
+            const pagination = new Pagination(interaction, {
+                firstEmoji: '⏮', // First button emoji
+                prevEmoji: '◀️', // Previous button emoji
+                nextEmoji: '▶️', // Next button emoji
+                lastEmoji: '⏭', // Last button emoji
+                prevLabel: "Previous",
+                nextLabel: "Next",
+            });
+
+            // /** @type {Record<string, ButtonBuilder>} */
+            // const buttons: Record<string, ButtonBuilder> = buttonList.reduce((_, button, i) => Object.assign(String(i), button), {});
+            pagination.addEmbeds(embedList);
+            // pagination.setButtons(buttons);
+            await pagination.reply();
+
+            // use of deprecated libary
+            // return paginationEmbed(interaction, embedList, buttonList);
+        }
     },
 };

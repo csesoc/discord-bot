@@ -1,44 +1,45 @@
-import * as fs from 'fs';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v9';
+import fs from 'fs';
+import { REST, Routes } from 'discord.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const commands: string[] = []; 
+const commands: string[] = [];
 
-function loadCommands() {
-    const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+async function loadCommands(): Promise<void[]> {
+    const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.ts'));
 
-    for (const file of commandFiles) {
-        // Note: Dynamic imports return promises.
-        const commandImport = import(`./commands/${file}`);
-        commandImport.then(command => {
+    const promises = commandFiles.map(async (file) => {
+        const command = (await import(`./commands/${file}`)).default;
+        if (command && command.data) {
+            // console.log(command);
             commands.push(command.data.toJSON());
-        });
-    }
+        }
+    });
+
+    return Promise.all(promises);
 }
 
-loadCommands();
-console.log(process.env.DISCORD_TOKEN);
 if (!process.env.DISCORD_TOKEN) {
     throw new Error("DISCORD_TOKEN is not defined in the environment variables!");
 }
-const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
     try {
         console.log('Attempting to register application commands.');
+        
+        // Ensure commands are loaded
+        await loadCommands();
 
-        // You should wait for all commands to be loaded before proceeding
-        // Especially important if there's any delay or async operation in loadCommands
-        await Promise.all(commands);
-
-        await rest.put(Routes.applicationCommands(process.env.APP_ID as string), {
+        console.log(`Loaded ${commands.length} commands.`);
+        const data = await rest.put(Routes.applicationCommands(process.env.APP_ID as string), {
             body: commands,
         });
 
-        console.log('Successfully registered application commands.');
+        if (data) {
+            console.log(`Successfully reloaded ${data} application (/) commands.`);
+        }
     } catch (error) {
         console.error(error);
     }

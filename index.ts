@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Client, Collection, Partials, GatewayIntentBits } from 'discord.js';
+import { Client, Collection, Partials, GatewayIntentBits, Events } from 'discord.js';
 import { config as dotenvConfig } from 'dotenv';
 import { EventEmitter } from 'events';
 
@@ -26,10 +26,10 @@ const client: Client & { commands?: Collection<string, any> } = new Client({
 });
 const initaliseBot = async (): Promise<void> => {
     client.commands = new Collection();
-    const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
+    const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.ts'));
 
     for (const file of commandFiles) {
-        const command = await import(`./commands/${file}`);
+        const command = (await import(`./commands/${file}`)).default;
         client.commands.set(command.data.name, command);
     }
 
@@ -46,7 +46,8 @@ const initaliseBot = async (): Promise<void> => {
         }
     }
 
-    client.on('interactionCreate', async (interaction) => {
+    client.on(Events.InteractionCreate , async (interaction): Promise<void> => {
+        // console.log(interaction);
         if (!interaction.isCommand()) return;
 
         const command = client.commands?.get(interaction.commandName);

@@ -1,6 +1,7 @@
 //@ts-check
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-const math = require("mathjs");
+import * as math from 'mathjs';
+
 
 const illegalPhraseRegexes = [/`/g, /@/g];
 
@@ -24,7 +25,6 @@ const tryCompileAndEvaluate = (eqnString: string) => {
         if (!equationObj) {
             throw Error;
         }
-
         /** @type {number} */
         const equationOutcome: number = equationObj.evaluate();
 
@@ -55,7 +55,6 @@ const evaluate = (equationString: string, target: number) => {
             ephemeral: true,
         };
     }
-
     const evaluationOutcome = tryCompileAndEvaluate(equationString);
     if (!evaluationOutcome.success) {
         return {
@@ -88,7 +87,7 @@ const evaluate = (equationString: string, target: number) => {
           };
 };
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName("24parse")
         .setDescription("Checks whether an equation evaluates to 24 (or a number input)!")

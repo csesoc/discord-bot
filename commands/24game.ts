@@ -2,7 +2,7 @@ import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 const MAX = 9;
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName("24")
         .setDescription("Generates 4 random numbers from 0 to 9!"),
