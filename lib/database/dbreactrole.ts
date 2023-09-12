@@ -134,7 +134,7 @@ export class DBReactRole {
     }
 
     // Add new react role role
-    async add_react_role_role(role_id: String, emoji: String, msg_id: Number) {
+    async add_react_role_role(role_id: BigInt, emoji: String, msg_id: Number) {
         const client = await this.pool.connect();
         try {
             await client.query("BEGIN");

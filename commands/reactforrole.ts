@@ -1,7 +1,7 @@
 // @ts-check
 import { EmbedBuilder, PermissionFlagsBits, ChatInputCommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName("reactforrole")
         .setDescription("Creates a new role and assigns role to anyone who reacts with given emoji")
@@ -22,7 +22,10 @@ module.exports = {
                 .setRequired(true),
         )
         .addStringOption((option) =>
-            option.setName("message").setDescription("Enter your message"),
+            option
+                .setName("message")
+                .setDescription("Enter your message")
+                .setRequired(false),
         ),
 
     /**
@@ -45,10 +48,12 @@ module.exports = {
         const emojis = interaction.options.getString("emojis", true);
         const roleNames = interaction.options.getString("rolenames", true);
 
-        let message = interaction.options.getString("message", true);
+
+        let message = interaction.options.getString("message");
 
         const emojiList = emojis.split(",").map((item) => item.trim());
         const roleList = roleNames.split(",").map((item) => item.trim());
+
 
         // Check emojis are unique
         if (emojiList.length !== new Set(emojiList).size) {
@@ -57,6 +62,7 @@ module.exports = {
                 ephemeral: true,
             });
         }
+
 
         // Check all emojis are valid
         const unicode_emoji_regex =
@@ -82,7 +88,7 @@ module.exports = {
 
         const reactRoles = (global as any).reactRoles;
 
-        const roles: Record<string, number> = {};
+        const roles: Record<string, BigInt> = {};
 
         let notificationContent = "This command: \n";
 
@@ -98,7 +104,8 @@ module.exports = {
             /** @type {GuildMember} */
             const member: GuildMember = interaction.member;
             const role = member.guild.roles.cache.find(r => r.name === roleName);
-            let roleID = 0;
+
+            let roleID;
 
             if (role) {
                 const roleIsAdmin = role.permissions.has(PermissionFlagsBits.Administrator);
@@ -108,7 +115,8 @@ module.exports = {
                         ephemeral: true,
                     });
                 }
-                roleID = Number(role.id);
+                roleID = BigInt(role.id);
+
                 notificationContent += `\t'${emoji}' Used the existing role '${roleName}'\n`;
             } else {
                 // Role does not exist so create one
@@ -117,7 +125,7 @@ module.exports = {
                         name: roleName!,
                         reason: `new role required for react role feature "${roleName!}"`,
                     });
-                    roleID = Number(newRole.id);
+                    roleID = BigInt(newRole.id);
                     notificationContent += `\t'${emoji}' Created the new role '${roleName}'\n`;
                 } catch (err) {
                     console.log(err);
@@ -179,6 +187,7 @@ module.exports = {
             // Add to database
             await reactRoles.add_react_role_msg(sentMessage.id, interaction.user.id);
             for (const e in roles) {
+                console.log(e);
                 await reactRoles.add_react_role_role(roles[e], e, sentMessage.id);
             }
         } catch (err) {
