@@ -55,6 +55,38 @@ const is_valid_course = (course) => {
   );
 };
 
+function editChannels(interaction, channels, role) {
+  channels.forEach(channel => {
+    if (channel.type === "GUILD_TEXT" && channel.name.toLowerCase() === role.name.toLowerCase()) {
+      // Remove all permissions from a role
+      role.setPermissions(0n)
+        .then(updated => console.log(`Updated permissions to ${updated.permissions.bitfield}`))
+        .catch(console.error);
+      // Set the permissions of the role
+      // Add the member to the channel's permission overwrites
+      channel.permissionOverwrites.create(role, {
+        VIEW_CHANNEL: true,
+        SEND_MESSAGES: true,
+      });
+      interaction.reply({
+        content: `✅ | removed all permissions and set new permission overwrites for
+                  ${interaction.channel.name} and ${role.name}.`,
+        ephemeral: true,
+      });
+    }
+  });
+}
+
+function editRoles(interaction, roles) {
+  roles.forEach(role => {
+    if (is_valid_course(role.name)) {
+      const channels = interaction.guild.channels.fetch()
+        .then(channels => (editChannels(interaction, channels, role), console.log(`There are ${channels.size} channels.`)))
+        .catch(console.error);
+    }
+  });
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
   .setName("rolespermoverride")
@@ -63,31 +95,9 @@ module.exports = {
     try {
       // for all roles with name == chat name involving 4 letter prefix comp, seng, engg or binf,
       // give the role the permission override to participate in the matching channel.
-      message.guild.roles.forEach(role => {
-        if (is_valid_course(role)) {
-          console.log("hi");
-          message.guild.channels.forEach(channel => {
-            if (channel.type === "GUILD_TEXT" && channel.name.toLowerCase() === role.toLowerCase()) {
-              // Remove all permissions from a role
-              role.setPermissions(0n)
-                .then(updated => console.log(`Updated permissions to ${updated.permissions.bitfield}`))
-                .catch(console.error);
-              // Set the permissions of the role
-              // Add the member to the channel's permission overwrites
-              channel.permissionOverwrites.create(role, {
-                VIEW_CHANNEL: true,
-                SEND_MESSAGES: true,
-              });
-              interaction.reply({
-                content: `✅ | removed all permissions and set new permission overwrites for
-                          ${interaction.channel.name} and ${role.name}.`,
-                ephemeral: true,
-              });
-            }
-          });
-        }
-      });
-
+      const all_roles = interaction.guild.roles.fetch()
+        .then(roles => (editRoles(interaction, roles), console.log(`There are ${roles.size} roles.`)))
+        .catch(console.error);
 
     } catch (error) {
       await interaction.reply("Error: " + error);
