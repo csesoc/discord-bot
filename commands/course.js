@@ -128,52 +128,8 @@ module.exports = {
                     });
                 }
 
-                // Otherwise, find a channel with the same name as the course
-                const channel = await interaction.guild.channels.cache.find(
-                    (c) => c.name.toLowerCase() === course.toLowerCase(),
-                );
-
-                // Make sure that the channel exists, and is a text channel
-                if (channel === undefined) {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` does not exist. If you'd like for it to be created, please raise a ticket in <#${MODERATION_REQUEST_CHANNEL}>.`,
-                        ephemeral: true,
-                    });
-                } else if (channel.type !== "GUILD_TEXT") {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` is not a text channel.`,
-                        ephemeral: true,
-                    });
-                }
-
-                const permissions = new Permissions(
-                    channel.permissionsFor(interaction.user.id).bitfield,
-                );
-
-                // Check if the member already has an entry in the channel's permission overwrites, and update
-                // the entry if they do just to make sure that they have the correct permissions
-                if (
-                    permissions.has([
-                        Permissions.FLAGS.VIEW_CHANNEL,
-                        Permissions.FLAGS.SEND_MESSAGES,
-                    ])
-                ) {
-                    await channel.permissionOverwrites.edit(interaction.member, {
-                        VIEW_CHANNEL: true,
-                    });
-                    return await interaction.reply({
-                        content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
-                        ephemeral: true,
-                    });
-                }
-
-                // Add the member to the channel's permission overwrites
-                await channel.permissionOverwrites.create(interaction.member, {
-                    VIEW_CHANNEL: true,
-                });
-
                 return await interaction.reply({
-                    content: `✅ | Added you to the chat for ${course_with_alias}.`,
+                    content: `✅ | End of command - ${course_with_alias}.`,
                     ephemeral: true,
                 });
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
@@ -182,7 +138,7 @@ module.exports = {
 
                 if (!is_valid_course(course)) {
                     return await interaction.reply({
-                        content: `❌ | You are not allowed to leave this channel using this command.`,
+                        content: `❌ | Not a valid course.`,
                         ephemeral: true,
                     });
                 }
@@ -196,7 +152,7 @@ module.exports = {
                 if (role !== undefined) {
                     if (!interaction.member.roles.cache.has(role.id)) {
                         return await interaction.reply({
-                            content: `❌ | You are not in the course chat for \`${course}\`.`,
+                            content: `❌ | You do not have the role for \`${course}\`.`,
                             ephemeral: true,
                         });
                     }
@@ -204,55 +160,11 @@ module.exports = {
                     // If they do, let's remove the role from them
                     await interaction.member.roles.remove(role);
                     return await interaction.reply({
-                        content: `✅ | Removed you from the chat for \`${course}\`.`,
+                        content: `✅ | Removed you from the role and chat for \`${course}\`.`,
                         ephemeral: true,
                     });
                 }
-
-                // Find a channel with the same name as the course
-                const channel = await interaction.guild.channels.cache.find(
-                    (c) => c.name.toLowerCase() === course.toLowerCase(),
-                );
-
-                // Otherwise, make sure that the channel exists, and is a text channel
-                if (channel === undefined) {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` does not exist.`,
-                        ephemeral: true,
-                    });
-                } else if (channel.type !== "GUILD_TEXT") {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` is not a text channel.`,
-                        ephemeral: true,
-                    });
-                }
-
-                const permissions = new Permissions(
-                    channel.permissionsFor(interaction.user.id).bitfield,
-                );
-
-                // Check if the member already has an entry in the channel's permission overwrites
-                if (
-                    !permissions.has([
-                        Permissions.FLAGS.VIEW_CHANNEL,
-                        Permissions.FLAGS.SEND_MESSAGES,
-                    ])
-                ) {
-                    return await interaction.reply({
-                        content: `❌ | You are not in the course chat for \`${course}\`.`,
-                        ephemeral: true,
-                    });
-                }
-
-                // Remove the member from the channel's permission overwrites
-                await channel.permissionOverwrites.delete(interaction.member);
-
-                return await interaction.reply({
-                    content: `✅ | Removed you from the course chat for \`${course}\`.`,
-                    ephemeral: true,
-                });
             }
-
             return await interaction.reply("Error: invalid subcommand.");
         } catch (error) {
             await interaction.reply("Error: " + error);
