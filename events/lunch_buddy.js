@@ -9,6 +9,11 @@ const interactionTimeout = 10000;
 const voteOriginId = "959995388289495050";
 const threadDestinationId = "959995388289495050";
 
+const generalAreaInfo =
+    "This lunch buddy vote commenced at 10am, you must vote for the area by 11am. A location vote will run afterwards until 12pm.";
+const generalLocationInfo =
+    "This lunch buddy vote commenced at 10am, you must vote for the location by 12pm, when one will be chosen.";
+
 const getLocations = (area) => {
     for (const object of lunchBuddyLocations.locations) {
         if (object.value === area) {
@@ -22,14 +27,21 @@ const generateAreasEmbed = (areaVotes = undefined) => {
     const areas = lunchBuddyLocations.locations.map(
         (element) => `${element.value}: ${areaVotes ? areaVotes[element.value].length : 0}`,
     );
+    areas.push(`Any: ${areaVotes ? areaVotes["Any"].length : 0}`);
     return new MessageEmbed()
         .setTitle("Meetup Area Selection")
         .setColor(0x0099ff)
         .setDescription("Please select an option below to vote for that area!")
-        .setFields({
-            name: "Options",
-            value: areas.join("\n"),
-        });
+        .setFields(
+            {
+                name: "Info",
+                value: generalAreaInfo,
+            },
+            {
+                name: "Options",
+                value: areas.join("\n"),
+            },
+        );
 };
 
 const generateLocationsEmbed = (area, votes = undefined) => {
@@ -37,17 +49,25 @@ const generateLocationsEmbed = (area, votes = undefined) => {
     const locations = locationData.sub.map(
         (element) => `${element.name}: ${votes ? votes[element.name].length : 0}`,
     );
+    locations.push(`Any: ${votes ? votes["Any"].length : 0}`);
     return new MessageEmbed()
         .setTitle(`Meetup Location Selection - ${area}`)
         .setColor(0x0099ff)
         .setDescription("Please select an option below to vote for that location!")
-        .setFields({
-            name: "Options",
-            value: locations.join("\n"),
-        });
+        .setFields(
+            {
+                name: "Info",
+                value: generalLocationInfo,
+            },
+            {
+                name: "Options",
+                value: locations.join("\n"),
+            },
+        );
 };
 
 const areasList = lunchBuddyLocations.locations.map((element) => element.value);
+areasList.push("Any");
 const areasButtons = lunchBuddyLocations.locations.map(
     (element) =>
         new MessageButton({
@@ -55,6 +75,13 @@ const areasButtons = lunchBuddyLocations.locations.map(
             label: element.value,
             customId: `${element.value}${areaButtonCustomId}`,
         }),
+);
+areasButtons.push(
+    new MessageButton({
+        style: "PRIMARY",
+        label: "Surprise Me!",
+        customId: `Any${areaButtonCustomId}`,
+    }),
 );
 areasButtons.push(
     new MessageButton({
@@ -66,6 +93,7 @@ areasButtons.push(
 const areasButtonsIds = lunchBuddyLocations.locations.map(
     (element) => `${element.value}${areaButtonCustomId}`,
 );
+areasButtonsIds.push(`Any${areaButtonCustomId}`);
 areasButtonsIds.push(`Remove${areaButtonCustomId}`);
 const areasActionRows = [];
 for (let i = 0; i < areasButtons.length; i += maxRowButtons) {
@@ -90,7 +118,10 @@ const getVoteOption = (userId, votes) => {
 const getMostVoted = (votes) => {
     let maxValue = 0;
     let results = [];
+
     for (const option of Object.keys(votes)) {
+        if (option == "Any") continue;
+
         const optionVotes = votes[option].length;
         if (optionVotes > maxValue) {
             maxValue = optionVotes;
@@ -191,7 +222,7 @@ module.exports = {
                         areaInfo = `The area ${selectedArea} had the highest votes.`;
                     }
 
-                    if (areaVotes[selectedArea].length) {
+                    if (areaVotes[selectedArea].length || areaVotes["Any"].length) {
                         await areaMessage.reply(areaInfo);
                         locationData = getLocations(selectedArea);
                         await conductLocationVote();
@@ -203,6 +234,7 @@ module.exports = {
 
             const conductLocationVote = async () => {
                 const locationsList = locationData.sub.map((element) => element.name);
+                locationsList.push("Any");
 
                 // Fetch channel and prepare voting message
 
@@ -219,6 +251,13 @@ module.exports = {
                 );
                 locationsButtons.push(
                     new MessageButton({
+                        style: "PRIMARY",
+                        label: "Surprise Me!",
+                        customId: `Any${locationButtonCustomId}`,
+                    }),
+                );
+                locationsButtons.push(
+                    new MessageButton({
                         style: "DANGER",
                         label: "Remove Vote",
                         customId: `Remove${locationButtonCustomId}`,
@@ -227,6 +266,7 @@ module.exports = {
                 const locationsButtonsIds = locationData.sub.map(
                     (element) => `${element.name}${locationButtonCustomId}`,
                 );
+                locationsButtonsIds.push(`Any${locationButtonCustomId}`);
                 locationsButtonsIds.push(`Remove${locationButtonCustomId}`);
                 const locationsActionRows = [];
                 for (let i = 0; i < locationsButtons.length; i += maxRowButtons) {
@@ -246,7 +286,7 @@ module.exports = {
                     });
                 });
 
-                const pingStr = toPing.reduce((str, id) => str + `<@${id}>`, "||") + "||";
+                const pingStr = toPing.reduce((str, id) => str + `<@${id}>`, "");
 
                 const locationMessage = await voteChannel.send({
                     content: pingStr,
@@ -325,7 +365,7 @@ module.exports = {
                         locationInfo = `The location ${selectedLocation} had the highest votes.`;
                     }
 
-                    if (locationVotes[selectedLocation].length) {
+                    if (locationVotes[selectedLocation].length || locationVotes["Any"].length) {
                         await locationMessage.reply(locationInfo);
                         createMeetupThread();
                     } else {
@@ -340,7 +380,7 @@ module.exports = {
                 client.channels.fetch(threadDestinationId).then(async (channel) => {
                     // Creates thread which expires after 1 day
                     const thread = await channel.threads.create({
-                        name: `${dateString}-${selectedLocation}`,
+                        name: `${dateString} - ${selectedLocation}`,
                         autoArchiveDuration: 1440,
                     });
 
