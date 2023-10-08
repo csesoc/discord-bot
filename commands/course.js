@@ -126,12 +126,13 @@ module.exports = {
                         content: `✅ | Added you to the chat for \`${course_with_alias}\`.`,
                         ephemeral: true,
                     });
+                } else {
+                    // if there isn't a role that matches the name of the course
+                    return await interaction.reply({
+                        content: `There doesn't exist a role for \`${course_with_alias}\`.`,
+                        ephemeral: true,
+                    });
                 }
-
-                return await interaction.reply({
-                    content: `✅ | End of command - ${course_with_alias}.`,
-                    ephemeral: true,
-                });
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
                 const input_course = await interaction.options.getString("course");
                 const course = get_real_course_name(input_course);
@@ -151,18 +152,57 @@ module.exports = {
                 // If there is, let's see if the member already has that role
                 if (role !== undefined) {
                     if (!interaction.member.roles.cache.has(role.id)) {
+                        // Find a channel with the same name as the course
+                        const channel = await interaction.guild.channels.cache.find(
+                            (c) => c.name.toLowerCase() === course.toLowerCase(),
+                        );
+
+                        // Otherwise, make sure that the channel exists, and is a text channel
+                        if (channel === undefined) {
+                            return await interaction.reply({
+                                content: `❌ | The course chat for \`${course}\` does not exist.`,
+                                ephemeral: true,
+                            });
+                        } else if (channel.type !== "GUILD_TEXT") {
+                            return await interaction.reply({
+                                content: `❌ | The course chat for \`${course}\` is not a text channel.`,
+                                ephemeral: true,
+                            });
+                        }
+
+                        const permissions = new Permissions(
+                            channel.permissionsFor(interaction.user.id).bitfield,
+                        );
+
+                        // Check if the member already has an entry in the channel's permission overwrites
+                        if (
+                            !permissions.has([
+                                Permissions.FLAGS.VIEW_CHANNEL,
+                                Permissions.FLAGS.SEND_MESSAGES,
+                            ])
+                        ) {
+                            // If they don't have an entry in the channel perm overwrites,
+                            // let's remove the role from them
+                            await interaction.member.roles.remove(role);
+                            return await interaction.reply({
+                                content: `✅ | Removed you from the role and chat for \`${course}\`.`,
+                                ephemeral: true,
+                            });
+                        }
+
+                        // Remove the member from the channel's permission overwrites
+                        await channel.permissionOverwrites.delete(interaction.member);
+
+                        return await interaction.reply({
+                            content: `✅ | Removed you from the course chat for \`${course}\`.`,
+                            ephemeral: true,
+                        });
+                    } else {
                         return await interaction.reply({
                             content: `❌ | You do not have the role for \`${course}\`.`,
                             ephemeral: true,
                         });
                     }
-
-                    // If they do, let's remove the role from them
-                    await interaction.member.roles.remove(role);
-                    return await interaction.reply({
-                        content: `✅ | Removed you from the role and chat for \`${course}\`.`,
-                        ephemeral: true,
-                    });
                 }
             }
             return await interaction.reply("Error: invalid subcommand.");
