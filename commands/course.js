@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
 
-const MODERATION_REQUEST_CHANNEL = 824506830641561600;
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
 
@@ -53,6 +51,8 @@ const is_valid_course = (course) => {
         reg_desn_course.test(course.toLowerCase())
     );
 };
+
+const in_overwrites = (overwrites, id) => overwrites.some((v, k) => k === id);
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -126,13 +126,13 @@ module.exports = {
                         content: `✅ | Added you to the chat for \`${course_with_alias}\`.`,
                         ephemeral: true,
                     });
-                } else {
-                    // if there isn't a role that matches the name of the course
-                    return await interaction.reply({
-                        content: `There doesn't exist a role for \`${course_with_alias}\`.`,
-                        ephemeral: true,
-                    });
                 }
+
+                // if there isn't a role that matches the name of the course
+                return await interaction.reply({
+                    content: `There doesn't exist a role for \`${course_with_alias}\`. If you believe there should be, please inform a member of the Discord Bot team or staff.`,
+                    ephemeral: true,
+                });
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
                 const input_course = await interaction.options.getString("course");
                 const course = get_real_course_name(input_course);
@@ -170,19 +170,11 @@ module.exports = {
                             });
                         }
 
-                        const permissions = new Permissions(
-                            channel.permissionsFor(interaction.user.id).bitfield,
-                        );
+                        const permissions = channel.permissionOverwrites.cache;
 
-                        // Check if the member already has an entry in the channel's permission overwrites
-                        if (
-                            !permissions.has([
-                                Permissions.FLAGS.VIEW_CHANNEL,
-                                Permissions.FLAGS.SEND_MESSAGES,
-                            ])
-                        ) {
-                            // If they don't have an entry in the channel perm overwrites,
-                            // let's remove the role from them
+                        // Check if the member has access via role
+                        if (in_overwrites(permissions, role.id)) {
+                            // If they do remove the role
                             await interaction.member.roles.remove(role);
                             return await interaction.reply({
                                 content: `✅ | Removed you from the role and chat for \`${course}\`.`,
@@ -190,8 +182,11 @@ module.exports = {
                             });
                         }
 
-                        // Remove the member from the channel's permission overwrites
-                        await channel.permissionOverwrites.delete(interaction.member);
+                        // Check if the member has access via individual perms
+                        if (in_overwrites(permissions, interaction.member.id)) {
+                            // Remove the member from the channel's permission overwrites
+                            await channel.permissionOverwrites.delete(interaction.member);
+                        }
 
                         return await interaction.reply({
                             content: `✅ | Removed you from the course chat for \`${course}\`.`,

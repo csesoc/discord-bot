@@ -18,96 +18,45 @@ const is_valid_course_name = (course) => {
     );
 };
 
-function editChannels(interaction, channels, role) {
-    channels.forEach((channel) => {
-        if (
-            channel.type === "GUILD_TEXT" &&
-            channel.name.toLowerCase() === role.name.toLowerCase()
-        ) {
-            // clear every individual user permission overwrite for the channel
-            for (const userID of channel.members) {
-                const permissions = new Permissions(channel.permissionsFor(userID).bitfield);
-                // Check if the member already has an entry in the channel's permission overwrites
-                if (
-                    !permissions.has([
-                        Permissions.FLAGS.VIEW_CHANNEL,
-                        Permissions.FLAGS.SEND_MESSAGES,
-                    ])
-                ) {
-                    console.log(
-                        `❌ | You do not have permission overwrite entry in the course channel \`${channel.name}\`.`,
-                    );
-                }
-                // Remove the member from the channel's permission overwrites
-                channel.permissionOverwrites.delete(
-                    interaction.guild.members.cache.get(`${userID}`),
-                );
-            }
+const in_overwrites = (overwrites, id) => overwrites.some((v, k) => k === id);
 
-            // Remove all permissions from a role
-            role.setPermissions(0n)
-                .then((updated) =>
-                    console.log(`Updated permissions to ${updated.permissions.bitfield}`),
-                )
-                .catch(console.error);
-            // Set the permissions of the role
-            // Add the member to the channel's permission overwrites
-            channel.permissionOverwrites.create(role, {
-                VIEW_CHANNEL: true,
-                SEND_MESSAGES: true,
-            });
-            console.log(channel.name, role.name);
-        } else if (
-            // if a course role doesn't exist for an existing course chat, then make one
-            channel.type === "GUILD_TEXT" &&
-            is_valid_course_name(channel.name.toLowerCase()) &&
-            channel.name.toLowerCase() !== role.name.toLowerCase()
-        ) {
-            // create a role and do the channel permission overwrite to the new role
+async function editChannels(interaction, channels) {
+    for (const channel in channels) {
+        const is_valid = is_valid_course_name(channel.name);
 
-            const newRole = interaction.guild.roles.create({
+        if (!is_valid || channel.type !== "GUILD_TEXT") continue;
+
+        let role = await interaction.guild.roles.cache.find(
+            (r) => r.name.toLowerCase() === channel.name.toLowerCase(),
+        );
+
+        if (!role) {
+            role = interaction.guild.roles.create({
                 name: channel.name.toLowerCase(),
                 color: "BLUE",
             });
-
-            // set the permissions for the new role on a channel
-            // const channel = interaction.guild.channels.cache.get('CHANNEL_ID');
-            channel.permissionOverwrites.create(newRole, {
-                VIEW_CHANNEL: true,
-                SEND_MESSAGES: true,
-            });
-
-            console.log(`Added permission overwrite for ${newRole.name} in ${channel.name}`);
         }
 
-        // now remove all the existing individual user permission overwrites
-        // and give them the role of the channel
+        // clear every individual user permission overwrite for the channel
+        for (const user of channel.members) {
+            const userId = user[0];
+            const permissions = channel.permissionOverwrites.cache;
 
-        for (const memberID of channel.members) {
-            const member = interaction.guild.members.cache.get(`${memberID}`);
-            member.setPermissions();
+            // Check if the member has access via individual perms
+            if (in_overwrites(permissions, userId)) {
+                // Remove the member from the channel's permission overwrites
+                channel.permissionOverwrites.delete(interaction.guild.members.cache.get(userId));
+            }
+            user[1].roles.add(role);
         }
-    });
-}
 
-function editRoles(interaction, roles) {
-    roles.forEach((role) => {
-        if (is_valid_course_name(role.name)) {
-            interaction.guild.channels
-                .fetch()
-                .then(
-                    (channels) => (
-                        editChannels(interaction, channels, role),
-                        console.log(`There are ${channels.size} channels.`)
-                    ),
-                )
-                .catch(console.error);
-        }
-    });
-    interaction.reply({
-        content: `✅ | found course chats and matching roles, cleared and set permission overwrites for roles.`,
-        ephemeral: true,
-    });
+        // set the permissions for the new role on a channel
+        // const channel = interaction.guild.channels.cache.get('CHANNEL_ID');
+        channel.permissionOverwrites.create(role, {
+            VIEW_CHANNEL: true,
+            SEND_MESSAGES: true,
+        });
+    }
 }
 
 module.exports = {
@@ -126,14 +75,10 @@ module.exports = {
             }
             // for all roles with name == chat name involving 4 letter prefix comp, seng, engg or binf,
 
-            // give the role the permission override to participate in the matching channel.
-            interaction.guild.roles
+            // Get all channels and run function
+            interaction.guild.channels
                 .fetch()
-                .then(
-                    (roles) => (
-                        editRoles(interaction, roles), console.log(`There are ${roles.size} roles.`)
-                    ),
-                )
+                .then(async (channels) => editChannels(interaction, channels))
                 .catch(console.error);
         } catch (error) {
             await interaction.reply("Error: " + error);
