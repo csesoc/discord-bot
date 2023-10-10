@@ -18,7 +18,8 @@ const is_valid_course_name = (course) => {
     );
 };
 
-const in_overwrites = (overwrites, id) => overwrites.some((v, k) => k === id);
+const in_overwrites = (overwrites, id) =>
+    overwrites.find((v, k) => k === id).allow.bitfield === 1024n;
 
 async function editChannels(interaction, channels) {
     for (const channel in channels) {
@@ -40,14 +41,15 @@ async function editChannels(interaction, channels) {
         // clear every individual user permission overwrite for the channel
         for (const user of channel.members) {
             const userId = user[0];
+            const userObj = user[1];
             const permissions = channel.permissionOverwrites.cache;
 
             // Check if the member has access via individual perms
             if (in_overwrites(permissions, userId)) {
                 // Remove the member from the channel's permission overwrites
-                channel.permissionOverwrites.delete(interaction.guild.members.cache.get(userId));
+                channel.permissionOverwrites.delete(userObj);
             }
-            user[1].roles.add(role);
+            userObj.roles.add(role);
         }
 
         // set the permissions for the new role on a channel
