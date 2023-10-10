@@ -27,7 +27,6 @@ async function editChannels(interaction, channels) {
         const is_valid = is_valid_course_name(channel.name);
         
         if (!is_valid || channel.type !== "GUILD_TEXT") continue;
-        console.log(channel);
 
         let role = interaction.guild.roles.cache.find(
             (r) => r.name.toLowerCase() === channel.name.toLowerCase(),
@@ -40,11 +39,14 @@ async function editChannels(interaction, channels) {
             });
         }
 
+        const permissions = channel.permissionOverwrites.cache;
+
         // clear every individual user permission overwrite for the channel
         for (const user of channel.members) {
             const userId = user[0];
             const userObj = user[1];
-            const permissions = channel.permissionOverwrites.cache;
+
+            if (userObj.user.bot) continue;
 
             // Check if the member has access via individual perms
             if (in_overwrites(permissions, userId)) {
