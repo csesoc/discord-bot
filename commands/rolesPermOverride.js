@@ -25,7 +25,7 @@ async function editChannels(interaction, channels) {
     for (const data of channels) {
         const channel = data[1];
         const is_valid = is_valid_course_name(channel.name);
-        
+
         if (!is_valid || channel.type !== "GUILD_TEXT") continue;
 
         let role = interaction.guild.roles.cache.find(
