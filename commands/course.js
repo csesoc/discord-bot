@@ -53,7 +53,7 @@ const is_valid_course = (course) => {
 };
 
 const in_overwrites = (overwrites, id) =>
-    overwrites.find((v, k) => k === id).allow.bitfield === 1024n;
+    overwrites.find((v, k) => k === id)?.allow?.bitfield === 1024n;
 
 module.exports = {
     data: new SlashCommandBuilder()

@@ -19,20 +19,22 @@ const is_valid_course_name = (course) => {
 };
 
 const in_overwrites = (overwrites, id) =>
-    overwrites.find((v, k) => k === id).allow.bitfield === 1024n;
+    overwrites.find((v, k) => k === id)?.allow?.bitfield === 1024n;
 
 async function editChannels(interaction, channels) {
-    for (const channel in channels) {
+    for (const data of channels) {
+        const channel = data[1];
         const is_valid = is_valid_course_name(channel.name);
-
+        
         if (!is_valid || channel.type !== "GUILD_TEXT") continue;
+        console.log(channel);
 
-        let role = await interaction.guild.roles.cache.find(
+        let role = interaction.guild.roles.cache.find(
             (r) => r.name.toLowerCase() === channel.name.toLowerCase(),
         );
 
         if (!role) {
-            role = interaction.guild.roles.create({
+            role = await interaction.guild.roles.create({
                 name: channel.name.toLowerCase(),
                 color: "BLUE",
             });
@@ -47,14 +49,14 @@ async function editChannels(interaction, channels) {
             // Check if the member has access via individual perms
             if (in_overwrites(permissions, userId)) {
                 // Remove the member from the channel's permission overwrites
-                channel.permissionOverwrites.delete(userObj);
+                await channel.permissionOverwrites.delete(userObj);
+                await userObj.roles.add(role);
             }
-            userObj.roles.add(role);
         }
 
         // set the permissions for the new role on a channel
         // const channel = interaction.guild.channels.cache.get('CHANNEL_ID');
-        channel.permissionOverwrites.create(role, {
+        await channel.permissionOverwrites.create(role, {
             VIEW_CHANNEL: true,
             SEND_MESSAGES: true,
         });
@@ -75,15 +77,17 @@ module.exports = {
                     ephemeral: true,
                 });
             }
+            await interaction.deferReply();
+
             // for all roles with name == chat name involving 4 letter prefix comp, seng, engg or binf,
 
             // Get all channels and run function
-            interaction.guild.channels
-                .fetch()
-                .then(async (channels) => editChannels(interaction, channels))
-                .catch(console.error);
+            const channels = await interaction.guild.channels.fetch();
+
+            await editChannels(interaction, channels);
+            await interaction.editReply("Successfully ported all user permissions to roles.");
         } catch (error) {
-            await interaction.reply("Error: " + error);
+            await interaction.editReply("Error: " + error);
         }
     },
 };
