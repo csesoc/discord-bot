@@ -19,7 +19,7 @@ const is_valid_course_name = (course) => {
 };
 
 const in_overwrites = (overwrites, id) =>
-    overwrites.find((v, k) => k === id)?.allow?.bitfield === 1024n;
+    [1024n, 3072n].includes(overwrites.find((v, k) => k === id)?.allow?.bitfield);
 
 async function editChannels(interaction, channels) {
     for (const data of channels) {
