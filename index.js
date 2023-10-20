@@ -1,18 +1,26 @@
 const fs = require("fs");
-const { Client, Collection, Intents } = require("discord.js");
+const { Client, Collection, Partials } = require("discord.js");
 require("dotenv").config();
+const { GatewayIntentBits } = require("discord.js");
 
 // Create a new client instance
 const client = new Client({
     intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MEMBERS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        Intents.FLAGS.GUILD_VOICE_STATES,
-        Intents.FLAGS.GUILD_PRESENCES,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions,
+        // GatewayIntentBits.GuideVoiceStates,
+        // GatewayIntentBits.GuidePresences,
     ],
-    partials: ["MESSAGE", "CHANNEL", "REACTION", "GUILD_MEMBER", "USER"],
+    partials: [
+        Partials.Message,
+        Partials.Channel,
+        Partials.Reaction,
+        Partials.GuildMembers,
+        Partials.User,
+    ],
 });
 // Add commands to the client
 client.commands = new Collection();
@@ -26,7 +34,7 @@ for (const file of commandFiles) {
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 // Add events to the client
-const eventFiles = fs.readdirSync("./events").filter((file) => file.endsWith(".js"));
+const eventFiles = fs.readdirSync("./events").filter((file) => file.endsWith(".ts"));
 
 for (const file of eventFiles) {
     const event = require(`./events/${file}`);
