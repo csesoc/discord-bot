@@ -79,6 +79,7 @@ module.exports = {
                     ephemeral: true,
                 });
             }
+
             await interaction.deferReply();
 
             // for all roles with name == chat name involving 4 letter prefix comp, seng, engg or binf,
