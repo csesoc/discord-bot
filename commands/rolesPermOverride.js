@@ -70,6 +70,12 @@ module.exports = {
         .setName("rolespermoverride")
         .setDescription(
             "Looks for matches between roles and course chats and attaches permissions.",
+        )
+        .addBooleanOption((option) =>
+            option
+                .setName("singlechannel")
+                .setDescription("Should this command only be run on the current channel?")
+                .setRequired(false),
         ),
     async execute(interaction) {
         try {
@@ -83,11 +89,18 @@ module.exports = {
 
             // for all roles with name == chat name involving 4 letter prefix comp, seng, engg or binf,
 
-            // Get all channels and run function
-            const channels = await interaction.guild.channels.fetch();
+            if (!interaction.options.getBoolean("singlechannel")) {
+                // Get all channels and run function
+                const channels = await interaction.guild.channels.fetch();
 
-            await editChannels(interaction, channels);
-            await interaction.editReply("Successfully ported all user permissions to roles.");
+                await editChannels(interaction, channels);
+                await interaction.editReply("Successfully ported all user permissions to roles.");
+            } else {
+                await editChannels(interaction, [[undefined, interaction.channel]]);
+                await interaction.editReply(
+                    "Successfully ported user permissions to roles in this channel",
+                );
+            }
         } catch (error) {
             await interaction.editReply("Error: " + error);
         }
