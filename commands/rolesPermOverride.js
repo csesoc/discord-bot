@@ -136,15 +136,10 @@ module.exports = {
                     ephemeral: true,
                 });
             }
-<<<<<<< HEAD
-=======
-
->>>>>>> 7912884c5cb8927549766792760dc80ab0bda3a2
             await interaction.deferReply();
 
             // for all roles with name == chat name involving 4 letter prefix comp, seng, engg or binf,
 
-<<<<<<< HEAD
             if (!interaction.options.getBoolean("singlechannel")) {
                 // Get all channels and run specified function
                 const channels = await interaction.guild.channels.fetch();
@@ -183,13 +178,6 @@ module.exports = {
                     }
                 }
             }
-=======
-            // Get all channels and run function
-            const channels = await interaction.guild.channels.fetch();
-
-            await editChannels(interaction, channels);
-            await interaction.editReply("Successfully ported all user permissions to roles.");
->>>>>>> 7912884c5cb8927549766792760dc80ab0bda3a2
         } catch (error) {
             await interaction.editReply("Error: " + error);
         }
