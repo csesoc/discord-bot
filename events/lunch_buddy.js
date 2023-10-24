@@ -5,7 +5,7 @@ const lunchBuddyLocations = require("../data/lunch_buddy_locations");
 const maxRowButtons = 4;
 const areaButtonCustomId = "AreaButton";
 const locationButtonCustomId = "LocationButton";
-const interactionTimeout = 10000;
+const interactionTimeout = 1000 * 60 * 60;
 const voteOriginId = "959995388289495050";
 const threadDestinationId = "959995388289495050";
 
@@ -138,7 +138,7 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-        cron.schedule("* * * * *", async () => {
+        cron.schedule("0 10 * * *", async () => {
             let locationData;
             let selectedArea;
             let selectedLocation;
