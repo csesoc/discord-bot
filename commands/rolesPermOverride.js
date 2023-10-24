@@ -153,7 +153,7 @@ module.exports = {
                 } else {
                     const unfixed = await allFixed(interaction, channels);
 
-                    if (unfixed.length == 0) {
+                    if (unfixed.length === 0) {
                         await interaction.editReply("All channels in this server appear fixed.");
                     } else {
                         await interaction.editReply(
