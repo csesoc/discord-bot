@@ -149,7 +149,7 @@ module.exports = {
 
             if (!interaction.options.getBoolean("singlechannel")) {
                 // Get all channels and run specified function
-                const channels = await interaction.guild.channels.fetch();
+                const channels = interaction.guild.channels.cache;
 
                 if (!interaction.options.getBoolean("check")) {
                     await editChannels(interaction, channels);
