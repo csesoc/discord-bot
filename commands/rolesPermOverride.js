@@ -24,6 +24,9 @@ const in_overwrites = (overwrites, id) =>
 async function editChannels(interaction, channels) {
     for (const data of channels) {
         const channel = data[1];
+
+        if (!channel) continue;
+
         const is_valid = is_valid_course_name(channel.name);
 
         if (!is_valid || channel.type !== "GUILD_TEXT") continue;
@@ -98,6 +101,9 @@ async function allFixed(interaction, channels) {
     const unfixed = [];
     for (const data of channels) {
         const channel = data[1];
+
+        if (!channel) continue;
+
         const fixed = await isFixed(interaction, channel);
 
         if (!fixed) unfixed.push(channel.name);
@@ -143,7 +149,7 @@ module.exports = {
 
             if (!interaction.options.getBoolean("singlechannel")) {
                 // Get all channels and run specified function
-                const channels = await interaction.guild.channels.fetch();
+                const channels = interaction.guild.channels.cache;
 
                 if (!interaction.options.getBoolean("check")) {
                     await editChannels(interaction, channels);
