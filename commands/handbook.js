@@ -48,7 +48,7 @@ module.exports = {
                 // study_level,
                 // school,
                 // campus,
-                equivalents,
+                // equivalents,
                 raw_requirements,
                 exclusions,
                 // handbook_note,
