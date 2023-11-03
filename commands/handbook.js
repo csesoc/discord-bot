@@ -80,7 +80,7 @@ module.exports = {
                     },
                     {
                         name: "Offering Terms",
-                        value: terms.join(", "),
+                        value: terms.join(", ") || "None",
                         inline: true,
                     },
                     {
