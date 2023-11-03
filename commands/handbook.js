@@ -74,7 +74,7 @@ module.exports = {
                         value:
                             raw_requirements.replace(
                                 /[A-Z]{4}[0-9]{4}/g,
-                                `[$&](${handbookURL}$&)`,
+                                `[$&](${handbookURL}/$&)`,
                             ) || "None",
                         inline: true,
                     },
@@ -86,8 +86,8 @@ module.exports = {
                     {
                         name: "Equivalent Courses",
                         value:
-                            Object.keys(equivalents)
-                                .map((course) => `[${course}](${course})`)
+                            Object.keys(exclusions)
+                                .map((course) => `[${course}](${handbookURL}/${course})`)
                                 .join(", ") || "None",
                         inline: true,
                     },
@@ -95,7 +95,7 @@ module.exports = {
                         name: "Exclusion Courses",
                         value:
                             Object.keys(exclusions)
-                                .map((course) => `[${course}](${handbookURL}${course})`)
+                                .map((course) => `[${course}](${handbookURL}/${course})`)
                                 .join(", ") || "None",
                         inline: true,
                     },
