@@ -48,7 +48,7 @@ module.exports = {
                 // study_level,
                 // school,
                 // campus,
-                // equivalents,
+                equivalents,
                 raw_requirements,
                 exclusions,
                 // handbook_note,
@@ -86,7 +86,7 @@ module.exports = {
                     {
                         name: "Equivalent Courses",
                         value:
-                            Object.keys(exclusions)
+                            Object.keys(equivalents)
                                 .map((course) => `[${course}](${handbookURL}/${course})`)
                                 .join(", ") || "None",
                         inline: true,
