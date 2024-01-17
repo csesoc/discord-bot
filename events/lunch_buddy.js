@@ -141,6 +141,11 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
+        // Quick return if any config is not setup
+        if (!voteOriginId || !threadDestinationId || !interactionTimeout || !cronString) {
+            return;
+        }
+
         cron.schedule(cronString, async () => {
             let locationData;
             let selectedArea;

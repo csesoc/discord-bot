@@ -2,5 +2,5 @@
     "voteOriginId": "959995388289495050",
     "threadDestinationId": "959995388289495050",
     "interactionTimeout": 360000,
-    "cronString": "0 10 * * *"
+    "cronString": ""
 }
