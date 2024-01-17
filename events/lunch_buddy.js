@@ -1,13 +1,16 @@
 const { MessageEmbed, MessageButton, MessageActionRow } = require("discord.js");
 const cron = require("node-cron");
 const lunchBuddyLocations = require("../data/lunch_buddy_locations");
+const config = require("../config/lunch_buddy.json");
 
 const maxRowButtons = 4;
 const areaButtonCustomId = "AreaButton";
 const locationButtonCustomId = "LocationButton";
-const interactionTimeout = 1000 * 60 * 60;
-const voteOriginId = "959995388289495050";
-const threadDestinationId = "959995388289495050";
+
+const voteOriginId = config.voteOriginId;
+const threadDestinationId = config.threadDestinationId;
+const interactionTimeout = config.interactionTimeout;
+const cronString = config.cronString;
 
 const generalAreaInfo =
     "This lunch buddy vote commenced at 10am, you must vote for the area by 11am. A location vote will run afterwards until 12pm.";
@@ -23,7 +26,7 @@ const getLocations = (area) => {
     return undefined;
 };
 
-const generateAreasEmbed = (areaVotes = undefined) => {
+const generateAreasEmbed = (areaVotes) => {
     const areas = lunchBuddyLocations.locations.map(
         (element) => `${element.value}: ${areaVotes ? areaVotes[element.value].length : 0}`,
     );
@@ -44,7 +47,7 @@ const generateAreasEmbed = (areaVotes = undefined) => {
         );
 };
 
-const generateLocationsEmbed = (area, votes = undefined) => {
+const generateLocationsEmbed = (area, votes) => {
     const locationData = getLocations(area);
     const locations = locationData.sub.map(
         (element) => `${element.name}: ${votes ? votes[element.name].length : 0}`,
@@ -138,7 +141,7 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-        cron.schedule("0 10 * * *", async () => {
+        cron.schedule(cronString, async () => {
             let locationData;
             let selectedArea;
             let selectedLocation;
