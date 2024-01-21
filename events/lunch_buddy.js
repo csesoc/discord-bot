@@ -122,6 +122,8 @@ const getMostVoted = (votes) => {
     let maxValue = 0;
     let results = [];
 
+    // Where only "Any" votes are present, all options will be returned as their
+    // vote length equals the maxValue variable of 0
     for (const option of Object.keys(votes)) {
         if (option == "Any") continue;
 
