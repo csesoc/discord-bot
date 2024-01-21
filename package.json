@@ -9,7 +9,7 @@
         "lint": "eslint . --ext .js",
         "lint:fix": "eslint --fix . --ext .js",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "de": "node deploy-commands.js",
+        "deploy": "node deploy-commands.js",
         "start": "node index.js",
         "server": "nodemon index.js"
     },
