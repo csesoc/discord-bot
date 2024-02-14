@@ -67,6 +67,9 @@ const is_valid_course = (course: string): boolean => {
     );
 };
 
+const in_overwrites = (overwrites, id) =>
+    [1024n, 3072n].includes(overwrites.find((v, k) => k === id)?.allow?.bitfield);
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("course")
@@ -192,7 +195,7 @@ module.exports = {
                 await channel.permissionOverwrites.create(interaction.member, { ViewChannel: true });
 
                 return await interaction.reply({
-                    content: `✅ | Added you to the chat for ${course_with_alias}.`,
+                    content: `There doesn't exist a role for \`${course_with_alias}\`. If you believe there should be, please inform a member of the Discord Bot team or staff.`,
                     ephemeral: true,
                 });
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
@@ -201,7 +204,7 @@ module.exports = {
 
                 if (!is_valid_course(course)) {
                     return await interaction.reply({
-                        content: `❌ | You are not allowed to leave this channel using this command.`,
+                        content: `❌ | Not a valid course.`,
                         ephemeral: true,
                     });
                 }
@@ -233,7 +236,6 @@ module.exports = {
                     c => c.name.toLowerCase() === course.toLowerCase(),
                 );
 
-                // Otherwise, make sure that the channel exists, and is a text channel
                 if (channel === undefined) {
                     return await interaction.reply({
                         content: `❌ | The course chat for \`${course}\` does not exist.`,
@@ -258,20 +260,16 @@ module.exports = {
                     ])
                 ) {
                     return await interaction.reply({
-                        content: `❌ | You are not in the course chat for \`${course}\`.`,
+                        content: `✅ | Removed you from the chat for \`${course}\`.`,
+                        ephemeral: true,
+                    });
+                } else {
+                    return await interaction.reply({
+                        content: `❌ | You do not have access to the chat for \`${course}\`.`,
                         ephemeral: true,
                     });
                 }
-
-                // Remove the member from the channel's permission overwrites
-                await channel.permissionOverwrites.delete(interaction.member);
-
-                return await interaction.reply({
-                    content: `✅ | Removed you from the course chat for \`${course}\`.`,
-                    ephemeral: true,
-                });
             }
-
             return await interaction.reply("Error: invalid subcommand.");
         } catch (error) {
             await interaction.reply("Error: " + error);

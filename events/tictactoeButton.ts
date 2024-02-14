@@ -1,13 +1,13 @@
-import { handleGameButton } from "../lib/tictactoe/tttHelper";
+// const { handleGameButton } = require("../lib/tictactoe/tttHelper");
 
-export const interactionCreate = {
-    once: false,
-    name: "interactionCreate",
-    execute(interaction: any) {
-        if (interaction.isButton() && interaction.message.interaction.commandName === "tictactoe") {
-            handleGameButton(interaction);
-        } else {
-            return;
-        }
-    },
-};
+// module.exports = {
+//     once: false,
+//     name: "interactionCreate",
+//     execute(interaction) {
+//         if (interaction.isButton() && interaction.message.interaction.commandName == "tictactoe") {
+//             handleGameButton(interaction);
+//         } else {
+//             return;
+//         }
+//     },
+// };

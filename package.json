@@ -7,8 +7,13 @@
         "format": "prettier -w './**/*.js'",
         "format:check": "prettier --check './**/*.js'",
         "lint": "eslint . --ext .js",
+        "tslint": "typescript-eslint . --ext .ts",
         "lint:fix": "eslint --fix . --ext .js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "tslint:fix": "typescript-eslint --fix . --ext .ts",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "deploy": "node deploy-commands.js",
+        "start": "node index.js",
+        "server": "nodemon index.js"
     },
     "repository": {
         "type": "git",
@@ -28,7 +33,6 @@
         "closest-match": "1.3.3",
         "csv-parser": "3.0.0",
         "csv-writer": "1.6.0",
-        "discord-api-types": "^0.37.56",
         "discord-tictactoe": "4.2.0",
         "discord.js": "14.13.0",
         "discordjs-button-pagination": "3.0.1",
@@ -36,6 +40,7 @@
         "js-yaml": "^4.1.0",
         "mathjs": "^11.10.1",
         "nodemailer": "^6.9.4",
+        "nodemon": "^2.0.20",
         "pagination.djs": "^4.0.12",
         "pg": "^8.11.3",
         "pg-pool": "^3.6.1",
@@ -51,11 +56,12 @@
         "@types/nodemailer": "^6.4.9",
         "@types/pg": "^8.10.2",
         "@types/textversionjs": "^1.1.1",
-        "eslint": "8.48.0",
+        "eslint": "^8.56.0",
         "eslint-config-prettier": "9.0.0",
         "eslint-plugin-prettier": "5.0.0",
         "node-pre-gyp": "0.12.0",
         "nodemon": "^3.0.1",
-        "prettier": "3.0.3"
+        "prettier": "3.0.3",
+        "typescript": "^5.3.3"
     }
 }
