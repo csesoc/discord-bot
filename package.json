@@ -37,7 +37,7 @@
         "discord-tictactoe": "2.1.1",
         "discord.js": "13.1.0",
         "discordjs-button-pagination": "2.0.0",
-        "dotenv": "10.0.0",
+        "dotenv": "16.4.5",
         "js-yaml": "4.1.0",
         "mathjs": "^11.3.3",
         "node-cron": "^3.0.2",
