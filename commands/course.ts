@@ -1,7 +1,5 @@
-// @ts-check
-import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder, PermissionFlagsBits, ChannelType } from "discord.js";
+import { ChannelType, ChatInputCommandInteraction, Collection, GuildMember, GuildMemberRoleManager, PermissionOverwrites, SlashCommandBuilder, Snowflake } from "discord.js";
 
-const MODERATION_REQUEST_CHANNEL = BigInt("824506830641561600");
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
 
@@ -29,26 +27,14 @@ const course_aliases: Record<string, string> = {
     math1241: "math1231",
 };
 
-/**
- * 
- * @param {string} course 
- * @returns {string}
- */
-const get_real_course_name = (course: string): string => {
-    course = course.toLowerCase();
-    if (course_aliases[course]) {
-        const alias = course_aliases[course];
-        return alias!;
+const get_real_course_name = (course: string) => {
+    if (course_aliases[course.toLowerCase()]) {
+        return course_aliases[course.toLowerCase()] ?? "";
     }
-    return course;
+    return course.toLowerCase();
 };
 
-/**
- * 
- * @param {string} course 
- * @returns {boolean}
- */
-const is_valid_course = (course: string): boolean => {
+const is_valid_course = (course: string) => {
     const reg_comp_course = /^comp\d{4}$/;
     const reg_math_course = /^math\d{4}$/;
     const reg_binf_course = /^binf\d{4}$/;
@@ -56,19 +42,20 @@ const is_valid_course = (course: string): boolean => {
     const reg_seng_course = /^seng\d{4}$/;
     const reg_desn_course = /^desn\d{4}$/;
 
-    course = course.toLowerCase();
     return (
-        reg_comp_course.test(course) ||
-        reg_math_course.test(course) ||
-        reg_binf_course.test(course) ||
-        reg_engg_course.test(course) ||
-        reg_seng_course.test(course) ||
-        reg_desn_course.test(course)
+        reg_comp_course.test(course.toLowerCase()) ||
+        reg_math_course.test(course.toLowerCase()) ||
+        reg_binf_course.test(course.toLowerCase()) ||
+        reg_engg_course.test(course.toLowerCase()) ||
+        reg_seng_course.test(course.toLowerCase()) ||
+        reg_desn_course.test(course.toLowerCase())
     );
 };
 
-const in_overwrites = (overwrites, id) =>
-    [1024n, 3072n].includes(overwrites.find((v, k) => k === id)?.allow?.bitfield);
+const in_overwrites = (overwrites: Collection<Snowflake, PermissionOverwrites>, id: Snowflake) =>
+    [BigInt(1024), BigInt(3072)].includes(
+        overwrites.find((_v: PermissionOverwrites, k: Snowflake) => k === id)?.allow?.bitfield as bigint
+    );
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -96,19 +83,10 @@ module.exports = {
                         .setRequired(true),
                 ),
         ),
-
-    /**
-     *
-     * @async
-     * @param {ChatInputCommandInteraction} interaction
-     * @returns
-     */
     async execute(interaction: ChatInputCommandInteraction) {
-        if (!interaction.inCachedGuild()) return Promise.resolve();
-
         try {
             if (interaction.options.getSubcommand() === COMMAND_JOIN) {
-                const input_course = interaction.options.getString("course", true).toLowerCase();
+                const input_course = (interaction.options.getString("course") ?? "").toLowerCase();
                 const course = get_real_course_name(input_course);
 
                 const other_courses = /^[a-zA-Z]{4}\d{4}$/;
@@ -132,13 +110,13 @@ module.exports = {
                 }
 
                 // First, let's see if there's a role that matches the name of the course
-                const role = interaction.guild.roles.cache.find(
-                    r => r.name.toLowerCase() === course.toLowerCase()
+                const role = interaction.guild?.roles.cache.find(
+                    (r) => r.name.toLowerCase() === course.toLowerCase(),
                 );
 
                 // If there is, let's see if the member already has that role
                 if (role !== undefined) {
-                    if (interaction.member.roles.cache.has(role.id)) {
+                    if ((interaction.member?.roles as GuildMemberRoleManager).cache.has(role.id)) {
                         return await interaction.reply({
                             content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
                             ephemeral: true,
@@ -146,60 +124,20 @@ module.exports = {
                     }
 
                     // If they don't, let's add the role to them
-                    await interaction.member.roles.add(role);
+                    await (interaction.member?.roles as GuildMemberRoleManager).add(role);
                     return await interaction.reply({
                         content: `✅ | Added you to the chat for \`${course_with_alias}\`.`,
                         ephemeral: true,
                     });
                 }
 
-                // Otherwise, find a channel with the same name as the course
-                const channel = interaction.guild.channels.cache.find(
-                    c => c.name.toLowerCase() === course.toLowerCase()
-                );
-
-                // Make sure that the channel exists, and is a text channel
-                if (channel === undefined) {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` does not exist. If you'd like for it to be created, please raise a ticket in <#${MODERATION_REQUEST_CHANNEL}>.`,
-                        ephemeral: true,
-                    });
-                } else if (channel.type !== ChannelType.GuildText) {
-                    return await interaction.reply({
-                        content: `❌ | The course chat for \`${course}\` is not a text channel.`,
-                        ephemeral: true,
-                    });
-                }
-                
-                // channel has type GuildBasedChannel
-                const permissionsFor = channel.permissionsFor(interaction.user.id);
-                if (!permissionsFor) return;
-                const permissions = new PermissionsBitField(permissionsFor.bitfield);
-
-                // Check if the member already has an entry in the channel's permission overwrites, and update
-                // the entry if they do just to make sure that they have the correct permissions
-                if (
-                    permissions.has([
-                        PermissionsBitField.Flags.ViewChannel,
-                        PermissionsBitField.Flags.SendMessages,
-                    ])
-                ) {
-                    await channel.permissionOverwrites.edit(interaction.member, { ViewChannel: true });
-                    return await interaction.reply({
-                        content: `❌ | You are already in the course chat for \`${course_with_alias}\`.`,
-                        ephemeral: true,
-                    });
-                }
-
-                // Add the member to the channel's permission overwrites
-                await channel.permissionOverwrites.create(interaction.member, { ViewChannel: true });
-
+                // if there isn't a role that matches the name of the course
                 return await interaction.reply({
                     content: `There doesn't exist a role for \`${course_with_alias}\`. If you believe there should be, please inform a member of the Discord Bot team or staff.`,
                     ephemeral: true,
                 });
             } else if (interaction.options.getSubcommand() === COMMAND_LEAVE) {
-                const input_course = interaction.options.getString("course", true);
+                const input_course = interaction.options.getString("course") ?? "";
                 const course = get_real_course_name(input_course);
 
                 if (!is_valid_course(course)) {
@@ -209,31 +147,9 @@ module.exports = {
                     });
                 }
 
-                // First, let's see if there's a role that matches the name of the course
-                const role = interaction.guild.roles.cache.find(
-                    r => r.name.toLowerCase() === course.toLowerCase(),
-                );
-
-                // If there is, let's see if the member already has that role
-                if (role !== undefined) {
-                    if (!interaction.member.roles.cache.has(role.id)) {
-                        return await interaction.reply({
-                            content: `❌ | You are not in the course chat for \`${course}\`.`,
-                            ephemeral: true,
-                        });
-                    }
-
-                    // If they do, let's remove the role from them
-                    await interaction.member.roles.remove(role);
-                    return await interaction.reply({
-                        content: `✅ | Removed you from the chat for \`${course}\`.`,
-                        ephemeral: true,
-                    });
-                }
-
-                // Find a channel with the same name as the course
-                const channel = interaction.guild.channels.cache.find(
-                    c => c.name.toLowerCase() === course.toLowerCase(),
+                // Check and fetch a channel corresponding to input
+                const channel = interaction.guild?.channels.cache.find(
+                    (c) => c.name.toLowerCase() === course.toLowerCase(),
                 );
 
                 if (channel === undefined) {
@@ -248,17 +164,43 @@ module.exports = {
                     });
                 }
 
-                const permissionsFor = channel.permissionsFor(interaction.user.id);
-                if (!permissionsFor) return;
-                const permissions = new PermissionsBitField(permissionsFor.bitfield);
+                const permissions = channel.permissionOverwrites.cache;
 
-                // Check if the member already has an entry in the channel's permission overwrites
-                if (
-                    !permissions.has([
-                        PermissionFlagsBits.ViewChannel,
-                        PermissionFlagsBits.SendMessages
-                    ])
-                ) {
+                // Then check if there's a role that matches the name of the course
+                const role = interaction.guild?.roles.cache.find(
+                    (r) => r.name.toLowerCase() === course.toLowerCase(),
+                );
+
+                const member = interaction.member as GuildMember;
+
+                // Check if the role exists
+                if (role !== undefined) {
+                    // Check if the member has access via individual perms
+                    if (in_overwrites(permissions, member.id)) {
+                        // Remove the member from the channel's permission overwrites if so
+                        await channel.permissionOverwrites.delete(member);
+                    }
+
+                    // Check if the member has access via role
+                    if (
+                        member.roles.cache.has(role.id) &&
+                        in_overwrites(permissions, role.id)
+                    ) {
+                        // If they do remove the role
+                        await member.roles.remove(role);
+                        return await interaction.reply({
+                            content: `✅ | Removed you from the role and chat for \`${course}\`.`,
+                            ephemeral: true,
+                        });
+                    } else {
+                        return await interaction.reply({
+                            content: `❌ | You do not have the role for \`${course}\`.`,
+                            ephemeral: true,
+                        });
+                    }
+                } else if (in_overwrites(permissions, member.id)) {
+                    // Check if the user has individual perms and removes if so
+                    await channel.permissionOverwrites.delete(member);
                     return await interaction.reply({
                         content: `✅ | Removed you from the chat for \`${course}\`.`,
                         ephemeral: true,
@@ -272,7 +214,7 @@ module.exports = {
             }
             return await interaction.reply("Error: invalid subcommand.");
         } catch (error) {
-            await interaction.reply("Error: " + error);
+            return await interaction.reply("Error: " + error);
         }
     },
 };
