@@ -1,5 +1,5 @@
 // @ts-check
-import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, Client, TextChannel, ButtonInteraction, ActionRow, InteractionButtonComponentData, CollectorFilter } from "discord.js";
+import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, Client, TextChannel, ButtonInteraction, MessageComponentInteraction } from "discord.js";
 // @ts-ignore  
 import cron from "node-cron";
 import lunchBuddyLocations from "../data/lunch_buddy_locations.json";
@@ -121,8 +121,8 @@ for (let i = 0; i < areasButtons.length; i += maxRowButtons) {
     );
 }
 
-const areasButtonsFilter = (resInteraction: ButtonInteraction<"cached">) => {
-    return areasButtonsIds.includes(resInteraction.customId);
+const areasButtonsFilter = (resInteraction: MessageComponentInteraction) => {
+    return resInteraction.isButton() && areasButtonsIds.includes(resInteraction.customId);
 };
 
 const getVoteOption = (userId: string, votes: Votes) => {
@@ -333,8 +333,8 @@ module.exports = {
                     components: locationsActionRows,
                 });
 
-                const locationsButtonsFilter = (resInteraction: ButtonInteraction<"cached">) => {
-                    return locationsButtonsIds.includes(resInteraction.customId);
+                const locationsButtonsFilter = (resInteraction: MessageComponentInteraction) => {
+                    return resInteraction.isButton() && locationsButtonsIds.includes(resInteraction.customId);
                 };
 
                 // Setup receiving message interactions
