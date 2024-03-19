@@ -1,7 +1,6 @@
 // @ts-check
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
-import xkcd from "xkcd-api";
-
+const xkcd = require("xkcd-api");
 
 interface xkcdJSON {
     month: string;

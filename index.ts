@@ -1,27 +1,27 @@
 // @ts-check
-const fs = require("fs");
-const {
+import fs from "fs";
+import {
     Client,
     Collection,
     GatewayIntentBits,
     InteractionType,
     Partials,
-    SlashCommandBuilder,
-    CommandInteraction,
-} = require("discord.js");
+    Interaction,
+    ClientOptions,
+} from "discord.js";
 require("dotenv").config();
-const { env } = require("node:process");
+import { env } from "node:process";
 
 /**
  * @typedef {{data: SlashCommandBuilder, execute: (interaction: CommandInteraction) => Promise<void>}} commandExport
  */
 
 class CseClient extends Client {
-    /** @param {import("discord.js").ClientOptions} options */
-    constructor(options) {
+    commands: Collection<any, any>
+    /** @param {ClientOptions} options */
+    constructor(options: ClientOptions) {
         super(options);
 
-        /** @type {Collection<string, commandExport>} */
         this.commands = new Collection();
     }
 }
@@ -46,7 +46,7 @@ const client = new CseClient({
 });
 
 // Add commands to the client
-const commandFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
+const commandFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".ts"));
 
 for (const file of commandFiles) {
     /** @type {commandExport} */
@@ -57,19 +57,19 @@ for (const file of commandFiles) {
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 // Add events to the client
-const eventFiles = fs.readdirSync("./events").filter((file) => file.endsWith(".js"));
+const eventFiles = fs.readdirSync("./events").filter((file) => file.endsWith(".ts"));
 
 for (const file of eventFiles) {
     const event = require(`./events/${file}`);
     if (event.once) {
-        client.once(event.name, (...args) => event.execute(...args));
+        client.once(event.name, (...args: any[]) => event.execute(...args));
     } else {
-        client.on(event.name, (...args) => event.execute(...args));
+        client.on(event.name, (...args: any[]) => event.execute(...args));
     }
 }
 
 // Handle commands
-client.on("interactionCreate", async (interaction) => {
+client.on("interactionCreate", async (interaction: Interaction) => {
     if (interaction.type !== InteractionType.ApplicationCommand) return;
 
     const command = client.commands.get(interaction.commandName);
@@ -78,7 +78,7 @@ client.on("interactionCreate", async (interaction) => {
 
     try {
         await command.execute(interaction);
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
         await interaction.reply({
             content: "There was an error while executing this command!",

@@ -1,5 +1,10 @@
 {
   // Mapped from https://www.typescriptlang.org/tsconfig
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "compilerOptions": {
       // Type Checking
       "allowUnreachableCode": false,
