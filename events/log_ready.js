@@ -32,25 +32,25 @@ module.exports = {
         // Status change functions
         const statusFunctions = [
             () => memberCountStatus(client),
-            () => specialEventStatus(client, events[currentEventIndex])
+            () => specialEventStatus(client, events[currentEventIndex]),
         ];
-        
+
         setInterval(() => {
             statusFunctions[currentStatusIndex]();
             currentStatusIndex = (currentStatusIndex + 1) % statusFunctions.length;
-        }, 1000*statusSeconds);
+        }, 1000 * statusSeconds);
     },
 };
 
 function memberCountStatus(client) {
     let memberCount = 0;
-    client.guilds.cache.forEach(guild => {
+    client.guilds.cache.forEach((guild) => {
         memberCount += guild.memberCount;
     });
-    client.user.setActivity(`${memberCount} total members!`, { type: "LISTENING"});
+    client.user.setActivity(`${memberCount} total members!`, { type: "LISTENING" });
 }
 
 function specialEventStatus(client, event) {
-    client.user.setActivity(event, { type: "COMPETING"})
+    client.user.setActivity(event, { type: "COMPETING" });
     currentEventIndex = (currentEventIndex + 1) % events.length;
 }
