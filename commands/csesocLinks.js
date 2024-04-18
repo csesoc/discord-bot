@@ -3,7 +3,7 @@ const cheerio = require("cheerio");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("csesoclinks")
-        .setDescription("Provides all CSESoc related links."),
+        .setDescription("Provides CSESoc Linktree links."),
     async execute(interaction) {
         fetch("https://linktr.ee/csesoc")
             .then(function (response) {
@@ -20,11 +20,8 @@ module.exports = {
                         output += `${title}: ${href}\n`;
                     }
                 });
-                console.log(output);
-
                 interaction.reply({
                     content: output,
-                    // ephemeral: true,
                 });
             })
             .catch(function (err) {
