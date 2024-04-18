@@ -1,9 +1,12 @@
 const { DBlog } = require("../lib/database/dblog");
 
 let currentStatusIndex = 0;
-let currentEventIndex = 0;
+const CSESOC_SERVER_ID = "693779865916276746";
 const statusSeconds = 30;
-const events = ["EVENT"];
+
+// In case of events working
+// let currentEventIndex = 0;
+// const events = ["EVENT"];
 
 module.exports = {
     name: "ready",
@@ -32,7 +35,7 @@ module.exports = {
         // Status change functions
         const statusFunctions = [
             () => memberCountStatus(client),
-            () => specialEventStatus(client, events[currentEventIndex]),
+            // () => specialEventStatus(client, events[currentEventIndex]),
         ];
 
         setInterval(() => {
@@ -43,14 +46,15 @@ module.exports = {
 };
 
 function memberCountStatus(client) {
-    let memberCount = 0;
-    client.guilds.cache.forEach((guild) => {
-        memberCount += guild.memberCount;
-    });
-    client.user.setActivity(`${memberCount} total members!`, { type: "LISTENING" });
+    const server = client.guilds.cache.get(CSESOC_SERVER_ID);
+    if (!server) {
+        return;
+    }
+
+    client.user.setActivity(`${server.memberCount} members!`, { type: "LISTENING" });
 }
 
-function specialEventStatus(client, event) {
-    client.user.setActivity(event, { type: "COMPETING" });
-    currentEventIndex = (currentEventIndex + 1) % events.length;
-}
+// function specialEventStatus(client, event) {
+//     client.user.setActivity(event, { type: "COMPETING" });
+//     currentEventIndex = (currentEventIndex + 1) % events.length;
+// }
