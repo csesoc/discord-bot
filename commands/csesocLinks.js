@@ -6,10 +6,10 @@ module.exports = {
         .setDescription("Provides CSESoc Linktree links."),
     async execute(interaction) {
         fetch("https://linktr.ee/csesoc")
-            .then(function (response) {
-                return response.text();
+            .then((res) => {
+                return res.text();
             })
-            .then(function (html) {
+            .then((html) => {
                 const $ = cheerio.load(html);
                 const links = $("a");
                 let output = "";
@@ -21,10 +21,10 @@ module.exports = {
                     }
                 });
                 interaction.reply({
-                    content: output,
+                  content: output,
                 });
             })
-            .catch(function (err) {
+            .catch((err) => {
                 console.log("Failed to fetch page: ", err);
             });
     },
