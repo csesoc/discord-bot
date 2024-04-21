@@ -21,7 +21,7 @@ module.exports = {
                     }
                 });
                 interaction.reply({
-                  content: output,
+                    content: output,
                 });
             })
             .catch((err) => {
