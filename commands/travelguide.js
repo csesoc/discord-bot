@@ -17,23 +17,24 @@ module.exports = {
                 // [recommendation name] [category] [description] [season optional] [recommender?]
                 .addStringOption((option) =>
                     option
-                        .setName("recommendation location")
+                        .setName("recommendation_location")
                         .setDescription("Name of the recommended place.")
                         .setRequired(true),
                 )
-                .addStringOption((option) =>
+                .addStringOption(option =>
                     option
                         .setName("category")
                         .setDescription(
-                            "The recommended category out of: entertainment, scenic views and restuarants.",
+                            "The recommended category out of: entertainment, scenic views and restaurants.",
                         )
                         .setRequired(true)
                         .addChoices(
-                            { name: 'entertainment', value: 'entertainment' },
-                            { name: 'scenic views', value: 'scenic views' },
-                            { name: 'restuarants', value: 'restuarants' },
-                        ));
+                            { name: "entertainment", value: "entertainment" },
+                            { name: "scenic views", value: "scenic views" },
+                            { name: "restaurants", value: "restaurants" },
+                        )),
                 )
+
                 .addStringOption((option) =>
                     option
                         .setName("description")
@@ -48,19 +49,18 @@ module.exports = {
                         .setDescription("The recommended season for the location.")
                         .setRequired(false),
                 ),
-
         ),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === "add") {
             let jsonObj = JSON.parse(travelguide);
             let recommendation = {
-                "name": interaction.options.getString("recommendation location"),
-                "description": interaction.options.getString("description"),
-                "season": "",
-            }
+                name: interaction.options.getString("recommendation location"),
+                description: interaction.options.getString("description"),
+                season: "",
+            };
             let category = interaction.options.getString("category");
             jsonObj.category.push(recommendation);
             jsonObj = JSON.stringify(jsonObj);
         }
-    }
+    },
 };
