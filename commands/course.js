@@ -41,20 +41,20 @@ const is_valid_course = (course) => {
 };
 
 const is_supported_course = (course) => {
-    const reg_comp_course = /^comp\d{4}$/;
-    const reg_math_course = /^math\d{4}$/;
-    const reg_binf_course = /^binf\d{4}$/;
-    const reg_engg_course = /^engg\d{4}$/;
-    const reg_seng_course = /^seng\d{4}$/;
-    const reg_desn_course = /^desn\d{4}$/;
+    const reg_comp_course = /^(?i)comp\d{4}$/;
+    const reg_math_course = /^(?i)math\d{4}$/;
+    const reg_binf_course = /^(?i)binf\d{4}$/;
+    const reg_engg_course = /^(?i)engg\d{4}$/;
+    const reg_seng_course = /^(?i)seng\d{4}$/;
+    const reg_desn_course = /^(?i)desn\d{4}$/;
 
     return (
-        reg_comp_course.test(course.toLowerCase()) ||
-        reg_math_course.test(course.toLowerCase()) ||
-        reg_binf_course.test(course.toLowerCase()) ||
-        reg_engg_course.test(course.toLowerCase()) ||
-        reg_seng_course.test(course.toLowerCase()) ||
-        reg_desn_course.test(course.toLowerCase())
+        reg_comp_course.test(course) ||
+        reg_math_course.test(course) ||
+        reg_binf_course.test(course) ||
+        reg_engg_course.test(course) ||
+        reg_seng_course.test(course) ||
+        reg_desn_course.test(course)
     );
 };
 
@@ -93,27 +93,22 @@ module.exports = {
                 const input_course = await interaction.options.getString("course").toLowerCase();
                 const course = get_real_course_name(input_course);
 
-                const other_courses = /^[a-zA-Z]{4}\d{4}$/;
                 const is_valid = is_valid_course(course);
+                const is_supported = is_supported_course(course);
 
                 const course_with_alias =
                     course != input_course
                         ? `${course} (same course chat as ${input_course})`
                         : `${course}`;
 
-                if (!is_valid && other_courses.test(course.toLowerCase())) {
+                if (!is_supported && is_valid) {
                     return await interaction.reply({
                         content: `❌ | Course chats for other faculties are not supported.`,
                         ephemeral: true,
                     });
-                } else if (!is_valid) {
+                } else if (!is_supported) {
                     return await interaction.reply({
                         content: `❌ | You are not allowed to join this channel using this command.`,
-                        ephemeral: true,
-                    });
-                } else if (!is_supported_course(course)) {
-                    return await interaction.reply({
-                        content: `❌ | Course chats for other faculties are not supported.`,
                         ephemeral: true,
                     });
                 }
