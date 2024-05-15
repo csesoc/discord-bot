@@ -1,7 +1,7 @@
 const axios = require("axios");
 const textVersion = require("textversionjs");
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { apiURL, handbookURL } = require("../config/handbook.json");
 
 module.exports = {
@@ -55,7 +55,7 @@ module.exports = {
                 terms,
             } = data;
 
-            const courseInfo = new MessageEmbed()
+            const courseInfo = new EmbedBuilder()
                 .setTitle(title)
                 .setURL(`${handbookURL}/${code}`)
                 .setColor(0x3a76f8)

@@ -1,6 +1,6 @@
 // @ts-check
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { DiscordScroll } = require("../lib/discordscroll/scroller");
 
 // ////////////////////////////////////////////
@@ -116,7 +116,7 @@ async function handleFAQGetAll(interaction, faqStorage) {
         const answers = [];
         let currentPage = 0;
         for (const row of rows) {
-            const newPage = new MessageEmbed({
+            const newPage = new EmbedBuilder({
                 title: `FAQS for the tag: ${tag}`,
                 color: 0xf1c40f,
                 timestamp: new Date().getTime(),

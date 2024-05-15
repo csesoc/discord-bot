@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions, MessageEmbed } = require("discord.js");
+const { Permissions, EmbedBuilder } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -144,7 +144,7 @@ module.exports = {
 
             // Notify user that they used the command
             const botName = sentMessage.author.username;
-            const notification = new MessageEmbed()
+            const notification = new EmbedBuilder()
                 .setColor("#7cd699")
                 .setTitle("React For Role Command Used!")
                 .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")

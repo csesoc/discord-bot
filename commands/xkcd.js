@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -34,7 +34,7 @@ module.exports = {
                         ephemeral: true,
                     });
                 } else {
-                    const embed = new MessageEmbed()
+                    const embed = new EmbedBuilder()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
                     return await interaction.reply({ embeds: [embed] });
@@ -51,7 +51,7 @@ module.exports = {
                         ephemeral: true,
                     });
                 } else {
-                    const embed = new MessageEmbed()
+                    const embed = new EmbedBuilder()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
                     return await interaction.reply({ embeds: [embed] });
@@ -66,7 +66,7 @@ module.exports = {
                         ephemeral: true,
                     });
                 } else {
-                    const embed = new MessageEmbed()
+                    const embed = new EmbedBuilder()
                         .setTitle(response.safe_title)
                         .setImage(response.img);
                     return await interaction.reply({ embeds: [embed] });
