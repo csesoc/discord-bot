@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 let { data } = require("../config/votes.json");
 const fs = require("fs");
 
@@ -44,7 +44,7 @@ module.exports = {
             votestring = votestring + ", vote by " + voteauthorname;
 
             // Generating the embed
-            const embed = new MessageEmbed().setTitle(votestring);
+            const embed = new EmbedBuilder().setTitle(votestring);
             const message = await interaction.reply({
                 embeds: [embed],
                 fetchReply: true,
@@ -71,7 +71,7 @@ module.exports = {
             const found = data.find((element) => element.channelid == channelid);
 
             if (found == undefined) {
-                const embed = new MessageEmbed().setTitle("0 votes found on this channel");
+                const embed = new EmbedBuilder().setTitle("0 votes found on this channel");
                 await interaction.reply({ embeds: [embed], fetchReply: true });
                 return;
             } else {
@@ -99,7 +99,7 @@ module.exports = {
                                 });
                             }
                         });
-                        const embed = new MessageEmbed()
+                        const embed = new EmbedBuilder()
                             .setTitle(found.string)
                             .addFields(responses);
 
@@ -127,7 +127,7 @@ module.exports = {
             const found = data.find((element) => element.channelid == channelid);
 
             if (found == undefined) {
-                const embed = new MessageEmbed().setTitle("0 votes found on this channel");
+                const embed = new EmbedBuilder().setTitle("0 votes found on this channel");
                 await interaction.reply({ embeds: [embed], fetchReply: true });
                 return;
             } else {
@@ -156,7 +156,7 @@ module.exports = {
                             }
                             responses.push(temp);
                         });
-                        const embed = new MessageEmbed()
+                        const embed = new EmbedBuilder()
                             .setTitle(found.string)
                             .addFields(responses);
 

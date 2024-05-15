@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, Permissions } = require("discord.js");
+const { EmbedBuilder, Permissions } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -164,7 +164,7 @@ async function create_scheduled_post(interaction, msg_id, channel, datetime) {
     const send_in = ("in " + dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
 
     // Create message preview
-    const preview = new MessageEmbed()
+    const preview = new EmbedBuilder()
         .setColor("#C492B1")
         .setTitle("Message Preview")
         .setDescription(

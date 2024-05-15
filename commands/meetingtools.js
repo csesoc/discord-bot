@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 // Tools to help manage meetings
 
@@ -153,7 +153,7 @@ module.exports = {
             });
         }
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(command)
             .setColor("#0099ff")
             .setDescription(ret_val);
