@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: "messageReactionRemove",
@@ -57,7 +57,7 @@ async function removeRole(reaction, user, roleId) {
         const botName = await reaction.message.author.username;
 
         // Notify user role was successfully removed
-        const notification = new MessageEmbed()
+        const notification = new EmbedBuilder()
             .setColor("#7cd699")
             .setTitle("Roles updated!")
             .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")
