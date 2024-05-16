@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { ChannelType } = require("discord.js");
 
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
@@ -41,12 +42,12 @@ const is_valid_course = (course) => {
 };
 
 const is_supported_course = (course) => {
-    const reg_comp_course = /^(?i)comp\d{4}$/;
-    const reg_math_course = /^(?i)math\d{4}$/;
-    const reg_binf_course = /^(?i)binf\d{4}$/;
-    const reg_engg_course = /^(?i)engg\d{4}$/;
-    const reg_seng_course = /^(?i)seng\d{4}$/;
-    const reg_desn_course = /^(?i)desn\d{4}$/;
+    const reg_comp_course = /^comp\d{4}$/i;
+    const reg_math_course = /^math\d{4}$/i;
+    const reg_binf_course = /^binf\d{4}$/i;
+    const reg_engg_course = /^engg\d{4}$/i;
+    const reg_seng_course = /^seng\d{4}$/i;
+    const reg_desn_course = /^desn\d{4}$/i;
 
     return (
         reg_comp_course.test(course) ||
@@ -161,7 +162,7 @@ module.exports = {
                         content: `❌ | The course chat for \`${course}\` does not exist.`,
                         ephemeral: true,
                     });
-                } else if (channel.type !== "GUILD_TEXT") {
+                } else if (channel.type !== ChannelType.GuildText) {
                     return await interaction.reply({
                         content: `❌ | The course chat for \`${course}\` is not a text channel.`,
                         ephemeral: true,
