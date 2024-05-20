@@ -21,7 +21,7 @@ module.exports = {
                         .setDescription("Name of the recommended place.")
                         .setRequired(true),
                 )
-                .addStringOption(option =>
+                .addStringOption((option) =>
                     option
                         .setName("category")
                         .setDescription(
@@ -32,9 +32,8 @@ module.exports = {
                             { name: "entertainment", value: "entertainment" },
                             { name: "scenic views", value: "scenic views" },
                             { name: "restaurants", value: "restaurants" },
-                        )),
+                        ),
                 )
-
                 .addStringOption((option) =>
                     option
                         .setName("description")
@@ -50,6 +49,7 @@ module.exports = {
                         .setRequired(false),
                 ),
         ),
+
     async execute(interaction) {
         if (interaction.options.getSubcommand() === "add") {
             let jsonObj = JSON.parse(travelguide);
