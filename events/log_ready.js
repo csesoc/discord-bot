@@ -1,5 +1,13 @@
 const { DBlog } = require("../lib/database/dblog");
 
+let currentStatusIndex = 0;
+const CSESOC_SERVER_ID = "693779865916276746";
+const statusSeconds = 30;
+
+// In case of events working
+// let currentEventIndex = 0;
+// const events = ["EVENT"];
+
 module.exports = {
     name: "ready",
     once: true,
@@ -23,5 +31,30 @@ module.exports = {
                 }
             }
         })();
+
+        // Status change functions
+        const statusFunctions = [
+            () => memberCountStatus(client),
+            // () => specialEventStatus(client, events[currentEventIndex]),
+        ];
+
+        setInterval(() => {
+            statusFunctions[currentStatusIndex]();
+            currentStatusIndex = (currentStatusIndex + 1) % statusFunctions.length;
+        }, 1000 * statusSeconds);
     },
 };
+
+function memberCountStatus(client) {
+    const server = client.guilds.cache.get(CSESOC_SERVER_ID);
+    if (!server) {
+        return;
+    }
+
+    client.user.setActivity(`${server.memberCount} members!`, { type: "LISTENING" });
+}
+
+// function specialEventStatus(client, event) {
+//     client.user.setActivity(event, { type: "COMPETING" });
+//     currentEventIndex = (currentEventIndex + 1) % events.length;
+// }

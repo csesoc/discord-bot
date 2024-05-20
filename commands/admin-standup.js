@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, MessageButton, Permissions } = require("discord.js");
+const { EmbedBuilder, ButtonBuilder, Permissions } = require("discord.js");
 const paginationEmbed = require("discordjs-button-pagination");
 
 module.exports = {
@@ -104,7 +104,7 @@ module.exports = {
                 if (notDone.length == 0) {
                     standupEmbeded.forEach((el) => {
                         embedList.push(
-                            new MessageEmbed()
+                            new EmbedBuilder()
                                 .setTitle("Standups (" + role.name + ")")
                                 .setDescription(
                                     el + "\n\n" + "_Everyone has done their standup_\n",
@@ -114,7 +114,7 @@ module.exports = {
                 } else {
                     standupEmbeded.forEach((el) => {
                         embedList.push(
-                            new MessageEmbed()
+                            new EmbedBuilder()
                                 .setTitle("Standups (" + role.name + ")")
                                 .setDescription(
                                     el +
@@ -127,7 +127,7 @@ module.exports = {
                 }
 
                 if (thisTeamStandups.length == 0) {
-                    const embed = new MessageEmbed()
+                    const embed = new EmbedBuilder()
                         .setTitle("Standups (" + role.name + ")")
                         .setDescription(
                             "No standups recorded\n\n" +
@@ -138,11 +138,11 @@ module.exports = {
                 }
 
                 const buttonList = [
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId("previousbtn")
                         .setLabel("Previous")
                         .setStyle("DANGER"),
-                    new MessageButton().setCustomId("nextbtn").setLabel("Next").setStyle("SUCCESS"),
+                    new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle("SUCCESS"),
                 ];
 
                 paginationEmbed(interaction, embedList, buttonList);

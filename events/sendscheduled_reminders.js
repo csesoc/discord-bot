@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 // Checks database every minute to check if a reminder needs
 // to be sent to the users who reacted with an alarm clock emoji in the original
@@ -32,7 +32,7 @@ module.exports = {
 
                     users_reacted.forEach((user) => {
                         if (!user.bot) {
-                            const reminder_msg = new MessageEmbed()
+                            const reminder_msg = new EmbedBuilder()
                                 .setColor("#C492B1")
                                 .setTitle("Reminder")
                                 .setDescription(

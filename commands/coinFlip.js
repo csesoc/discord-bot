@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder().setName("coinflip").setDescription("Tosses a coin 💰"),
@@ -13,7 +13,7 @@ module.exports = {
         : 'http://assets.stickpng.com/thumbs/5a521f522f93c7a8d5137fc7.png';
     */
         const img = coinNum === 0 ? "attachment://heads.png" : "attachment://tails.png";
-        const embed = new MessageEmbed().setTitle(`it's ${coin}!`).setImage(img);
+        const embed = new EmbedBuilder().setTitle(`it's ${coin}!`).setImage(img);
         if (coinNum == 0) {
             return await interaction.reply({
                 embeds: [embed],

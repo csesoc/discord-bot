@@ -1,4 +1,4 @@
-const { MessageAttachment } = require("discord.js");
+const { AttachmentBuilder } = require("discord.js");
 
 // Checks database every minute to see if there is a message to be sent
 
@@ -29,7 +29,7 @@ module.exports = {
                     // Retrieve attachments if applicable
                     const attachment_list = [];
                     send_msg.attachments.forEach((attachment) => {
-                        attachment_list.push(new MessageAttachment(attachment.proxyURL));
+                        attachment_list.push(new AttachmentBuilder(attachment.proxyURL));
                     });
 
                     // Retrieve message content
