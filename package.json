@@ -52,7 +52,7 @@
         "@babel/core": "7.19.1",
         "@babel/eslint-parser": "7.19.1",
         "eslint": "8.23.1",
-        "eslint-config-prettier": "8.5.0",
+        "eslint-config-prettier": "9.1.0",
         "eslint-plugin-prettier": "4.2.1",
         "node-pre-gyp": "0.12.0",
         "prettier": "2.7.1"
