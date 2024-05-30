@@ -19,7 +19,7 @@ module.exports = {
                 // [recommendation name] [category] [description] [season optional] [recommender?]
                 .addStringOption((option) =>
                     option
-                        .setName("recommendation_location")
+                        .setName("recommendation location")
                         .setDescription("Name of the recommended place.")
                         .setRequired(true),
                 )
@@ -120,6 +120,7 @@ module.exports = {
         } else if (interaction.options.getSubcommand() === "get") {
             let category = interaction.options.getString("category");
             console.log(guide[category]);
+            
             // if (guide[category])
             return await interaction.reply({
                 content: guide[category],
