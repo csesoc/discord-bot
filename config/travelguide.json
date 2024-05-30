@@ -1,17 +1,23 @@
 {
     "guide": {
-        "category1": [
+        "entertainment": [],
+        "scenic views": [
             {
-                "name": "store1",
-                "description": "nice place",
-                "season": ""
+                "location": "your moms house",
+                "description": "good fun",
+                "season": "summer"
+            },
+            {
+                "location": "your dadshouse",
+                "description": "good fun",
+                "season": "summer"
             }
         ],
-        "category2": [
+        "restaurants": [
             {
-                "name": "store2",
-                "description": "nice place",
-                "season": ""
+                "location": "asasd",
+                "description": "asdasd",
+                "season": "sss"
             }
         ]
     }
