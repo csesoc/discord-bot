@@ -1,24 +1,3 @@
 {
-    "guide": {
-        "entertainment": [],
-        "scenic views": [
-            {
-                "location": "your moms house",
-                "description": "good fun",
-                "season": "summer"
-            },
-            {
-                "location": "your dadshouse",
-                "description": "good fun",
-                "season": "summer"
-            }
-        ],
-        "restaurants": [
-            {
-                "location": "asasd",
-                "description": "asdasd",
-                "season": "sss"
-            }
-        ]
-    }
+    "guide": []
 }
