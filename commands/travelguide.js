@@ -345,7 +345,7 @@ module.exports = {
             });
 
             // Send the embed
-            await interaction.reply({ embeds: [userEntriesEmbed]});
+            await interaction.reply({ embeds: [userEntriesEmbed] });
 
             // Prompt for entry index
             await interaction.channel.send("Please provide the entry number to delete.");
