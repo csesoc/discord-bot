@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageEmbed, MessageAttachment } = require("discord.js");
 
-// Depends on ChartJS must be version 3.x.x (legacy version)
+// Depends on ChartJS must be version 3.9.1 (legacy version)
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 
 
