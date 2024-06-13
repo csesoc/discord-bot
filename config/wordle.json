@@ -1,3 +1,24 @@
 {
-    "players": []
+    "players": [
+        {
+            "id": "754950907975958558",
+            "name": "addictedson",
+            "wordOfTheDay": "luser",
+            "timeChanged": 1717032989621,
+            "if_finished": true,
+            "words": [
+                "luser"
+            ],
+            "guesses": [
+                "adieu",
+                "muter",
+                "buyer",
+                "super",
+                "fuser",
+                "luser"
+            ],
+            "score": 1,
+            "total_games": 1
+        }
+    ]
 }
