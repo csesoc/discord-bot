@@ -131,7 +131,7 @@ module.exports = {
                 .addFields(...ratings)
                 .setFooter(numReviews);
             
-            await interaction.reply({ embeds: [replyEmbed], files: [attachment]});
+            await interaction.reply({ embeds: [replyEmbed], files: [attachment], ephemeral: true});
         } catch(err) {
             console.log(err);
             interaction.reply({
