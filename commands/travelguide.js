@@ -360,18 +360,39 @@ module.exports = {
                 const entryIndex = parseInt(message.content.trim());
                 if (isNaN(entryIndex) || entryIndex < 1 || entryIndex > userEntries.length) {
                     await interaction.followUp(
-                        "Invalid entry number. Please provide a valid number.",
+                        "Invalid entry number. No entry was deleted.",
                     );
                     return;
                 }
+                // Confirm entry
+                await interaction.channel.send(
+                    `Type 'Y' to confirm the deletion of index **${message.content}**`,
+                );
 
-                // Delete the entry
-                const deletedEntry = userEntries[entryIndex - 1];
-                guide.splice(guide.indexOf(deletedEntry), 1);
-                updateFile();
+                const confirmCollector = interaction.channel.createMessageCollector({
+                    filter: (message) => message.author.id === authorId,
+                    max: 1,
+                    time: 10_000,
+                });
 
-                // Notify the user about the deletion
-                await interaction.followUp(`Entry "${deletedEntry.location}" has been deleted.`);
+                confirmCollector.on("collect", async (message) => {
+                    const confirmMessage = message.content.trim();
+                    if (confirmMessage === "Y") {
+                        // Delete the entry
+                        const deletedEntry = userEntries[entryIndex - 1];
+                        guide.splice(guide.indexOf(deletedEntry), 1);
+                        updateFile();
+
+                        // Notify the user about the deletion
+                        await interaction.followUp(
+                            `Entry "${deletedEntry.location}" has been deleted.`,
+                        );
+                    } else {
+                        await interaction.followUp(`No entry has been deleted.`);
+                    }
+                    return;
+                });
+
             });
 
             collector.on("end", (collected) => {});
