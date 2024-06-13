@@ -359,9 +359,7 @@ module.exports = {
             collector.on("collect", async (message) => {
                 const entryIndex = parseInt(message.content.trim());
                 if (isNaN(entryIndex) || entryIndex < 1 || entryIndex > userEntries.length) {
-                    await interaction.followUp(
-                        "Invalid entry number. No entry was deleted.",
-                    );
+                    await interaction.followUp("Invalid entry number. No entry was deleted.");
                     return;
                 }
                 // Confirm entry
@@ -392,7 +390,6 @@ module.exports = {
                     }
                     return;
                 });
-
             });
 
             collector.on("end", (collected) => {});
