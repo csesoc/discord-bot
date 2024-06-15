@@ -1,4 +1,4 @@
-const { MessageEmbed, MessageButton, MessageActionRow } = require("discord.js");
+const { EmbedBuilder, ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const cron = require("node-cron");
 const lunchBuddyLocations = require("../data/lunch_buddy_locations");
 const config = require("../config/lunch_buddy.json");
@@ -31,7 +31,7 @@ const generateAreasEmbed = (areaVotes) => {
         (element) => `${element.value}: ${areaVotes ? areaVotes[element.value].length : 0}`,
     );
     areas.push(`Any: ${areaVotes ? areaVotes["Any"].length : 0}`);
-    return new MessageEmbed()
+    return new EmbedBuilder()
         .setTitle("Meetup Area Selection")
         .setColor(0x0099ff)
         .setDescription("Please select an option below to vote for that area!")
@@ -53,7 +53,7 @@ const generateLocationsEmbed = (area, votes) => {
         (element) => `${element.name}: ${votes ? votes[element.name].length : 0}`,
     );
     locations.push(`Any: ${votes ? votes["Any"].length : 0}`);
-    return new MessageEmbed()
+    return new EmbedBuilder()
         .setTitle(`Meetup Location Selection - ${area}`)
         .setColor(0x0099ff)
         .setDescription("Please select an option below to vote for that location!")
@@ -73,21 +73,21 @@ const areasList = lunchBuddyLocations.locations.map((element) => element.value);
 areasList.push("Any");
 const areasButtons = lunchBuddyLocations.locations.map(
     (element) =>
-        new MessageButton({
+        new ButtonBuilder({
             style: "PRIMARY",
             label: element.value,
             customId: `${element.value}${areaButtonCustomId}`,
         }),
 );
 areasButtons.push(
-    new MessageButton({
+    new ButtonBuilder({
         style: "PRIMARY",
         label: "Surprise Me!",
         customId: `Any${areaButtonCustomId}`,
     }),
 );
 areasButtons.push(
-    new MessageButton({
+    new ButtonBuilder({
         style: "DANGER",
         label: "Remove Vote",
         customId: `Remove${areaButtonCustomId}`,
@@ -101,7 +101,7 @@ areasButtonsIds.push(`Remove${areaButtonCustomId}`);
 const areasActionRows = [];
 for (let i = 0; i < areasButtons.length; i += maxRowButtons) {
     areasActionRows.push(
-        new MessageActionRow({ components: areasButtons.slice(i, i + maxRowButtons) }),
+        new ActionRowBuilder({ components: areasButtons.slice(i, i + maxRowButtons) }),
     );
 }
 
@@ -253,21 +253,21 @@ module.exports = {
                 // client.channels.fetch(voteOriginId).then(async (voteChannel) => {
                 const locationsButtons = locationData.sub.map(
                     (element) =>
-                        new MessageButton({
+                        new ButtonBuilder({
                             style: "PRIMARY",
                             label: element.name,
                             customId: `${element.name}${locationButtonCustomId}`,
                         }),
                 );
                 locationsButtons.push(
-                    new MessageButton({
+                    new ButtonBuilder({
                         style: "PRIMARY",
                         label: "Surprise Me!",
                         customId: `Any${locationButtonCustomId}`,
                     }),
                 );
                 locationsButtons.push(
-                    new MessageButton({
+                    new ButtonBuilder({
                         style: "DANGER",
                         label: "Remove Vote",
                         customId: `Remove${locationButtonCustomId}`,
@@ -281,7 +281,7 @@ module.exports = {
                 const locationsActionRows = [];
                 for (let i = 0; i < locationsButtons.length; i += maxRowButtons) {
                     locationsActionRows.push(
-                        new MessageActionRow({
+                        new ActionRowBuilder({
                             components: locationsButtons.slice(i, i + maxRowButtons),
                         }),
                     );

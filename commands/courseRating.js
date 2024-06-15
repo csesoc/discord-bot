@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, MessageAttachment } = require("discord.js");
+const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
 const puppeteer = require("puppeteer");
 
@@ -120,19 +120,19 @@ module.exports = {
             }
 
             const image = await buildChart(ratings);
-            const attachment = new MessageAttachment(image, "rating.png");
+            const attachment = new AttachmentBuilder(image, { name: "rating.png" });
             ratings.unshift({
                 name: "\u200B",
                 value: `[${course} Handbook](${handbookUrl})`,
             });
-            const replyEmbed = new MessageEmbed()
+            const replyEmbed = new EmbedBuilder()
                 .setColor(0x0099ff)
                 .setTitle(course + " " + courseTitle)
                 .setURL(url)
                 .setDescription(description)
                 .setImage("attachment://rating.png")
-                .addFields(...ratings)
-                .setFooter(numReviews);
+                .addFields(ratings)
+                .setFooter({ text: numReviews });
 
             await interaction.editReply({ embeds: [replyEmbed], files: [attachment] });
         } catch (err) {

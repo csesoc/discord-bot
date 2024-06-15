@@ -1,6 +1,6 @@
 const help = require("../config/help.json");
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require("discord.js");
 
 // Fetches commands from the help data
 const commands = help.commands;
@@ -9,13 +9,13 @@ const commands = help.commands;
 const prevId = "helpPrevButtonId";
 const nextId = "helpNextButtonId";
 
-const prevButton = new MessageButton({
+const prevButton = new ButtonBuilder({
     style: "SECONDARY",
     label: "Previous",
     emoji: "⬅️",
     customId: prevId,
 });
-const nextButton = new MessageButton({
+const nextButton = new ButtonBuilder({
     style: "SECONDARY",
     label: "Next",
     emoji: "➡️",
@@ -27,13 +27,13 @@ const PAGE_SIZE = 10;
 /**
  * Creates an embed with commands starting from an index.
  * @param {number} start The index to start from.
- * @returns {MessageEmbed}
+ * @returns {EmbedBuilder}
  */
 const generateEmbed = (start) => {
     const current = commands.slice(start, start + PAGE_SIZE);
     const pageNum = Math.floor(start / PAGE_SIZE) + 1;
 
-    return new MessageEmbed({
+    return new EmbedBuilder({
         title: `Help Command - Page ${pageNum}`,
         color: 0x3a76f8,
         author: {
@@ -86,7 +86,7 @@ module.exports = {
         await interaction.reply({
             embeds: [helpEmbed],
             components: [
-                new MessageActionRow({
+                new ActionRowBuilder({
                     components: [
                         // previous button if it isn't the start
                         ...(currentIndex ? [prevButton] : []),
@@ -118,7 +118,7 @@ module.exports = {
             await i.update({
                 embeds: [generateEmbed(currentIndex)],
                 components: [
-                    new MessageActionRow({
+                    new ActionRowBuilder({
                         components: [
                             // previous button if it isn't the start
                             ...(currentIndex ? [prevButton] : []),
