@@ -3,6 +3,9 @@ const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
 const puppeteer = require("puppeteer");
 
+/**
+ * Extracts the relevant information from the course page
+ */
 async function extractRating(url) {
     const browser = await puppeteer.launch();
 
@@ -35,6 +38,13 @@ async function extractRating(url) {
     return { courseTitle, numReviews, description, ratings };
 }
 
+/**
+ * Determines the color code based on the given rating.
+ *
+ * @param {number} rating - The rating value to evaluate.
+ * @returns {string} - The corresponding color code in hexadecimal format.
+ *             
+ */
 function ratingColour(rating) {
     if (rating >= 3.5) {
         return "#39e75f";
@@ -44,6 +54,12 @@ function ratingColour(rating) {
     return "#FF0000";
 }
 
+/**
+ * Builds a doughnut chart representing the average rating from a list of ratings.
+ *
+ * @param {Array} ratings - An array of rating objects
+ * @returns {Promise<Buffer>} - An image buffer of doughnut chart
+ */
 async function buildChart(ratings) {
     const width = 800;
     const height = 300;
