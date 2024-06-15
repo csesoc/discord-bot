@@ -43,7 +43,7 @@ async function extractRating(url) {
  *
  * @param {number} rating - The rating value to evaluate.
  * @returns {string} - The corresponding color code in hexadecimal format.
- *             
+ *
  */
 function ratingColour(rating) {
     if (rating >= 3.5) {
