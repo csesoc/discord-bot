@@ -21,6 +21,10 @@ export default [...compat.extends("eslint:recommended", "prettier"), {
 
     files: ["**/*.js"],
 
+    ignores: [
+        "node_modules/**",
+    ],
+
     languageOptions: {
         globals: {
             ...globals.node,
