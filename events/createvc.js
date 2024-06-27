@@ -41,8 +41,6 @@ function deleteExistentChannels(client, jsonString) {
         JSON.stringify({ users: data.users, channels: data.channels }, null, 4),
     );
 
-    // console.log(data);
-
     data.channels.forEach((item) => {
         // item here is the channel id
         if (item.delete == false) {
