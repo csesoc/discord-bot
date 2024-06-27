@@ -190,7 +190,6 @@ module.exports = {
             for (let j = 0; j < 6; j++) {
                 const imageNums = getAnswer(answer, guesses[j]);
                 for (let i = 0; i < 5; i++) {
-                    // eslint-disable-next-line no-undef
                     const imageNumber = imageNums[i];
                     square = square_arr[imageNumber];
 
