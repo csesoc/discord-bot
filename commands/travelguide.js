@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { DBTravelguide } = require("../lib/database/dbtravelguide");
 const { v4: uuidv4 } = require("uuid");
 
 // ////////////////////////////////////////////
