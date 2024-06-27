@@ -1,5 +1,4 @@
 const { DBSchedulePost } = require("../lib/database/dbschedulepost");
-/* eslint-disable */
 
 module.exports = {
     name: "ready",

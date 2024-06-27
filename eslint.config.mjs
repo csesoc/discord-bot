@@ -87,7 +87,12 @@ export default [...compat.extends("eslint:recommended", "prettier"), {
         "no-var": "error",
         "object-curly-spacing": ["error", "always"],
         "prefer-const": "error",
-        "prettier/prettier": "error",
+        "prettier/prettier": [
+            "error",
+            {
+                "endOfLine": "auto",
+            }
+        ],
         semi: ["error", "always"],
         "space-before-blocks": "error",
         "space-in-parens": "error",
