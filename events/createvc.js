@@ -8,18 +8,21 @@ module.exports = {
     name: "ready",
     once: true,
     execute(client) {
-        const timer = setInterval(function () {
-            // Reading data from the file
-            fs.readFile("./data/createvc.json", "utf-8", (err, jsonString) => {
-                if (err) {
-                    console.log("Error reading file from disk:", err);
-                    return;
-                } else {
-                    deleteExistentChannels(client, jsonString);
-                }
-            });
-            // Write back to the file
-        }, 60 * 60 * 1000);
+        const timer = setInterval(
+            function () {
+                // Reading data from the file
+                fs.readFile("./data/createvc.json", "utf-8", (err, jsonString) => {
+                    if (err) {
+                        console.log("Error reading file from disk:", err);
+                        return;
+                    } else {
+                        deleteExistentChannels(client, jsonString);
+                    }
+                });
+                // Write back to the file
+            },
+            60 * 60 * 1000,
+        );
     },
 };
 
