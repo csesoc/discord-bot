@@ -198,7 +198,7 @@ module.exports = {
                         /** @type {DBuser} */
                         const userDB = global.userDB;
                         userDB.remove_user_role(interaction.user.id, role.name);
-                        
+
                         await interaction.member.roles.remove(role);
                         return await interaction.reply({
                             content: `✅ | Removed you from the role and chat for \`${course}\`.`,
