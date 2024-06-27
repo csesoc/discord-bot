@@ -127,9 +127,14 @@ module.exports = {
                             ephemeral: true,
                         });
                     }
+                    // // Add it to the existing database to track.
+                    /** @type {DBuser} */
+                    const userDB = global.userDB;
+                    await userDB.add_user_role(interaction.user.id, role.name);
 
                     // If they don't, let's add the role to them
                     await interaction.member.roles.add(role);
+
                     return await interaction.reply({
                         content: `✅ | Added you to the chat for \`${course_with_alias}\`.`,
                         ephemeral: true,
@@ -190,6 +195,10 @@ module.exports = {
                         in_overwrites(permissions, role.id)
                     ) {
                         // If they do remove the role
+                        /** @type {DBuser} */
+                        const userDB = global.userDB;
+                        userDB.remove_user_role(interaction.user.id, role.name);
+                        
                         await interaction.member.roles.remove(role);
                         return await interaction.reply({
                             content: `✅ | Removed you from the role and chat for \`${course}\`.`,
