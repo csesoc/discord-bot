@@ -4,8 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "format": "prettier -w './**/*.js'",
-        "format:check": "prettier --check './**/*.js'",
+        "format": "prettier -w ./**/*.js",
+        "format:check": "prettier --check ./**/*.js",
         "lint": "eslint",
         "lint:fix": "eslint --fix",
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -58,9 +58,9 @@
         "@eslint/js": "^9.5.0",
         "eslint": "^9.5.0",
         "eslint-config-prettier": "9.1.0",
-        "eslint-plugin-prettier": "4.2.1",
+        "eslint-plugin-prettier": "^5.0.0",
         "globals": "^15.5.0",
         "node-pre-gyp": "0.12.0",
-        "prettier": "2.7.1"
+        "prettier": "3.3.2"
     }
 }
