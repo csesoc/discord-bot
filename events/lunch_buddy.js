@@ -1,6 +1,6 @@
 const { EmbedBuilder, ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const cron = require("node-cron");
-const lunchBuddyLocations = require("../data/lunch_buddy_locations.js");
+const lunchBuddyLocations = require("../data/lunch_buddy_locations.json");
 const config = require("../config/lunch_buddy.json");
 
 const maxRowButtons = 4;
@@ -18,7 +18,7 @@ const generalLocationInfo =
     "This lunch buddy vote commenced at 10am, you must vote for the location by 12pm, when one will be chosen.";
 
 const getLocations = (area) => {
-    for (const object of lunchBuddyLocations.locations) {
+    for (const object of lunchBuddyLocations) {
         if (object.value === area) {
             return object;
         }
@@ -27,7 +27,7 @@ const getLocations = (area) => {
 };
 
 const generateAreasEmbed = (areaVotes) => {
-    const areas = lunchBuddyLocations.locations.map(
+    const areas = lunchBuddyLocations.map(
         (element) => `${element.value}: ${areaVotes ? areaVotes[element.value].length : 0}`,
     );
     areas.push(`Any: ${areaVotes ? areaVotes["Any"].length : 0}`);
@@ -69,9 +69,9 @@ const generateLocationsEmbed = (area, votes) => {
         );
 };
 
-const areasList = lunchBuddyLocations.locations.map((element) => element.value);
+const areasList = lunchBuddyLocations.map((element) => element.value);
 areasList.push("Any");
-const areasButtons = lunchBuddyLocations.locations.map(
+const areasButtons = lunchBuddyLocations.map(
     (element) =>
         new ButtonBuilder({
             style: "PRIMARY",
@@ -93,7 +93,7 @@ areasButtons.push(
         customId: `Remove${areaButtonCustomId}`,
     }),
 );
-const areasButtonsIds = lunchBuddyLocations.locations.map(
+const areasButtonsIds = lunchBuddyLocations.map(
     (element) => `${element.value}${areaButtonCustomId}`,
 );
 areasButtonsIds.push(`Any${areaButtonCustomId}`);
