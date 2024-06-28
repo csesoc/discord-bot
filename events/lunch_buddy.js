@@ -2,7 +2,7 @@ const { EmbedBuilder, ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const cron = require("node-cron");
 
 const lunchBuddyLocations = require("../config/lunch_buddy_locations.json");
-const config = require("../config/lunch_budy.json");
+const config = require("../config/lunch_buddy.json");
 
 const maxRowButtons = 4;
 const areaButtonCustomId = "AreaButton";
