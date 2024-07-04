@@ -1,15 +1,17 @@
 # Build layer template for an eventual TS migration
-FROM node:20.13.1-slim as builder
+FROM node:20.15.0-slim as builder
 ENV NODE_ENV=production
 
 # Set working directory
 WORKDIR /app
 
+RUN apt-get update && apt-get -y install libgbm1 && apt-get -y install libasound2
+
 # Install dependencies
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-FROM node:20.13.1-slim
+FROM node:20.15.0-slim
 ENV NODE_ENV=production
 
 # Set working directory
