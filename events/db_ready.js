@@ -2,7 +2,6 @@
 const { DBuser } = require("../lib/database/database");
 const { CronJob } = require("cron");
 
-/* eslint-disable */
 const CSESOC_SERVER_ID = "693779865916276746";
 // const TEST_SERVER_ID = "1220297696829509713";
 
