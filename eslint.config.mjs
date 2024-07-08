@@ -23,6 +23,7 @@ export default [...compat.extends("eslint:recommended", "prettier"), {
 
     ignores: [
         "node_modules/**",
+        ".puppeteerrc.cjs",
     ],
 
     languageOptions: {
