@@ -5,8 +5,6 @@ ENV NODE_ENV=production
 # Set working directory
 WORKDIR /app
 
-RUN apt-get update && apt-get -y install libgbm1 && apt-get -y install libasound2
-
 # Install dependencies
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
