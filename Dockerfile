@@ -5,12 +5,6 @@ ENV NODE_ENV=production
 # Set working directory
 WORKDIR /app
 
-# We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_DOWNLOAD true
-
-# Install Chromium manually
-RUN apk add --no-cache \ chromium
-
 # Install dependencies
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
