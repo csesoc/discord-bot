@@ -7,7 +7,9 @@ const puppeteer = require("puppeteer");
  * Extracts the relevant information from the course page
  */
 async function extractRating(url) {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        executablePath: "/usr/bin/google-chrome",
+    });
 
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "networkidle2" });
