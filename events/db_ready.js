@@ -18,11 +18,12 @@ module.exports = {
             console.log("Performing daily check of old roles at 12:00pm");
 
             const old_roles = await userDB.checkTimeAssigned();
+            const guild = await client.guilds.fetch(CSESOC_SERVER_ID);
+            const roles = await guild.roles.fetch();
+
             for (const removed_role of old_roles) {
                 try {
-                    const guild = await client.guilds.fetch(CSESOC_SERVER_ID);
                     const member = await guild.members.fetch(removed_role.userid);
-                    const roles = await guild.roles.fetch();
                     const role = roles.find((r) => r.name === removed_role.role_name);
 
                     if (member && role) {
