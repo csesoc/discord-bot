@@ -21,5 +21,7 @@ COPY --from=builder /app/node_modules ./node_modules
 # Copy bot files
 COPY . .
 
+RUN chmod +x entrypoint.sh
+
 # Run bot
 ENTRYPOINT [ "./entrypoint.sh" ]
