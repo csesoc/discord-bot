@@ -1,5 +1,5 @@
 # Build layer template for an eventual TS migration
-FROM node:20.15.0-slim as builder
+FROM node:20.15.0-slim AS builder
 ENV NODE_ENV=production
 
 # Set working directory
@@ -20,8 +20,6 @@ COPY --from=builder /app/node_modules ./node_modules
 
 # Copy bot files
 COPY . .
-
-RUN chmod +x entrypoint.sh
 
 # Run bot
 ENTRYPOINT [ "./entrypoint.sh" ]
