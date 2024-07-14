@@ -12,6 +12,8 @@ RUN npm ci --omit=dev
 FROM ghcr.io/puppeteer/puppeteer:22.12.1
 ENV NODE_ENV=production
 
+USER root
+
 # Set working directory
 WORKDIR /app
 
