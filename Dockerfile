@@ -25,5 +25,7 @@ COPY . .
 
 RUN chmod +x entrypoint.sh
 
+USER pptruser
+
 # Run bot
 ENTRYPOINT [ "./entrypoint.sh" ]
