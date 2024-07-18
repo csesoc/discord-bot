@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const axios = require("axios").default;
 
 module.exports = {
@@ -9,7 +9,7 @@ module.exports = {
             .get("https://official-joke-api.appspot.com/random_joke")
             .then((res) => {
                 // console.log(res.data);
-                const embed = new MessageEmbed()
+                const embed = new EmbedBuilder()
                     .setTitle(res.data.setup)
                     .setDescription(res.data.punchline);
 

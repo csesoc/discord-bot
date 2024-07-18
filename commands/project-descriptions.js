@@ -9,21 +9,21 @@ module.exports = {
                 .setName("project")
                 .setDescription("Which project do you want to be introduced to?")
                 .setRequired(true)
-                .addChoices([
-                    ["Chaos", "chaos"],
-                    ["Circles", "circles"],
-                    ["Uni-lectives", "unilectives"],
-                    ["Discord Bot", "discordbot"],
-                    ["Freerooms", "freerooms"],
-                    ["Jobsboard", "jobsboard"],
-                    ["Notangles", "notangles"],
-                    ["Structs.sh", "structs.sh"],
-                    ["Trainee Program", "training-program"],
-                    ["UI/UX", "ui/ux"],
-                    ["CMS", "cms"],
-                    ["Website", "website"],
-                    ["???", "projects-fair-easter-egg-ctf"],
-                ]),
+                .addChoices(
+                    { name: "Chaos", value: "chaos" },
+                    { name: "Circles", value: "circles" },
+                    { name: "Uni-lectives", value: "unilectives" },
+                    { name: "Discord Bot", value: "discordbot" },
+                    { name: "Freerooms", value: "freerooms" },
+                    { name: "Jobsboard", value: "jobsboard" },
+                    { name: "Notangles", value: "notangles" },
+                    { name: "Structs.sh", value: "structs.sh" },
+                    { name: "Trainee Program", value: "training-program" },
+                    { name: "UI/UX", value: "ui/ux" },
+                    { name: "CMS", value: "cms" },
+                    { name: "Website", value: "website" },
+                    { name: "???", value: "projects-fair-easter-egg-ctf" },
+                ),
         ),
 
     async execute(interaction) {

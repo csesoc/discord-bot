@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { ChannelType } = require("discord.js");
 
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
@@ -35,20 +36,26 @@ const get_real_course_name = (course) => {
 };
 
 const is_valid_course = (course) => {
-    const reg_comp_course = /^comp\d{4}$/;
-    const reg_math_course = /^math\d{4}$/;
-    const reg_binf_course = /^binf\d{4}$/;
-    const reg_engg_course = /^engg\d{4}$/;
-    const reg_seng_course = /^seng\d{4}$/;
-    const reg_desn_course = /^desn\d{4}$/;
+    const reg_valid_course = /^[a-zA-Z]{4}\d{4}$/;
+
+    return reg_valid_course.test(course);
+};
+
+const is_supported_course = (course) => {
+    const reg_comp_course = /^comp\d{4}$/i;
+    const reg_math_course = /^math\d{4}$/i;
+    const reg_binf_course = /^binf\d{4}$/i;
+    const reg_engg_course = /^engg\d{4}$/i;
+    const reg_seng_course = /^seng\d{4}$/i;
+    const reg_desn_course = /^desn\d{4}$/i;
 
     return (
-        reg_comp_course.test(course.toLowerCase()) ||
-        reg_math_course.test(course.toLowerCase()) ||
-        reg_binf_course.test(course.toLowerCase()) ||
-        reg_engg_course.test(course.toLowerCase()) ||
-        reg_seng_course.test(course.toLowerCase()) ||
-        reg_desn_course.test(course.toLowerCase())
+        reg_comp_course.test(course) ||
+        reg_math_course.test(course) ||
+        reg_binf_course.test(course) ||
+        reg_engg_course.test(course) ||
+        reg_seng_course.test(course) ||
+        reg_desn_course.test(course)
     );
 };
 
@@ -87,20 +94,20 @@ module.exports = {
                 const input_course = await interaction.options.getString("course").toLowerCase();
                 const course = get_real_course_name(input_course);
 
-                const other_courses = /^[a-zA-Z]{4}\d{4}$/;
                 const is_valid = is_valid_course(course);
+                const is_supported = is_supported_course(course);
 
                 const course_with_alias =
                     course != input_course
                         ? `${course} (same course chat as ${input_course})`
                         : `${course}`;
 
-                if (!is_valid && other_courses.test(course.toLowerCase())) {
+                if (!is_supported && is_valid) {
                     return await interaction.reply({
                         content: `❌ | Course chats for other faculties are not supported.`,
                         ephemeral: true,
                     });
-                } else if (!is_valid) {
+                } else if (!is_supported) {
                     return await interaction.reply({
                         content: `❌ | You are not allowed to join this channel using this command.`,
                         ephemeral: true,
@@ -120,9 +127,14 @@ module.exports = {
                             ephemeral: true,
                         });
                     }
+                    // // Add it to the existing database to track.
+                    /** @type {DBuser} */
+                    const userDB = global.userDB;
+                    await userDB.add_user_role(interaction.user.id, role.name);
 
                     // If they don't, let's add the role to them
                     await interaction.member.roles.add(role);
+
                     return await interaction.reply({
                         content: `✅ | Added you to the chat for \`${course_with_alias}\`.`,
                         ephemeral: true,
@@ -138,7 +150,7 @@ module.exports = {
                 const input_course = await interaction.options.getString("course");
                 const course = get_real_course_name(input_course);
 
-                if (!is_valid_course(course)) {
+                if (!is_supported_course(course)) {
                     return await interaction.reply({
                         content: `❌ | Not a valid course.`,
                         ephemeral: true,
@@ -155,7 +167,7 @@ module.exports = {
                         content: `❌ | The course chat for \`${course}\` does not exist.`,
                         ephemeral: true,
                     });
-                } else if (channel.type !== "GUILD_TEXT") {
+                } else if (channel.type !== ChannelType.GuildText) {
                     return await interaction.reply({
                         content: `❌ | The course chat for \`${course}\` is not a text channel.`,
                         ephemeral: true,
@@ -183,6 +195,10 @@ module.exports = {
                         in_overwrites(permissions, role.id)
                     ) {
                         // If they do remove the role
+                        /** @type {DBuser} */
+                        const userDB = global.userDB;
+                        userDB.remove_user_role(interaction.user.id, role.name);
+
                         await interaction.member.roles.remove(role);
                         return await interaction.reply({
                             content: `✅ | Removed you from the role and chat for \`${course}\`.`,

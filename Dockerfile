@@ -1,5 +1,5 @@
 # Build layer template for an eventual TS migration
-FROM node:16.17.0-slim as builder
+FROM node:20.15.0-slim AS builder
 ENV NODE_ENV=production
 
 # Set working directory
@@ -9,8 +9,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-FROM node:16.17.0-slim
+FROM ghcr.io/puppeteer/puppeteer:22.12.1
 ENV NODE_ENV=production
+
+USER root
 
 # Set working directory
 WORKDIR /app
@@ -22,6 +24,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
 RUN chmod +x entrypoint.sh
+
+USER pptruser
 
 # Run bot
 ENTRYPOINT [ "./entrypoint.sh" ]

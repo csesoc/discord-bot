@@ -1,7 +1,7 @@
 const axios = require("axios");
 const textVersion = require("textversionjs");
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const { apiURL, handbookURL } = require("../config/handbook.json");
 
 module.exports = {
@@ -55,7 +55,7 @@ module.exports = {
                 terms,
             } = data;
 
-            const courseInfo = new MessageEmbed()
+            const courseInfo = new EmbedBuilder()
                 .setTitle(title)
                 .setURL(`${handbookURL}/${code}`)
                 .setColor(0x3a76f8)
@@ -74,20 +74,20 @@ module.exports = {
                         value:
                             raw_requirements.replace(
                                 /[A-Z]{4}[0-9]{4}/g,
-                                `[$&](${handbookURL}$&)`,
+                                `[$&](${handbookURL}/$&)`,
                             ) || "None",
                         inline: true,
                     },
                     {
                         name: "Offering Terms",
-                        value: terms.join(", "),
+                        value: terms.join(", ") || "None",
                         inline: true,
                     },
                     {
                         name: "Equivalent Courses",
                         value:
                             Object.keys(equivalents)
-                                .map((course) => `[${course}](${course})`)
+                                .map((course) => `[${course}](${handbookURL}/${course})`)
                                 .join(", ") || "None",
                         inline: true,
                     },
@@ -95,7 +95,7 @@ module.exports = {
                         name: "Exclusion Courses",
                         value:
                             Object.keys(exclusions)
-                                .map((course) => `[${course}](${handbookURL}${course})`)
+                                .map((course) => `[${course}](${handbookURL}/${course})`)
                                 .join(", ") || "None",
                         inline: true,
                     },

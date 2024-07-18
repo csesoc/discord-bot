@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: "messageReactionAdd",
@@ -43,7 +43,7 @@ module.exports = {
                     const botName = await reaction.message.author.username;
 
                     // Notify user that role was not assigned
-                    const notification = new MessageEmbed()
+                    const notification = new EmbedBuilder()
                         .setColor("#7cd699")
                         .setTitle("Role could not be assigned")
                         .setAuthor(
@@ -73,7 +73,7 @@ async function giveRole(reaction, user, roleId) {
         const botName = await reaction.message.author.username;
 
         // Notify user role was successfully added
-        const notification = new MessageEmbed()
+        const notification = new EmbedBuilder()
             .setColor("#7cd699")
             .setTitle("Roles updated!")
             .setAuthor(botName, "https://avatars.githubusercontent.com/u/164179?s=200&v=4")

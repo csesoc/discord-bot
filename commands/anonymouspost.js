@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const { allowedChannels } = require("../config/anon_channel.json");
 const paginationEmbed = require("discordjs-button-pagination");
 const fs = require("fs");
-const { Util, MessageEmbed, MessageButton, Permissions } = require("discord.js");
+const { Util, EmbedBuilder, ButtonBuilder, Permissions } = require("discord.js");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("anonymouspost")
@@ -223,7 +223,7 @@ module.exports = {
         } else if (interaction.options.getSubcommand() === "whitelist") {
             // No allowed roles
             if (allowedChannels.length == 0) {
-                const embed = new MessageEmbed()
+                const embed = new EmbedBuilder()
                     .setTitle("Allowed Channels")
                     .setDescription("No allowed channels");
                 return await interaction.reply({ embeds: [embed] });
@@ -239,7 +239,7 @@ module.exports = {
             }
 
             if (channels.length == 0) {
-                const embed = new MessageEmbed()
+                const embed = new EmbedBuilder()
                     .setTitle("Allowed Channels")
                     .setDescription("No allowed channels");
                 return await interaction.reply({ embeds: [embed] });
@@ -250,18 +250,18 @@ module.exports = {
             const embedList = [];
             for (let i = 0; i < channels.length; i += channelsPerPage) {
                 embedList.push(
-                    new MessageEmbed()
+                    new EmbedBuilder()
                         .setTitle("Allowed Channels")
                         .setDescription(channels.slice(i, i + channelsPerPage).join("\n")),
                 );
             }
 
             const buttonList = [
-                new MessageButton()
+                new ButtonBuilder()
                     .setCustomId("previousbtn")
                     .setLabel("Previous")
                     .setStyle("DANGER"),
-                new MessageButton().setCustomId("nextbtn").setLabel("Next").setStyle("SUCCESS"),
+                new ButtonBuilder().setCustomId("nextbtn").setLabel("Next").setStyle("SUCCESS"),
             ];
 
             paginationEmbed(interaction, embedList, buttonList);

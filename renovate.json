@@ -26,6 +26,6 @@
             "matchPackagePatterns": ["docker/*"],
             "automerge": true,
             "automergeType": "branch"
-        },
+        }
     ]
 }

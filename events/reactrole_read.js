@@ -1,5 +1,4 @@
 const { DBReactRole } = require("../lib/database/dbreactrole");
-/* eslint-disable */
 
 module.exports = {
     name: "ready",
