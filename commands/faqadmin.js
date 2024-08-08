@@ -1,6 +1,6 @@
 // @ts-check
 const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+const { PermissionsBitField } = require("discord.js");
 
 // ////////////////////////////////////////////
 // //////// SETTING UP THE COMMANDS ///////////
@@ -46,7 +46,7 @@ async function handleInteraction(interaction) {
     const faqStorage = global.faqStorage;
 
     // Admin permission check (this may not work uhm)
-    if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         await interaction.reply({
             content: "You do not have permission to execute this command.",
             ephemeral: true,
