@@ -65,7 +65,7 @@ module.exports = {
                 const userDB = global.userDB;
                 await userDB.deleteUsers();
 
-                return await interaction.editReply("Deleted user table.");
+                return await interaction.reply("Deleted user table.");
             }
 
             return await interaction.reply("Error: unknown subcommand.");
