@@ -63,7 +63,7 @@ module.exports = {
                 return await interaction.reply("Removed unverified members.");
             } else if (interaction.options.getSubcommand() === COMMAND_DROPUSERTABLE) {
                 const userDB = global.userDB;
-                await userDB.drop_table();
+                await userDB.deleteUsers();
 
                 return await interaction.editReply("Deleted user table.");
             }
