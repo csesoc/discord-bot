@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+const { PermissionsBitField } = require("discord.js");
 
 const COMMAND_KICKUNVERIFIED = "kickunverified";
 const COMMAND_DROPUSERTABLE = "dropusertable";
@@ -20,7 +20,7 @@ module.exports = {
         ),
     async execute(interaction) {
         try {
-            if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
                 return await interaction.reply({
                     content: "You do not have permission to execute this command.",
                     ephemeral: true,
@@ -63,9 +63,9 @@ module.exports = {
                 return await interaction.reply("Removed unverified members.");
             } else if (interaction.options.getSubcommand() === COMMAND_DROPUSERTABLE) {
                 const userDB = global.userDB;
-                await userDB.drop_table();
+                await userDB.deleteUsers();
 
-                return await interaction.editReply("Deleted user table.");
+                return await interaction.reply("Deleted user table.");
             }
 
             return await interaction.reply("Error: unknown subcommand.");

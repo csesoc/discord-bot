@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Permissions } = require("discord.js");
+const { PermissionsBitField } = require("discord.js");
 
 const is_valid_course_name = (course) => {
     const reg_comp_course = /^comp\d{4}$/;
@@ -136,7 +136,7 @@ module.exports = {
         ),
     async execute(interaction) {
         try {
-            if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
                 return await interaction.reply({
                     content: "You do not have permission to execute this command.",
                     ephemeral: true,

@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const { allowedChannels } = require("../config/anon_channel.json");
 const paginationEmbed = require("discordjs-button-pagination");
 const fs = require("fs");
-const { Util, EmbedBuilder, ButtonBuilder, Permissions } = require("discord.js");
+const { Util, EmbedBuilder, ButtonBuilder, PermissionsBitField } = require("discord.js");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("anonymouspost")
@@ -125,7 +125,7 @@ module.exports = {
         }
 
         // Admin permission check
-        if (!interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
             return await interaction.reply({
                 content: "You do not have permission to execute this command.",
                 ephemeral: true,
