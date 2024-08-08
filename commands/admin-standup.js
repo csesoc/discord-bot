@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { EmbedBuilder, ButtonBuilder, Permissions } = require("discord.js");
+const { EmbedBuilder, ButtonBuilder, PermissionsBitField } = require("discord.js");
 const paginationEmbed = require("discordjs-button-pagination");
 
 module.exports = {
@@ -28,7 +28,7 @@ module.exports = {
         const standupDB = global.standupDBGlobal;
         const TEAM_DIRECTOR_ROLE_ID = "921348676692107274";
         if (
-            !interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR) &&
+            !interaction.member.permissions.has(PermissionsBitField.Flags.Administrator) &&
             !interaction.member._roles.includes(TEAM_DIRECTOR_ROLE_ID)
         ) {
             return await interaction.reply({
