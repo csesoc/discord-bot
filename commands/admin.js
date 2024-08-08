@@ -2,28 +2,7 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const { Permissions } = require("discord.js");
 
 const COMMAND_KICKUNVERIFIED = "kickunverified";
-const COMMAND_MIGRATE = "migratecourses";
-const COMMAND_REMOVECOURSEROLES = "nukeremovecourseroles";
-
-// yeah i know this code is copy pasted from the other file
-// but whatever, the migration command is temporary!
-const is_valid_course = (course) => {
-    const reg_comp_course = /^comp\d{4}$/;
-    const reg_math_course = /^math\d{4}$/;
-    const reg_binf_course = /^binf\d{4}$/;
-    const reg_engg_course = /^engg\d{4}$/;
-    const reg_seng_course = /^seng\d{4}$/;
-    const reg_desn_course = /^desn\d{4}$/;
-
-    return (
-        reg_comp_course.test(course.toLowerCase()) ||
-        reg_math_course.test(course.toLowerCase()) ||
-        reg_binf_course.test(course.toLowerCase()) ||
-        reg_engg_course.test(course.toLowerCase()) ||
-        reg_seng_course.test(course.toLowerCase()) ||
-        reg_desn_course.test(course.toLowerCase())
-    );
-};
+const COMMAND_DROPUSERTABLE = "dropusertable";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,19 +15,8 @@ module.exports = {
         )
         .addSubcommand((subcommand) =>
             subcommand
-                .setName(COMMAND_MIGRATE)
-                .setDescription("Migrates a course role to permission overwrites.")
-                .addStringOption((option) =>
-                    option
-                        .setName("course")
-                        .setDescription("Course role to remove")
-                        .setRequired(true),
-                ),
-        )
-        .addSubcommand((subcommand) =>
-            subcommand
-                .setName(COMMAND_REMOVECOURSEROLES)
-                .setDescription("WARNING: Removes course roles from the server."),
+                .setName(COMMAND_DROPUSERTABLE)
+                .setDescription("Deletes the user table and reliant tables."),
         ),
     async execute(interaction) {
         try {
@@ -93,50 +61,11 @@ module.exports = {
                     });
                 });
                 return await interaction.reply("Removed unverified members.");
-            } else if (interaction.options.getSubcommand() === COMMAND_MIGRATE) {
-                const course = interaction.options.getString("course");
-                if (!is_valid_course(course)) {
-                    return await interaction.reply("Error: invalid course.");
-                }
+            } else if (interaction.options.getSubcommand() === COMMAND_DROPUSERTABLE) {
+                const userDB = global.userDB;
+                await userDB.drop_table();
 
-                const role = await interaction.guild.roles.cache.find(
-                    (course_role) => course_role.name.toLowerCase() === course.toLowerCase(),
-                );
-
-                if (role === undefined) {
-                    return await interaction.reply("Error: no role exists for course " + course);
-                }
-
-                const channel = await interaction.guild.channels.cache.find(
-                    (role_channel) => role_channel.name.toLowerCase() === role.name.toLowerCase(),
-                );
-
-                if (channel === undefined) {
-                    return await interaction.reply("Error: no channel exists for course " + course);
-                }
-
-                await interaction.deferReply();
-                for (const member of role.members.values()) {
-                    await channel.permissionOverwrites.create(member, {
-                        VIEW_CHANNEL: true,
-                    });
-                }
-                return await interaction.editReply(
-                    "Migrated course role to permission overwrites.",
-                );
-            } else if (interaction.options.getSubcommand() === COMMAND_REMOVECOURSEROLES) {
-                // get all roles, and find courses which match the regex
-                const course_roles = await interaction.guild.roles.cache.filter((role) =>
-                    is_valid_course(role.name),
-                );
-
-                await interaction.deferReply();
-
-                for (const role of course_roles.values()) {
-                    await role.delete();
-                }
-
-                return await interaction.editReply("Removed all course roles.");
+                return await interaction.editReply("Deleted user table.");
             }
 
             return await interaction.reply("Error: unknown subcommand.");
