@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-FROM ghcr.io/puppeteer/puppeteer:22.12.1
+FROM ghcr.io/puppeteer/puppeteer:23.6.0
 ENV NODE_ENV=production
 
 USER root
