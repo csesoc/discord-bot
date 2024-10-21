@@ -64,7 +64,7 @@ jobs:
                   repository: csesoc/deployment
                   token: ${{ secrets.GH_TOKEN }}
             - name: Install yq - portable yaml processor
-              uses: mikefarah/yq@v4.44.2
+              uses: mikefarah/yq@v4.44.3
             - name: Determine file to update
               id: get_manifest
               env:
