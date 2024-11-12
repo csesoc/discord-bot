@@ -59,7 +59,10 @@ module.exports = {
                 .setTitle(title)
                 .setURL(`${handbookURL}/${code}`)
                 .setColor(0x3a76f8)
-                .setAuthor(`Course Info: ${code} (${UOC} UOC)`, "https://i.imgur.com/EE3Q40V.png")
+                .setAuthor({
+                    name: `Course Info: ${code} (${UOC} UOC)`,
+                    iconURL: "https://i.imgur.com/EE3Q40V.png",
+                })
                 .addFields(
                     {
                         name: "Overview",
@@ -106,7 +109,9 @@ module.exports = {
                     /* }, */
                 )
                 .setTimestamp()
-                .setFooter("Data fetched from Circles' Api");
+                .setFooter({
+                    text: "Data fetched from Circles' Api",
+                });
             await interaction.reply({ embeds: [courseInfo] });
         }
     },
