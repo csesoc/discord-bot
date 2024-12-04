@@ -7,6 +7,7 @@ const COMMAND_LEAVE = "leave";
 // map of course aliases to their actual names
 const course_aliases = {
     comp6841: "comp6441",
+    comp6843: "comp6443",
     comp9044: "comp2041",
     comp3891: "comp3231",
     comp9201: "comp3231",
