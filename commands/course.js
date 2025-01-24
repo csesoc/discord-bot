@@ -4,7 +4,7 @@ const { ChannelType } = require("discord.js");
 const COMMAND_JOIN = "join";
 const COMMAND_LEAVE = "leave";
 
-// map of course aliases to their actual names
+// map of course aliases to actual codes
 const course_aliases = {
     comp6841: "comp6441",
     comp6843: "comp6443",
