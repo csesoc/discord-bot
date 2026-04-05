@@ -2,6 +2,9 @@ name: Build projects-bot
 
 on:
     push:
+        branches:
+            - develop
+            - projects-bot
 
 env:
     IMAGE_NAME: ${{ github.ref_name == 'projects-bot' && 'projects-discord-bot' || 'projects-discord-bot-qa' }}
