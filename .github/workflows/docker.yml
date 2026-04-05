@@ -37,7 +37,7 @@ jobs:
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
-                  password: ${{ secrets.GH_TOKEN }}
+                  password: ${{ github.token }}
             - name: Build and push Docker image
               uses: docker/build-push-action@v4
               with:
@@ -58,37 +58,13 @@ jobs:
         environment:
             name: production (projects-bot)
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+            - name: Dispatch deployment
+              uses: devsoc-unsw/deployment-dispatch-action@main
               with:
-                  repository: csesoc/deployment
-                  token: ${{ secrets.GH_TOKEN }}
-            - name: Install yq - portable yaml processor
-              uses: mikefarah/yq@v4.44.2
-            - name: Determine file to update
-              id: get_manifest
-              env:
-                  BRANCH_NAME: ${{ github.ref }}
-              run: |
-                  if [ "$BRANCH_NAME" = "refs/heads/projects-bot" ]; then
-                      echo "MANIFEST=apps/projects/bot/ptb/deploy.yml" >> $GITHUB_OUTPUT
-                      echo "DEPLOYMENT=ptb" >> $GITHUB_OUTPUT
-                  elif [ "$BRANCH_NAME" = "refs/heads/develop" ]; then
-                      echo "MANIFEST=apps/projects/bot/qa/deploy.yml" >> $GITHUB_OUTPUT
-                      echo "DEPLOYMENT=qa" >> $GITHUB_OUTPUT
-                  else
-                      exit 1
-                  fi
-            - name: Update deployment
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-              run: |
-                  git config user.name "CSESoc CD"
-                  git config user.email "technical@csesoc.org.au"
-                  git checkout -b update/projects-bot/${{ github.sha }}
-                  yq -i '.spec.template.spec.containers[0].image = "ghcr.io/csesoc/projects-discord-bot:${{ github.sha }}"' ${{ steps.get_manifest.outputs.MANIFEST }}
-                  git add .
-                  git commit -m "feat(projects-bot/${{ steps.get_manifest.outputs.DEPLOYMENT }}): update images"
-                  git push -u origin update/projects-bot/${{ github.sha }}
-                  gh pr create --title "feat(projects-bot/${{ steps.get_manifest.outputs.DEPLOYMENT }}): update images" --body "Updates the images for the projects-bot deployment to commit csesoc/discord-bot@${{ github.sha }}." > URL
-                  gh pr merge $(cat URL) --squash -d
+                  deployment-dispatcher-app-id: ${{ vars.DEPLOYMENT_DISPATCHER_APP_ID }}
+                  deployment-dispatcher-app-private-key: ${{ secrets.DEPLOYMENT_DISPATCHER_APP_PRIVATE_KEY }}
+                  owner: csesoc
+                  repository: deployment
+                  ref: develop
+                  updates: |
+                      ghcr.io/csesoc/projects-discord-bot=${{ github.sha }}
