@@ -43,7 +43,7 @@
         "js-yaml": "4.1.0",
         "mathjs": "^13.0.0",
         "node-cron": "^3.0.3",
-        "nodemailer": "6.9.13",
+        "nodemailer": "9.0.1",
         "nodemon": "^3.0.0",
         "pg": "8.12.0",
         "puppeteer": "^22.12.1",
