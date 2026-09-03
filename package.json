@@ -53,7 +53,7 @@
         "yaml": "2.4.2"
     },
     "devDependencies": {
-        "@babel/core": "7.24.7",
+        "@babel/core": "7.29.6",
         "@babel/eslint-parser": "^7.24.7",
         "@eslint/eslintrc": "^3.1.0",
         "@eslint/js": "^9.5.0",
