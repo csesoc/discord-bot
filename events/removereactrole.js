@@ -34,9 +34,8 @@ module.exports = {
         if (noEntryReact) {
             try {
                 noEntryReact.users.fetch().then(async (userList) => {
-                    const hasRole = await reaction.message.guild.members.cache
-                        .get(user.id)
-                        ._roles.includes(roleId);
+                    const guildMember = await reaction.message.guild.members.fetch(user.id);
+                    const hasRole = guildMember.roles.cache.has(roleId);
                     if (!userList.has(senderId) || hasRole) {
                         removeRole(reaction, user, roleId);
                     }
@@ -52,7 +51,8 @@ module.exports = {
 
 async function removeRole(reaction, user, roleId) {
     try {
-        reaction.message.guild.members.cache.get(user.id).roles.remove(roleId);
+        const guildMember = await reaction.message.guild.members.fetch(user.id);
+        await guildMember.roles.remove(roleId);
         const roleName = await reaction.message.guild.roles.cache.find((r) => r.id === roleId).name;
         const botName = await reaction.message.author.username;
 
