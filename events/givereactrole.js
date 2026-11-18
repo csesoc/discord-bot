@@ -68,7 +68,8 @@ module.exports = {
 
 async function giveRole(reaction, user, roleId) {
     try {
-        reaction.message.guild.members.cache.get(user.id).roles.add(roleId);
+        const guildMember = await reaction.message.guild.members.fetch(user.id);
+        await guildMember.roles.add(roleId);
         const roleName = await reaction.message.guild.roles.cache.find((r) => r.id === roleId).name;
         const botName = await reaction.message.author.username;
 
