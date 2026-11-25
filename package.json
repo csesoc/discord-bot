@@ -58,7 +58,7 @@
         "@eslint/eslintrc": "^3.1.0",
         "@eslint/js": "^9.5.0",
         "eslint": "^9.5.0",
-        "eslint-config-prettier": "9.1.0",
+        "eslint-config-prettier": "9.1.2",
         "eslint-plugin-prettier": "^5.0.0",
         "globals": "^15.5.0",
         "node-pre-gyp": "0.17.0",
